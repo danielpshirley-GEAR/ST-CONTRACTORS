@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900">
+  <defs>
+    <!-- 1. Rich Architectural Paper Grain & Fiber Texture -->
+    <pattern id="paperTexture" width="160" height="160" patternUnits="userSpaceOnUse">
+      <!-- Fine Vellum Fibers -->
+      <path d="M 12 28 Q 28 32 45 24 M 78 92 Q 100 96 118 88 M 18 112 Q 35 120 58 114 M 92 24 Q 105 16 122 30 M 48 68 Q 65 62 82 70 M 130 135 Q 142 145 155 138 M 5 145 Q 20 152 35 146 M 120 75 Q 135 68 150 78" 
+            stroke="#94a3b8" stroke-width="0.35" stroke-opacity="0.14" fill="none" />
+      <path d="M 30 5 Q 42 18 55 10 M 80 130 Q 92 142 108 136 M 140 10 Q 148 25 156 18 M 65 40 Q 72 52 80 46" 
+            stroke="#cbd5e1" stroke-width="0.3" stroke-opacity="0.18" fill="none" />
+      
+      <!-- Stippling / Matte Paper Grain Dots -->
+      <circle cx="15" cy="35" r="0.5" fill="#64748b" fill-opacity="0.12" />
+      <circle cx="45" cy="85" r="0.6" fill="#64748b" fill-opacity="0.09" />
+      <circle cx="75" cy="20" r="0.5" fill="#64748b" fill-opacity="0.1" />
+      <circle cx="110" cy="65" r="0.7" fill="#64748b" fill-opacity="0.08" />
+      <circle cx="140" cy="115" r="0.5" fill="#64748b" fill-opacity="0.11" />
+      <circle cx="25" cy="130" r="0.6" fill="#64748b" fill-opacity="0.09" />
+      <circle cx="95" cy="145" r="0.5" fill="#64748b" fill-opacity="0.12" />
+      <circle cx="130" cy="40" r="0.4" fill="#64748b" fill-opacity="0.1" />
+      <circle cx="60" cy="105" r="0.5" fill="#64748b" fill-opacity="0.09" />
+      <circle cx="155" cy="80" r="0.6" fill="#64748b" fill-opacity="0.08" />
+    </pattern>
+
+    <!-- 2. Subtle Hand-Drawn 25px / 100px Drafting Grid -->
+    <pattern id="subtleHandGrid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <!-- 25px Minor Grid Lines (Very Faint) -->
+      <path d="M 0 25 C 30 25.2, 70 24.8, 100 25 M 0 50 C 25 49.8, 75 50.2, 100 50 M 0 75 C 35 75.2, 65 74.8, 100 75" 
+            fill="none" stroke="#94a3b8" stroke-width="0.35" stroke-opacity="0.1" />
+      <path d="M 25 0 C 25.2 30, 24.8 70, 25 100 M 50 0 C 49.8 25, 50.2 75, 50 100 M 75 0 C 75.2 35, 74.8 65, 75 100" 
+            fill="none" stroke="#94a3b8" stroke-width="0.35" stroke-opacity="0.1" />
+      <!-- 100px Major Grid Lines (Gentle Blueprint Reference) -->
+      <path d="M 0 0 C 30 0.3, 70 -0.3, 100 0 M 0 0 C 0.3 30, -0.3 70, 0 100" 
+            fill="none" stroke="#64748b" stroke-width="0.6" stroke-opacity="0.16" />
+    </pattern>
+  </defs>
+
+  <!-- Base Paper Texture & Grid Layers -->
+  <rect width="900" height="900" fill="url(#paperTexture)" />
+  <rect width="900" height="900" fill="url(#subtleHandGrid)" />
+
+  <!-- 3. Ultra-Subtle Hand-Drawn Blueprint Sketches (Delicate Pencil Opacity: 0.16 - 0.20) -->
+  <g stroke="#475569" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    
+    <!-- ============================================== -->
+    <!-- SKETCH 1: FREEHAND RESIDENTIAL FLOOR PLAN      -->
+    <!-- ============================================== -->
+    <g transform="translate(50, 60)" stroke-opacity="0.18">
+      <!-- Exterior Walls -->
+      <path d="M 45 48 C 160 51, 280 49, 395 50 L 402 50" stroke-width="1.8" />
+      <path d="M 390 42 C 392 140, 389 240, 390 340 L 390 345" stroke-width="1.8" />
+      <path d="M 395 338 C 280 341, 160 339, 48 340 L 42 340" stroke-width="1.8" />
+      <path d="M 50 345 C 49 240, 52 140, 50 45 L 50 40" stroke-width="1.8" />
+
+      <!-- Inner Cavity Wall Lines -->
+      <path d="M 60 62 C 160 61, 270 63, 378 62" stroke-width="0.9" />
+      <path d="M 378 62 C 379 145, 377 240, 378 328" stroke-width="0.9" />
+      <path d="M 378 328 C 270 327, 160 329, 62 328" stroke-width="0.9" />
+      <path d="M 62 328 C 61 240, 63 145, 62 62" stroke-width="0.9" />
+
+      <!-- Hand-Hatched Wall Sections -->
+      <path d="M 52 52 L 60 60 M 70 50 L 78 58 M 120 50 L 128 58 M 170 50 L 178 58 M 220 50 L 228 58 M 270 50 L 278 58 M 320 50 L 328 58 M 370 50 L 378 58" 
+            stroke-width="0.6" stroke-opacity="0.14" />
+      <path d="M 388 70 L 380 78 M 388 120 L 380 128 M 388 170 L 380 178 M 388 220 L 380 228 M 388 270 L 380 278" 
+            stroke-width="0.6" stroke-opacity="0.14" />
+
+      <!-- Internal Partition Walls -->
+      <path d="M 195 62 C 196 120, 194 180, 195 240" stroke-width="1.4" />
+      <path d="M 62 195 C 110 194, 150 196, 195 195" stroke-width="1.4" />
+      <path d="M 195 175 C 260 174, 320 176, 378 175" stroke-width="1.4" />
+
+      <!-- Hand-Drawn Door Swings -->
+      <path d="M 195 125 C 215 127, 228 142, 230 162" stroke-width="0.75" stroke-dasharray="3,3" />
+      <path d="M 195 125 L 195 160" stroke-width="1.1" />
+      <path d="M 140 195 C 142 215, 127 228, 108 230" stroke-width="0.75" stroke-dasharray="3,3" />
+      <path d="M 140 195 L 108 195" stroke-width="1.1" />
+
+      <!-- Hand-Drawn Windows -->
+      <path d="M 105 46 L 165 46 M 105 54 L 165 54 M 105 46 L 105 54 M 165 46 L 165 54" stroke-width="0.7" fill="#f1f5f9" fill-opacity="0.2" />
+      <path d="M 260 46 L 335 46 M 260 54 L 335 54 M 260 46 L 260 54 M 335 46 L 335 54" stroke-width="0.7" fill="#f1f5f9" fill-opacity="0.2" />
+      <path d="M 386 95 L 386 150 M 394 95 L 394 150 M 386 95 L 394 95 M 386 150 L 394 150" stroke-width="0.7" fill="#f1f5f9" fill-opacity="0.2" />
+
+      <!-- Hand-Sketched Living & Kitchen Layout -->
+      <path d="M 85 85 C 105 83, 140 84, 160 85 C 163 95, 161 115, 160 125 C 140 126, 105 125, 85 125 Z" stroke-width="0.85" rx="3" />
+      <path d="M 100 138 C 115 137, 130 139, 145 138 C 146 150, 144 160, 145 168 C 130 169, 115 167, 100 168 Z" stroke-width="0.7" rx="2" />
+      
+      <!-- Kitchen Island & Stools -->
+      <path d="M 230 95 C 270 94, 310 96, 350 95 C 352 110, 349 130, 350 142 C 310 143, 270 141, 230 142 Z" stroke-width="0.95" />
+      <ellipse cx="255" cy="118" rx="14" ry="12" stroke-width="0.6" />
+      <circle cx="295" cy="118" r="6" stroke-width="0.6" />
+      <circle cx="325" cy="118" r="5" stroke-width="0.6" />
+
+      <!-- Dining Table & Chairs -->
+      <path d="M 240 215 C 275 214, 305 216, 340 215 C 342 235, 339 255, 340 275 C 305 276, 275 274, 240 275 Z" stroke-width="0.85" />
+      <circle cx="260" cy="202" r="5" stroke-width="0.6" />
+      <circle cx="290" cy="202" r="5" stroke-width="0.6" />
+      <circle cx="320" cy="202" r="5" stroke-width="0.6" />
+      <circle cx="260" cy="288" r="5" stroke-width="0.6" />
+      <circle cx="290" cy="288" r="5" stroke-width="0.6" />
+      <circle cx="320" cy="288" r="5" stroke-width="0.6" />
+
+      <!-- Bathroom Suite -->
+      <path d="M 85 225 C 100 223, 115 224, 125 225 C 127 255, 124 285, 125 305 C 110 307, 95 305, 85 305 Z" stroke-width="0.85" />
+      <ellipse cx="105" cy="245" rx="7" ry="5" stroke-width="0.6" />
+
+      <!-- Hand-Drawn Dimension Tick Marks & Hand Script Notes -->
+      <g stroke-width="0.6" stroke="#64748b" stroke-opacity="0.25">
+        <path d="M 45 25 L 395 25" />
+        <path d="M 40 20 L 50 30 M 190 20 L 200 30 M 390 20 L 400 30" stroke-width="0.8" />
+        <text x="105" y="19" font-family="'Plus Jakarta Sans', sans-serif" font-style="italic" font-size="9" font-weight="600" fill="#64748b" stroke="none">~ 4.35 m</text>
+        <text x="275" y="19" font-family="'Plus Jakarta Sans', sans-serif" font-style="italic" font-size="9" font-weight="600" fill="#64748b" stroke="none">~ 5.75 m</text>
+
+        <!-- Room Script Labels -->
+        <text x="95" y="180" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="700" fill="#64748b" stroke="none" letter-spacing="1.2">OPEN LIVING (26.5m²)</text>
+        <text x="250" y="165" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="700" fill="#64748b" stroke="none" letter-spacing="1.2">DINING &amp; KITCHEN</text>
+      </g>
+    </g>
+
+    <!-- ============================================== -->
+    <!-- SKETCH 2: HAND-DRAWN STRUCTURAL ISOMETRIC BEAM -->
+    <!-- ============================================== -->
+    <g transform="translate(540, 90)" stroke-opacity="0.18">
+      <path d="M 70 65 L 210 65 L 270 20 L 130 20 Z" stroke-width="1.1" fill="#f8fafc" fill-opacity="0.3" />
+      <path d="M 70 65 L 70 85 L 210 85 L 210 65 Z" stroke-width="1.1" />
+      <path d="M 210 65 L 270 20 L 270 40 L 210 85 Z" stroke-width="1.1" />
+      
+      <!-- Columns -->
+      <path d="M 85 85 L 85 195 L 105 195 L 105 85" stroke-width="0.9" />
+      <path d="M 190 85 L 190 195 L 210 195 L 210 85" stroke-width="0.9" />
+
+      <!-- Steel Hatch Lines -->
+      <path d="M 88 100 L 102 100 M 88 125 L 102 125 M 88 150 L 102 150 M 88 175 L 102 175" stroke-width="0.5" />
+      <path d="M 193 100 L 207 100 M 193 125 L 207 125 M 193 150 L 207 150 M 193 175 L 207 175" stroke-width="0.5" />
+
+      <!-- Load Arrows -->
+      <g stroke="#d97706" stroke-width="0.9" stroke-opacity="0.3">
+        <path d="M 150 5 L 150 38 M 146 30 L 150 38 L 154 30" />
+        <path d="M 190 5 L 190 38 M 186 30 L 190 38 L 194 30" />
+        <text x="156" y="2" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-style="italic" font-weight="700" fill="#d97706" stroke="none">UDL 14.5 kN/m</text>
+      </g>
+
+      <text x="70" y="220" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#64748b" stroke="none">BEAM: 203x133x30 UB</text>
+      <text x="70" y="235" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" fill="#94a3b8" stroke="none">PADSTONE: 440x215x100 C30</text>
+    </g>
+
+    <!-- ============================================== -->
+    <!-- SKETCH 3: HAND-DRAWN ROOF & ELEVATION SECTION  -->
+    <!-- ============================================== -->
+    <g transform="translate(70, 480)" stroke-opacity="0.17">
+      <path d="M 35 160 C 120 110, 170 80, 215 58 C 265 82, 320 115, 395 160" stroke-width="1.5" />
+      <path d="M 35 172 C 120 122, 170 92, 215 70 C 265 94, 320 127, 395 172" stroke-width="0.9" />
+      <path d="M 215 58 L 215 160" stroke-width="0.8" stroke-dasharray="4,3" />
+
+      <!-- Roof Skylight Window -->
+      <path d="M 110 95 L 150 75 L 165 105 L 125 125 Z" stroke-width="0.9" fill="#f1f5f9" fill-opacity="0.25" />
+
+      <!-- Floor Joists and Wall Sections -->
+      <path d="M 35 160 L 395 160" stroke-width="1.3" />
+      <path d="M 35 160 L 35 270" stroke-width="1.6" />
+      <path d="M 395 160 L 395 270" stroke-width="1.6" />
+
+      <!-- Strip Footings -->
+      <path d="M 15 270 L 75 270 L 75 300 L 15 300 Z" stroke-width="1.1" fill="#cbd5e1" fill-opacity="0.18" />
+      <path d="M 355 270 L 415 270 L 415 300 L 355 300 Z" stroke-width="1.1" fill="#cbd5e1" fill-opacity="0.18" />
+      <circle cx="35" cy="285" r="1.5" stroke-width="0.5" />
+      <circle cx="55" cy="282" r="1.2" stroke-width="0.5" />
+      <circle cx="375" cy="285" r="1.5" stroke-width="0.5" />
+      <circle cx="395" cy="282" r="1.2" stroke-width="0.5" />
+
+      <!-- Elevation Height Annotation -->
+      <path d="M 430 60 L 430 270" stroke-width="0.6" />
+      <path d="M 424 58 L 436 62 M 424 158 L 436 162 M 424 268 L 436 272" stroke-width="0.75" />
+      <text x="444" y="115" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-style="italic" font-weight="600" fill="#64748b" stroke="none">+2.45m RIDGE</text>
+      <text x="444" y="215" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-style="italic" font-weight="600" fill="#64748b" stroke="none">+2.70m CEILING</text>
+      <text x="444" y="290" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-style="italic" font-weight="600" fill="#64748b" stroke="none">-1.00m STRIP FOOTING</text>
+    </g>
+
+    <!-- ============================================== -->
+    <!-- SKETCH 4: HAND-DRAWN COMPASS & STAMP TITLE     -->
+    <!-- ============================================== -->
+    <g transform="translate(620, 560)" stroke-opacity="0.2">
+      <!-- Hand Traced Compass -->
+      <circle cx="70" cy="70" r="38" stroke-width="0.9" />
+      <circle cx="70" cy="70" r="34" stroke-width="0.5" stroke-dasharray="2,2" />
+      <polygon points="70,36 78,70 70,64" fill="#475569" fill-opacity="0.3" stroke-width="0.5" />
+      <polygon points="70,36 62,70 70,64" fill="none" stroke-width="0.5" />
+      <polygon points="70,104 78,70 70,76" fill="none" stroke-width="0.5" />
+      <polygon points="70,104 62,70 70,76" fill="#cbd5e1" fill-opacity="0.2" stroke-width="0.5" />
+      <text x="65" y="28" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="800" fill="#334155" stroke="none">N</text>
+
+      <!-- Title Block -->
+      <g transform="translate(-80, 135)">
+        <path d="M 0 0 L 230 0 L 230 90 L 0 90 Z" stroke-width="0.95" fill="#ffffff" fill-opacity="0.5" />
+        <path d="M 0 30 L 230 30 M 0 58 L 230 58 M 115 58 L 115 90" stroke-width="0.6" />
+        <text x="12" y="20" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="800" fill="#334155" stroke="none" letter-spacing="1.5">ST CONTRACTORS</text>
+        <text x="12" y="46" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-style="italic" font-weight="600" fill="#64748b" stroke="none">RESIDENTIAL SCHEMATIC PLAN</text>
+        <text x="12" y="76" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" fill="#94a3b8" stroke="none">SCALE: 1:50 @ A1</text>
+        <text x="125" y="76" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" fill="#94a3b8" stroke="none">DRG: ST-2026-SK01</text>
+      </g>
+    </g>
+  </g>
+</svg>
