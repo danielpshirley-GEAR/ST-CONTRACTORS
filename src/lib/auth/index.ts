@@ -17,7 +17,7 @@ export async function verifyAdminAuth(): Promise<AdminSession> {
   if (token && token === ADMIN_SECRET) {
     return {
       isAuthenticated: true,
-      username: 'Apex Director',
+      username: 'ST Contractors Director',
       role: 'admin',
     };
   }

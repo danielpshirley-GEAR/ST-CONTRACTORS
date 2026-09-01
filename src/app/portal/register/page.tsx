@@ -104,7 +104,7 @@ function RegisterContent() {
               <Hammer className="h-5 w-5" />
             </div>
             <span className="font-extrabold font-heading text-2xl tracking-tight text-white">
-              APEX<span className="text-[#FFAA4F]">.</span>
+              ST CONTRACTORS
             </span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-white">

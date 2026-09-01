@@ -196,7 +196,7 @@ export const ProjectCommandCenter: React.FC = () => {
       title: 'CDM Regulations 2015 Health & Safety Plan',
       status: 'Mandatory',
       description: 'Principal Contractor duties and site welfare compliance.',
-      actionNote: 'Managed 100% by Apex Construction site management.',
+      actionNote: 'Managed 100% by ST CONTRACTORS site management.',
     },
   ];
 

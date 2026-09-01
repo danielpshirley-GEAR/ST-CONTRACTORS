@@ -297,7 +297,7 @@ export const CostGuideView: React.FC<CostGuideViewProps> = ({ guide }) => {
         <section aria-label="Project Planning Consultation" className="max-w-4xl p-8 sm:p-12 rounded-3xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm mb-12">
           <div className="space-y-2">
             <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-bold text-xs">
-              Apex Turnkey Construction
+              ST CONTRACTORS Turnkey Construction
             </Badge>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
               {guide.commercialCta.title}

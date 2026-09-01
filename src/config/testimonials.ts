@@ -25,7 +25,7 @@ export const testimonialsData: Testimonial[] = [
     source: 'Trustpilot',
     highlight: 'Completed on budget with zero hidden extras.',
     quote:
-      'We had heard endless horror stories about builders in London, but Apex completely changed our perception. From the initial fixed-price itemized quote to handover, their communication was exceptional. Having a dedicated project director on-site every morning gave us complete peace of mind.',
+      'We had heard endless horror stories about builders in London, but ST CONTRACTORS completely changed our perception. From the initial fixed-price itemized quote to handover, their communication was exceptional. Having a dedicated project director on-site every morning gave us complete peace of mind.',
     budgetDelivered: '£215,000 (Exact Contract Price)',
     duration: '18 Weeks',
     avatarUrl:
@@ -61,7 +61,7 @@ export const testimonialsData: Testimonial[] = [
     source: 'Trustpilot',
     highlight: 'Unrivalled architectural quality and joinery.',
     quote:
-      'Apex managed all council planning submissions, Thames Water build-over agreements, and building control inspections seamlessly. The final space has transformed how our family lives every day.',
+      'ST CONTRACTORS managed all council planning submissions, Thames Water build-over agreements, and building control inspections seamlessly. The final space has transformed how our family lives every day.',
     budgetDelivered: '£132,000 (Fixed Schedule)',
     duration: '14 Weeks',
     avatarUrl:
@@ -79,7 +79,7 @@ export const testimonialsData: Testimonial[] = [
     source: 'Google Reviews',
     highlight: 'Flawless building control sign-off.',
     quote:
-      'Added a full master bedroom suite, walk-in dressing room, and micro-cement bathroom. The soundproofing and thermal insulation are top tier. Could not recommend Apex more highly.',
+      'Added a full master bedroom suite, walk-in dressing room, and micro-cement bathroom. The soundproofing and thermal insulation are top tier. Could not recommend ST CONTRACTORS more highly.',
     budgetDelivered: '£78,000 (Guaranteed Price)',
     duration: '9 Weeks',
     avatarUrl:

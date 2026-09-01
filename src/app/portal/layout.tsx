@@ -37,11 +37,11 @@ export default async function CustomerPortalLayout({
                     <Hammer className="h-5 w-5" />
                   </div>
                   <div>
-                    <span className="font-extrabold font-heading text-lg tracking-tight text-white block">
-                      APEX<span className="text-[#FFAA4F]">.</span>
+                    <span className="font-extrabold font-heading text-base tracking-tight text-white block">
+                      ST CONTRACTORS
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">
-                      Homeowner Portal
+                    <span className="text-[10px] text-amber-400 font-mono uppercase tracking-wider block">
+                      Client Portal
                     </span>
                   </div>
                 </Link>

@@ -56,7 +56,7 @@ export async function dispatchLeadWebhook(params: {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Apex-Source': 'ApexConstructionPlatform',
+        'X-STContractors-Source': 'STContractorsPlatform',
       },
       body: JSON.stringify(payload),
     });

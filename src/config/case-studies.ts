@@ -32,7 +32,7 @@ export const caseStudiesData: CaseStudy[] = [
       'Underfloor water heating throughout and bespoke kitchen island',
     ],
     testimonial: {
-      quote: 'Apex delivered exactly what they promised on time and within our agreed budget. The open plan space has completely transformed how our family lives every day.',
+      quote: 'ST CONTRACTORS delivered exactly what they promised on time and within our agreed budget. The open plan space has completely transformed how our family lives every day.',
       author: 'Marcus & Sophie T.',
       location: 'Ealing, W5',
     },

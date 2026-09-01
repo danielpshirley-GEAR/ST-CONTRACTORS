@@ -561,7 +561,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({ slug }) => {
           <section aria-label="Project Planning Consultation" className="p-8 sm:p-12 rounded-3xl bg-amber-50/80 border border-amber-200/90 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
             <div className="space-y-2">
               <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-bold text-xs">
-                Apex Construction Full Project Delivery
+                ST CONTRACTORS Turnkey Construction
               </Badge>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
                 {calculator.commercialCta.title}
