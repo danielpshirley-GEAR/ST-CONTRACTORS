@@ -94,6 +94,8 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
     )
     .join('');
 
+  const publishUrl = `${siteConfig.url}/admin/editorial/publish?slug=${encodeURIComponent(data.seoArticle.slug)}&title=${encodeURIComponent(data.seoArticle.title)}&category=cost-guides`;
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -119,9 +121,16 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
                     <h1 style="margin: 12px 0 4px; font-size: 22px; font-weight: 800; color: #ffffff;">
                       New SEO Content &amp; 4-Video Social Pack
                     </h1>
-                    <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+                    <p style="margin: 0 0 16px; font-size: 13px; color: #94a3b8;">
                       Target Keyword: <strong style="color: #e2e8f0;">${data.targetKeyword}</strong> • Estimated Job Value: <strong style="color: #10b981;">${data.targetJobValue}</strong>
                     </p>
+
+                    <!-- 1-CLICK PUBLISH HERO BUTTON -->
+                    <div style="margin-top: 14px;">
+                      <a href="${publishUrl}" target="_blank" style="display: inline-block; background-color: #FFAA4F; color: #020617; font-weight: 800; font-size: 14px; padding: 12px 24px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(255, 170, 79, 0.35); text-align: center;">
+                        🚀 1-Click Publish to Website →
+                      </a>
+                    </div>
                   </td>
                 </tr>
               </table>
@@ -131,13 +140,20 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
           <!-- Section 1: Executive Summary & SEO Guide -->
           <tr>
             <td style="padding: 28px 32px; border-bottom: 1px solid #1e293b;">
-              <h2 style="font-size: 16px; color: #FFAA4F; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                📄 1. New SEO Guide Ready for Publication
-              </h2>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 style="font-size: 16px; color: #FFAA4F; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                  📄 1. New SEO Guide Ready for Publication
+                </h2>
+              </div>
               <div style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 18px;">
                 <h3 style="margin: 0 0 8px; font-size: 17px; color: #f8fafc;">${data.seoArticle.title}</h3>
                 <p style="margin: 0 0 14px; font-size: 13px; color: #94a3b8;">${data.seoArticle.summary}</p>
-                <div style="font-size: 11px; color: #64748b;">Target URL: <code style="color: #38bdf8;">/cost-guides/${data.seoArticle.slug}</code></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; pt: 10px; border-top: 1px solid #1e293b; padding-top: 12px;">
+                  <span style="font-size: 11px; color: #64748b;">Target URL: <code style="color: #38bdf8;">/cost-guides/${data.seoArticle.slug}</code></span>
+                  <a href="${publishUrl}" target="_blank" style="display: inline-block; background-color: #FFAA4F; color: #020617; font-size: 12px; font-weight: bold; padding: 6px 14px; border-radius: 6px; text-decoration: none;">
+                    Publish Now →
+                  </a>
+                </div>
               </div>
             </td>
           </tr>
