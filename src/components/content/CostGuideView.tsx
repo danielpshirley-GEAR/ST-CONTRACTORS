@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CostGuide } from '@/lib/content/types';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +26,8 @@ import {
   ArrowUpRight,
   TrendingUp,
   FileText,
+  ShieldCheck,
+  Hammer,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { BuilderInsightsCard } from '@/components/knowledge/BuilderInsightsCard';
@@ -42,322 +45,296 @@ export const CostGuideView: React.FC<CostGuideViewProps> = ({ guide }) => {
   };
 
   return (
-    <article className="py-10 sm:py-16 bg-slate-50 text-slate-900 min-h-screen text-left">
+    <article className="py-10 sm:py-16 bg-[#FAFAF9] text-slate-900 min-h-screen">
       <Container>
-        {/* Breadcrumbs */}
-        <Breadcrumbs
-          items={[
-            { name: 'Cost Guides', href: '/cost-guides' },
-            { name: guide.title },
-          ]}
-          className="mb-8 text-slate-500"
-        />
+        <div className="max-w-4xl mx-auto space-y-10">
+          {/* Breadcrumbs */}
+          <Breadcrumbs
+            items={[
+              { name: 'Cost Guides', href: '/cost-guides' },
+              { name: guide.title },
+            ]}
+            className="text-slate-500"
+          />
 
-        {/* 1. HERO HEADER */}
-        <header className="max-w-4xl mb-12 space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="brand" size="sm" className="bg-amber-100 text-amber-900 border-amber-300 font-bold text-xs">
-              2026 UK Build Benchmark
-            </Badge>
-            <span className="text-xs text-slate-500 flex items-center gap-1 font-medium">
-              <Clock className="h-3.5 w-3.5" />
-              Updated February 2026
-            </span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 font-heading leading-tight">
-            {guide.h1}
-          </h1>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            {guide.subtitle}
-          </p>
-
-          {/* Quick Benchmark Card */}
-          <div className="mt-6 p-6 rounded-3xl bg-slate-900 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                Typical UK Budget Range
+          {/* 1. HERO HEADER (CENTERED & BALANCED) */}
+          <header className="space-y-5 text-left">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="brand" size="sm" className="bg-[#FFAA4F]/20 text-slate-950 border-[#FFAA4F] font-bold text-xs">
+                2026 UK Build Benchmark
+              </Badge>
+              <span className="text-xs text-slate-500 flex items-center gap-1 font-semibold">
+                <Clock className="h-3.5 w-3.5 text-[#FFAA4F]" />
+                Updated February 2026
               </span>
-              <div className="text-3xl sm:text-4xl font-bold font-heading text-white tabular-numbers">
-                {guide.indicativeRange.formatted}
-              </div>
-              <p className="text-xs text-slate-400">
-                {guide.indicativeRange.unit} • Indicative planning benchmark including 10% contingency.
-              </p>
             </div>
-            <Button
-              href={guide.commercialCta.buttonHref}
-              variant="primary"
-              size="lg"
-              className="bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-sm px-6 py-3.5 shrink-0 shadow-md"
-              rightIcon={<ArrowRight className="h-4 w-4" />}
-            >
-              Estimate Your Space Live →
-            </Button>
-          </div>
-        </header>
 
-        {/* 2. INTRODUCTION */}
-        <section aria-label="Overview" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10 space-y-4">
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-            Project Overview &amp; Market Context
-          </h2>
-          <div className="space-y-3 text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-            {guide.introParagraphs.map((p, idx) => (
-              <p key={idx}>{p}</p>
-            ))}
-          </div>
-        </section>
-
-        {/* 3. PRICE TABLE */}
-        <section aria-label="Price Breakdown" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10 space-y-4">
-          <div className="space-y-1">
-            <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-              {guide.priceTable.title}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Transparent price per m² and turnkey estimates based on recent UK contractor data.
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-950 font-heading leading-tight">
+              {guide.h1}
+            </h1>
+            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+              {guide.subtitle}
             </p>
-          </div>
 
-          <div className="overflow-x-auto pt-2">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-400 uppercase text-[11px] font-bold tracking-wider">
-                  <th className="py-3 pr-4">Project Format</th>
-                  <th className="py-3 px-4">Indicative Range</th>
-                  {guide.priceTable.rows.some((r) => r.perM2) && <th className="py-3 px-4">Rate per m²</th>}
-                  <th className="py-3 pl-4">Specification Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {guide.priceTable.rows.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 pr-4 font-bold text-slate-900">{row.type}</td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-amber-700 whitespace-nowrap">{row.guideRange}</td>
-                    {guide.priceTable.rows.some((r) => r.perM2) && (
-                      <td className="py-3.5 px-4 font-mono text-slate-600 whitespace-nowrap">{row.perM2 || '—'}</td>
-                    )}
-                    <td className="py-3.5 pl-4 text-slate-500 text-xs">{row.notes}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* 4. COST FACTORS & DRIVERS */}
-        <section aria-label="Cost Factors" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10 space-y-6">
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-            Key Construction Cost Factors
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {guide.costFactors.map((factor, idx) => (
-              <div key={idx} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm sm:text-base font-heading">
-                  {factor.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  {factor.description}
+            {/* Quick Benchmark Card (Warm Charcoal & Golden Orange) */}
+            <div className="mt-6 p-6 sm:p-8 rounded-3xl bg-[#0E1013] text-white shadow-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFAA4F]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="space-y-1 relative z-10">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#FFAA4F] flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
+                  Typical London Budget Range
+                </span>
+                <div className="text-3xl sm:text-4xl font-extrabold font-heading text-white tabular-numbers tracking-tight">
+                  {guide.indicativeRange.formatted}
+                </div>
+                <p className="text-xs text-slate-400">
+                  {guide.indicativeRange.unit} • Fixed-price turnkey benchmark including 10% contingency.
                 </p>
               </div>
-            ))}
-          </div>
-        </section>
+              <Button
+                href={guide.commercialCta.buttonHref}
+                variant="primary"
+                size="lg"
+                className="bg-[#FFAA4F] hover:bg-[#FFB86A] text-slate-950 font-extrabold text-sm px-7 py-4 shrink-0 shadow-[0_4px_20px_rgba(255,170,79,0.35)] relative z-10 transition-all cursor-pointer"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              >
+                Estimate Your Space Live →
+              </Button>
+            </div>
+          </header>
 
-        {/* 5. FINISH LEVEL MATRIX */}
-        <section aria-label="Finish Levels" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10 space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-              Finish Level Specifications
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              How internal specification and material quality influence total build budget.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {guide.finishLevels.map((lvl, idx) => (
-              <div key={idx} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-900 text-sm font-heading">{lvl.level}</span>
-                    <Badge variant="brand" size="sm" className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-bold">
-                      {lvl.multiplier}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-slate-500">{lvl.description}</p>
-                </div>
-                <ul className="space-y-1.5 pt-3 border-t border-slate-200 text-xs text-slate-700">
-                  {lvl.features.map((feat, fIdx) => (
-                    <li key={fIdx} className="flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 6. PROJECT TIMELINE */}
-        <section aria-label="Timeline" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10 space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-              Realistic Construction Timeline
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Typical build schedule from site mobilization to completion certificate.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {guide.timeline.map((stage, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
-                <div className="space-y-0.5">
-                  <div className="font-bold text-slate-900 font-heading">{stage.stage}</div>
-                  <div className="text-slate-500 text-xs">{stage.description}</div>
-                </div>
-                <span className="font-bold text-amber-700 font-mono shrink-0 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200 self-start sm:self-auto">
-                  {stage.duration}
+          {/* 2. FEATURED HERO IMAGE #1: ARCHITECTURAL EXTERIOR */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 group">
+            <img
+              src="/images/cost-guides/wraparound-exterior.jpg"
+              alt="Luxury modern Victorian wraparound house extension in London with frameless glass and London stock brick"
+              className="w-full h-[360px] sm:h-[480px] object-cover group-hover:scale-102 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-wrap items-center justify-between gap-2 text-white">
+              <div>
+                <span className="bg-[#FFAA4F] text-slate-950 font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider">
+                  Real London Case Study
                 </span>
+                <p className="text-sm font-bold text-white mt-1">
+                  Victorian Wraparound with Slimline 20mm Sliding Glazing &amp; Reclaimed Stock Brick
+                </p>
               </div>
-            ))}
+              <span className="text-xs text-slate-300 font-medium">Turnkey Delivery: 16 Weeks</span>
+            </div>
           </div>
-        </section>
 
-        {/* 7. COMMON ADDITIONAL COSTS */}
-        <section aria-label="Additional Costs" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10 space-y-4">
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-            Professional Fees &amp; Statutory Costs
-          </h2>
-          <div className="space-y-3">
-            {guide.commonAdditionalCosts.map((item, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
-                <div>
-                  <strong className="text-slate-900 block font-semibold">{item.item}</strong>
-                  <span className="text-slate-500 text-xs">{item.description}</span>
-                </div>
-                <span className="font-bold text-slate-900 font-mono shrink-0">{item.cost}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 7.5 FIRST-HAND BUILDER EXPERTISE & STRIP-OUT REALITIES */}
-        <div className="max-w-4xl">
-          <BuilderInsightsCard
-            records={constructionKnowledgeBank.filter(
-              (r) =>
-                r.approvedForPublicContent &&
-                (guide.slug.includes('extension')
-                  ? r.serviceSlugs.includes('extension')
-                  : guide.slug.includes('kitchen')
-                  ? r.serviceSlugs.includes('kitchen-renovation')
-                  : guide.slug.includes('bathroom')
-                  ? r.serviceSlugs.includes('bathroom-renovation')
-                  : true)
-            )}
-          />
-        </div>
-
-        {/* 8. FAQS */}
-        {guide.faqs.length > 0 && (
-          <section aria-label="FAQs" className="max-w-4xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-12 space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-              Frequently Asked Questions
+          {/* 3. INTRODUCTION & PROJECT OVERVIEW */}
+          <section aria-label="Overview" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4 text-left">
+            <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-950 flex items-center gap-2">
+              <span className="h-6 w-1.5 rounded-full bg-[#FFAA4F]" />
+              Project Overview &amp; Market Context
             </h2>
-            <div className="space-y-3">
-              {guide.faqs.map((faq, idx) => {
-                const isOpen = openFaqs[idx] ?? false;
-                return (
-                  <div key={idx} className="rounded-2xl border border-slate-200/90 overflow-hidden transition-all">
-                    <button
-                      type="button"
-                      onClick={() => toggleFaq(idx)}
-                      className="w-full p-4 sm:p-5 bg-slate-50/60 hover:bg-slate-100/60 flex items-center justify-between text-left transition-colors cursor-pointer"
-                    >
-                      <span className="font-bold text-slate-900 text-sm font-heading">{faq.question}</span>
-                      {isOpen ? <ChevronUp className="h-4 w-4 text-slate-500 ml-2" /> : <ChevronDown className="h-4 w-4 text-slate-500 ml-2" />}
-                    </button>
-                    {isOpen && (
-                      <div className="p-4 sm:p-5 bg-white border-t border-slate-100 text-xs sm:text-sm text-slate-600 leading-relaxed">
-                        {faq.answer}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="space-y-3 text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+              {guide.introParagraphs.map((p, idx) => (
+                <p key={idx}>{p}</p>
+              ))}
             </div>
           </section>
-        )}
 
-        {/* 9. COMMERCIAL CONVERSION HERO BANNER */}
-        <section aria-label="Project Planning Consultation" className="max-w-4xl p-8 sm:p-12 rounded-3xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm mb-12">
-          <div className="space-y-2">
-            <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-bold text-xs">
-              ST CONTRACTORS Turnkey Construction
-            </Badge>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-              {guide.commercialCta.title}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-xl leading-relaxed">
-              {guide.commercialCta.description}
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
-            <Button
-              href={guide.commercialCta.buttonHref}
-              variant="primary"
-              size="lg"
-              className="w-full sm:w-auto bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-sm px-8 py-4 shadow-md"
-              rightIcon={<ArrowRight className="h-4 w-4" />}
-            >
-              {guide.commercialCta.buttonText}
-            </Button>
-            <Button
-              href="/contact?type=consultation"
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto text-slate-800 border-slate-300 hover:bg-white text-xs sm:text-sm px-6 py-4"
-              leftIcon={<Phone className="h-4 w-4 text-amber-600" />}
-            >
-              Book Consultation
-            </Button>
-          </div>
-        </section>
+          {/* 4. PRICE TABLE */}
+          <section aria-label="Price Breakdown" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-5 text-left">
+            <div className="space-y-1">
+              <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-950 flex items-center gap-2">
+                <span className="h-6 w-1.5 rounded-full bg-[#FFAA4F]" />
+                {guide.priceTable.title}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500">
+                Transparent price per m² and turnkey estimates based on recent UK contractor data.
+              </p>
+            </div>
 
-        {/* 10. RELATED TOOLS & SERVICES (Intentional Commercial Journey) */}
-        <section aria-label="Related Tools & Services" className="max-w-4xl space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-900">
-            Related Construction Calculators &amp; Services
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link href={`/calculators/${guide.relatedCalculatorSlug}`} className="group block">
-              <div className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-xs transition-all flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors text-sm">
-                    Interactive Cost Calculator
-                  </div>
-                  <div className="text-xs text-slate-500 mt-0.5">Calculate materials &amp; labor live</div>
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-amber-600 transition-colors shrink-0 ml-3" />
+            <div className="overflow-x-auto pt-2">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-[11px] font-bold tracking-wider">
+                    <th className="py-3 pr-4">Project Format</th>
+                    <th className="py-3 px-4">Indicative Range</th>
+                    {guide.priceTable.rows.some((r) => r.perM2) && <th className="py-3 px-4">Rate per m²</th>}
+                    <th className="py-3 pl-4">Specification Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {guide.priceTable.rows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-amber-50/40 transition-colors">
+                      <td className="py-4 pr-4 font-bold text-slate-900">{row.type}</td>
+                      <td className="py-4 px-4 font-extrabold text-[#D97706] tabular-numbers">{row.guideRange}</td>
+                      {row.perM2 && <td className="py-4 px-4 font-mono text-slate-600">{row.perM2}</td>}
+                      <td className="py-4 pl-4 text-xs text-slate-500 leading-relaxed">{row.notes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* 5. FEATURED IMAGE #2: OPEN-PLAN INTERIOR LIVING */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 group">
+            <img
+              src="/images/cost-guides/wraparound-interior.jpg"
+              alt="Open-plan modern kitchen with marble waterfall island and structural roof lantern"
+              className="w-full h-[360px] sm:h-[440px] object-cover group-hover:scale-102 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-wrap items-center justify-between gap-2 text-white">
+              <div>
+                <span className="bg-[#FFAA4F] text-slate-950 font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider">
+                  Interior Spatial Design
+                </span>
+                <p className="text-sm font-bold text-white mt-1">
+                  Frameless Roof Lantern Deep Core Lighting &amp; Bespoke Fluted Oak Joinery
+                </p>
               </div>
-            </Link>
-            <Link href={`/services/${guide.relatedServiceSlug}`} className="group block">
-              <div className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-xs transition-all flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors text-sm">
-                    Professional Building Services
-                  </div>
-                  <div className="text-xs text-slate-500 mt-0.5">Explore our turnkey delivery standards</div>
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-amber-600 transition-colors shrink-0 ml-3" />
-              </div>
-            </Link>
+              <span className="text-xs text-slate-300 font-medium">Bespoke Finish: Standard on ST CONTRACTORS Builds</span>
+            </div>
           </div>
-        </section>
+
+          {/* 6. STRUCTURAL FACTORS & COST DRIVERS */}
+          <section aria-label="Cost Factors" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6 text-left">
+            <div className="space-y-1">
+              <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-950 flex items-center gap-2">
+                <span className="h-6 w-1.5 rounded-full bg-[#FFAA4F]" />
+                Key Structural &amp; Engineering Cost Factors
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500">
+                What drives the difference between baseline quotes and high-specification architectural builds.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {guide.costFactors.map((factor, idx) => (
+                <div key={idx} className="p-5 rounded-2xl bg-[#FAFAF9] border border-slate-200/90 space-y-2 hover:border-[#FFAA4F]/60 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-[#FFAA4F]/20 text-[#D97706] flex items-center justify-center font-bold text-xs">
+                      {idx + 1}
+                    </div>
+                    <h3 className="font-bold text-sm text-slate-900">{factor.title}</h3>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">{factor.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 7. FEATURED IMAGE #3: STRUCTURAL STEEL GOALPOST INSTALLATION */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 group">
+            <img
+              src="/images/cost-guides/wraparound-steelwork.jpg"
+              alt="Contractor precision laser levelling 3-steel RSJ goalpost frame on concrete padstones for London wraparound extension"
+              className="w-full h-[340px] sm:h-[420px] object-cover group-hover:scale-102 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-wrap items-center justify-between gap-2 text-white">
+              <div>
+                <span className="bg-[#FFAA4F] text-slate-950 font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider">
+                  Structural Engineering Phase
+                </span>
+                <p className="text-sm font-bold text-white mt-1">
+                  Precision 3-Steel Goalpost Frame Bearing on Engineered Concrete Padstones
+                </p>
+              </div>
+              <span className="text-xs text-slate-300 font-medium">Building Regulations Part A Sign-Off</span>
+            </div>
+          </div>
+
+          {/* 8. BUILDER INSIGHTS CARD */}
+          <div className="text-left">
+            <BuilderInsightsCard
+              records={constructionKnowledgeBank.filter((k) => k.serviceSlugs?.includes('extension') || k.id === 'KB-EXT-001')}
+            />
+          </div>
+
+          {/* 9. TIMELINE PHASES */}
+          {guide.timeline && (
+            <section aria-label="Project Timeline" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-5 text-left">
+              <div className="space-y-1">
+                <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-950 flex items-center gap-2">
+                  <span className="h-6 w-1.5 rounded-full bg-[#FFAA4F]" />
+                  Expected Construction Schedule &amp; Sequence
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500">
+                  How our principal contracting team stages trade sequences from excavation to final decoration.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+                {guide.timeline.map((step, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-[#FAFAF9] border border-slate-200/90 space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97706] bg-[#FFAA4F]/20 px-2 py-0.5 rounded-md">
+                      {step.duration}
+                    </span>
+                    <h3 className="font-bold text-xs text-slate-900 mt-1">{step.stage}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 10. FAQS */}
+          {guide.faqs && guide.faqs.length > 0 && (
+            <section aria-label="Frequently Asked Questions" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4 text-left">
+              <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-950 flex items-center gap-2">
+                <span className="h-6 w-1.5 rounded-full bg-[#FFAA4F]" />
+                Frequently Asked Homeowner Questions
+              </h2>
+
+              <div className="space-y-3 pt-2">
+                {guide.faqs.map((faq, idx) => {
+                  const isOpen = openFaqs[idx] ?? false;
+                  return (
+                    <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden">
+                      <button
+                        onClick={() => toggleFaq(idx)}
+                        className="w-full p-4 text-left font-bold text-sm text-slate-900 flex items-center justify-between gap-4 bg-[#FAFAF9] hover:bg-amber-50/50 transition-colors cursor-pointer"
+                      >
+                        <span>{faq.question}</span>
+                        {isOpen ? <ChevronUp className="h-4 w-4 text-[#D97706]" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                      </button>
+                      {isOpen && (
+                        <div className="p-4 text-xs sm:text-sm text-slate-600 bg-white border-t border-slate-200 leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* 11. COMMERCIAL CONVERSION HERO BANNER (WARM CHARCOAL + GOLDEN ORANGE) */}
+          <section aria-label="Project Planning Consultation" className="p-8 sm:p-12 rounded-3xl bg-[#0E1013] text-white border border-slate-800 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-8 relative overflow-hidden text-left">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#FFAA4F]/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="space-y-3 relative z-10 max-w-xl">
+              <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-black text-xs">
+                ST CONTRACTORS Turnkey Delivery
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-heading tracking-tight">
+                {guide.commercialCta.title}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                {guide.commercialCta.description}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0 relative z-10">
+              <Button
+                href={guide.commercialCta.buttonHref}
+                variant="primary"
+                size="lg"
+                className="w-full sm:w-auto bg-[#FFAA4F] hover:bg-[#FFB86A] text-slate-950 font-black text-sm px-8 py-4 shadow-[0_4px_20px_rgba(255,170,79,0.35)] transition-all cursor-pointer"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              >
+                {guide.commercialCta.buttonText}
+              </Button>
+            </div>
+          </section>
+        </div>
       </Container>
     </article>
   );
