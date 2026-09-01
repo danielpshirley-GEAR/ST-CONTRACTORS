@@ -249,7 +249,7 @@ export async function sendContentReportEmail(payload: ContentReportPayload): Pro
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `${siteConfig.shortName} Marketing <marketing@stcontractors.co.uk>`,
+          from: process.env.RESEND_FROM_EMAIL || 'ST CONTRACTORS <onboarding@resend.dev>',
           to: [recipient],
           subject: subject,
           html: html,
