@@ -58,21 +58,23 @@ export default function AdminEditorialPage() {
     setActiveReport(report);
   };
 
+  const isApproved = activeReport.status === 'APPROVED_FOR_PUBLICATION';
+
   return (
-    <div className="p-6 sm:p-8 max-w-6xl mx-auto space-y-8 text-left text-white">
+    <div className="py-10 px-4 sm:px-8 max-w-7xl mx-auto space-y-8 text-left bg-[#F4F5F7] min-h-screen text-slate-900">
       {/* 1. HEADER */}
-      <div className="border-b border-slate-800 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-slate-200 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="brand" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-              <FileCheck2 className="h-3 w-3 mr-1" />
+            <Badge variant="brand" className="bg-[#FFAA4F]/20 text-[#D97706] border-[#FFAA4F]/40 font-bold text-xs">
+              <FileCheck2 className="h-3 w-3 mr-1 text-[#D97706]" />
               Section 23 Master Quality Gate
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 tracking-tight">
             Editorial Content Quality Gate
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
             Automated 20-Point Quality Gate auditor enforcing genuine construction expertise, London property realities, and commercial conversion integrity.
           </p>
         </div>
@@ -81,10 +83,10 @@ export default function AdminEditorialPage() {
           <Badge
             variant="brand"
             className={clsx(
-              'font-extrabold text-xs px-3 py-1.5',
-              activeReport.status === 'APPROVED_FOR_PUBLICATION'
-                ? 'bg-emerald-500 text-slate-950'
-                : 'bg-amber-500 text-slate-950'
+              'font-extrabold text-xs px-4 py-2 rounded-xl shadow-xs',
+              isApproved
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-[#FFAA4F] text-slate-950 border-[#FFAA4F]'
             )}
           >
             {activeReport.status.replace(/_/g, ' ')} ({activeReport.totalScore} / 20)
@@ -94,21 +96,21 @@ export default function AdminEditorialPage() {
 
       {/* 2. SELECT ARTICLE PRESET */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <div>
-          <label className="block text-slate-300 font-bold mb-1.5">Select Published Page to Audit:</label>
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-3">
+          <label className="block text-slate-900 font-extrabold text-sm">Select Published Page to Audit:</label>
           <select
             value={selectedArticleKey}
             onChange={(e) => handleSelectPreset(e.target.value)}
-            className="w-full p-3 rounded-xl border border-slate-700 bg-slate-800 text-white"
+            className="w-full p-3 rounded-xl bg-[#FAFAF9] border border-slate-300 text-slate-900 font-medium focus:border-[#FFAA4F] focus:outline-none"
           >
-            <optgroup label="Cost Guides (8 Articles)">
+            <optgroup label="Cost Guides">
               {COST_GUIDES_DATA.map((g) => (
                 <option key={g.slug} value={`cost-guides/${g.slug}`}>
-                  Cost Guide: {g.title}
+                  Cost Guide: {g.h1}
                 </option>
               ))}
             </optgroup>
-            <optgroup label="Advice Guides (4 Articles)">
+            <optgroup label="Advice Guides">
               {ADVICE_ARTICLES_DATA.map((a) => (
                 <option key={a.slug} value={`advice/${a.slug}`}>
                   Advice: {a.title}
@@ -116,89 +118,74 @@ export default function AdminEditorialPage() {
               ))}
             </optgroup>
           </select>
-        </div>
+        </Card>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Current Audit Score</span>
-            <div className="text-2xl font-bold font-heading text-white">
-              {activeReport.totalScore} <span className="text-sm font-normal text-slate-400">/ 20 points ({activeReport.percentage}%)</span>
-            </div>
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-2">
+          <label className="block text-slate-900 font-extrabold text-sm">Audit Custom Draft Ingestion:</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Draft H1 Title..."
+              value={customDraftTitle}
+              onChange={(e) => setCustomDraftTitle(e.target.value)}
+              className="flex-1 p-3 rounded-xl bg-[#FAFAF9] border border-slate-300 text-slate-900 text-xs focus:border-[#FFAA4F] focus:outline-none"
+            />
+            <Button
+              onClick={handleAuditCustom}
+              variant="primary"
+              size="sm"
+              className="bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-extrabold px-5 rounded-xl shadow-xs"
+            >
+              Audit
+            </Button>
           </div>
-          <div className="text-right">
-            <span className="text-xs text-emerald-400 font-semibold block">
-              {activeReport.criteria.filter((c) => c.status === 'PASS').length} Passed
-            </span>
-            <span className="text-xs text-amber-400 font-semibold block">
-              {activeReport.criteria.filter((c) => c.status === 'CONDITIONAL').length} Conditional
-            </span>
-          </div>
-        </div>
+        </Card>
       </div>
 
-      {/* 3. 20-POINT QUALITY GATE CHECKLIST */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-amber-400" />
-          20-Point Quality Gate Audit Results
-        </h2>
+      {/* 3. AUDIT REPORT RESULTS */}
+      <Card className="p-6 sm:p-8 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <h2 className="text-lg font-extrabold font-heading text-slate-900">
+              Audit Breakdown: {activeReport.title}
+            </h2>
+            <span className="text-xs text-slate-500 font-mono">
+              Slug: {activeReport.slug || 'custom-draft'} • Score: {activeReport.totalScore}/20
+            </span>
+          </div>
+          <Badge
+            variant="brand"
+            className={clsx(
+              'font-extrabold text-xs',
+              isApproved
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-red-100 text-red-700 border-red-200'
+            )}
+          >
+            {isApproved ? '✓ Passes Quality Gate' : '⚠️ Requires Revision'}
+          </Badge>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {activeReport.criteria.map((crit) => (
-            <Card key={crit.id} className="p-4 bg-slate-900 border-slate-800 rounded-2xl space-y-2">
+        {/* 20 Criteria Checklist */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {activeReport.criteria.map((c) => (
+            <div key={c.id} className="p-4 rounded-2xl bg-[#FAFAF9] border border-slate-200 space-y-1 text-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="h-5 w-5 rounded-full bg-slate-800 text-slate-300 font-mono text-[10px] flex items-center justify-center font-bold">
-                    {crit.id}
-                  </span>
-                  <h4 className="font-bold text-xs text-white">{crit.name}</h4>
-                </div>
-                <Badge
-                  variant="brand"
-                  className={clsx(
-                    'text-[10px] font-bold',
-                    crit.status === 'PASS'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                      : crit.status === 'CONDITIONAL'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                      : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                  {c.status === 'PASS' ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-amber-600 shrink-0" />
                   )}
-                >
-                  {crit.status} ({crit.points} pt)
-                </Badge>
+                  <span className="font-extrabold text-slate-900">{c.name}</span>
+                </div>
+                <span className="font-mono font-bold text-[#D97706]">{c.points} pt</span>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">{crit.explanation}</p>
-            </Card>
+              <p className="text-slate-600 leading-relaxed pl-6">{c.explanation}</p>
+            </div>
           ))}
         </div>
-      </div>
-
-      {/* 4. STRENGTHS & ACTIONS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <Card className="p-5 bg-slate-900 border-slate-800 rounded-2xl space-y-2">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4" /> Editorial Strengths:
-          </h3>
-          <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
-            {activeReport.strengths.map((s, idx) => (
-              <li key={idx}>{s}</li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card className="p-5 bg-slate-900 border-slate-800 rounded-2xl space-y-2">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <AlertTriangle className="h-4 w-4" /> Recommendations for 100% Score:
-          </h3>
-          <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
-            {activeReport.actionableImprovements.length > 0 ? (
-              activeReport.actionableImprovements.map((a, idx) => <li key={idx}>{a}</li>)
-            ) : (
-              <li>All core quality gate criteria satisfied to the highest standard.</li>
-            )}
-          </ul>
-        </Card>
-      </div>
+      </Card>
     </div>
   );
 }

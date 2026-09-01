@@ -158,19 +158,19 @@ export function SeoDashboardView({
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* HEADER & ACTIONS */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700/80 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="brand" size="sm" className="bg-brand-500/20 text-brand-400 border-brand-500/30">
+            <Badge variant="brand" size="sm" className="bg-[#FFAA4F]/20 text-[#D97706] border-[#FFAA4F]/40">
               <Sparkles className="h-3 w-3 mr-1" />
               Unified Intelligence Layer
             </Badge>
-            <span className="text-xs text-slate-400 font-mono">Phase 4 Engine</span>
+            <span className="text-xs text-slate-500 font-mono">Phase 4 Engine</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 tracking-tight">
             SEO &amp; Content Intelligence Hub
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Real-time synthesis of Search Console, GA4, DataForSEO, PageSpeed, and Gemini AI reasoning.
           </p>
         </div>
@@ -181,7 +181,7 @@ export function SeoDashboardView({
             size="sm"
             onClick={handleRunHealthCheck}
             disabled={isCheckingHealth}
-            className="text-xs border-slate-700 hover:bg-slate-800 text-slate-200"
+            className="text-xs border-slate-200 hover:bg-slate-800 text-slate-800"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isCheckingHealth ? 'animate-spin' : ''}`} />
             {isCheckingHealth ? 'Testing APIs...' : 'Test All Integrations'}
@@ -197,7 +197,7 @@ export function SeoDashboardView({
       </div>
 
       {/* NAVIGATION TABS */}
-      <div className="flex overflow-x-auto no-scrollbar gap-1.5 p-1 bg-slate-900/90 rounded-2xl border border-slate-800 text-xs">
+      <div className="flex overflow-x-auto no-scrollbar gap-1.5 p-1 bg-white rounded-2xl border border-slate-200 shadow-sm text-xs">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'opportunities', label: `Opportunities (${allOpportunities.length})`, icon: Zap },
@@ -217,7 +217,7 @@ export function SeoDashboardView({
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-[#FFAA4F] text-slate-950 shadow-md font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -234,9 +234,9 @@ export function SeoDashboardView({
         <div className="space-y-8">
           {/* KPI CARDS GRID */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Card className="p-4 bg-slate-800/80 border-slate-700 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Organic Clicks</span>
-              <div className="text-xl sm:text-2xl font-bold text-white font-heading">
+            <Card className="p-4 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Organic Clicks</span>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
                 {kpis.organicClicks.toLocaleString()}
               </div>
               <div className="flex items-center text-[11px] text-emerald-400 font-semibold gap-0.5">
@@ -245,9 +245,9 @@ export function SeoDashboardView({
               </div>
             </Card>
 
-            <Card className="p-4 bg-slate-800/80 border-slate-700 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Impressions</span>
-              <div className="text-xl sm:text-2xl font-bold text-white font-heading">
+            <Card className="p-4 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Impressions</span>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
                 {kpis.organicImpressions.toLocaleString()}
               </div>
               <div className="flex items-center text-[11px] text-emerald-400 font-semibold gap-0.5">
@@ -256,51 +256,51 @@ export function SeoDashboardView({
               </div>
             </Card>
 
-            <Card className="p-4 bg-slate-800/80 border-slate-700 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Organic Leads</span>
-              <div className="text-xl sm:text-2xl font-bold text-amber-400 font-heading">
+            <Card className="p-4 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Organic Leads</span>
+              <div className="text-xl sm:text-2xl font-bold text-[#D97706] font-heading">
                 {kpis.organicLeads} Enquiries
               </div>
-              <div className="text-[11px] text-slate-400">
-                Avg CTR: <strong className="text-white">{kpis.averageCtr}%</strong>
+              <div className="text-[11px] text-slate-500">
+                Avg CTR: <strong className="text-slate-900">{kpis.averageCtr}%</strong>
               </div>
             </Card>
 
-            <Card className="p-4 bg-slate-800/80 border-slate-700 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Won Pipeline</span>
+            <Card className="p-4 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Won Pipeline</span>
               <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-heading">
                 £{(kpis.pipelineValueGbp / 1000).toFixed(0)}k
               </div>
-              <div className="text-[11px] text-slate-400">Attributed to SEO</div>
+              <div className="text-[11px] text-slate-500">Attributed to SEO</div>
             </Card>
 
-            <Card className="p-4 bg-slate-800/80 border-slate-700 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Rankings (Top 3/10)</span>
-              <div className="text-xl sm:text-2xl font-bold text-white font-heading">
-                {kpis.keywordsTop3Count} <span className="text-sm text-slate-400">/ {kpis.keywordsTop10Count}</span>
+            <Card className="p-4 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Rankings (Top 3/10)</span>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
+                {kpis.keywordsTop3Count} <span className="text-sm text-slate-500">/ {kpis.keywordsTop10Count}</span>
               </div>
-              <div className="text-[11px] text-slate-400">of {kpis.trackedKeywordsCount} tracked</div>
+              <div className="text-[11px] text-slate-500">of {kpis.trackedKeywordsCount} tracked</div>
             </Card>
 
-            <Card className="p-4 bg-slate-800/80 border-slate-700 space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Opportunities</span>
-              <div className="text-xl sm:text-2xl font-bold text-amber-400 font-heading">
+            <Card className="p-4 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Opportunities</span>
+              <div className="text-xl sm:text-2xl font-bold text-[#D97706] font-heading">
                 {kpis.criticalOpportunitiesCount} Critical
               </div>
-              <div className="text-[11px] text-slate-400">{kpis.totalOpportunitiesCount} total actions</div>
+              <div className="text-[11px] text-slate-500">{kpis.totalOpportunitiesCount} total actions</div>
             </Card>
           </div>
 
           {/* TOP OPPORTUNITIES & QUICK WINS */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2 p-6 bg-slate-800/80 border-slate-700 space-y-5 rounded-3xl">
+            <Card className="lg:col-span-2 p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-5 rounded-3xl">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-white font-heading flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-400" />
+                  <h3 className="text-base font-bold text-slate-900 font-heading flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-[#D97706]" />
                     <span>Top Priority SEO Opportunities</span>
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Highest commercial return actions scored deterministically (0–100).
                   </p>
                 </div>
@@ -308,7 +308,7 @@ export function SeoDashboardView({
                   variant="outline"
                   size="sm"
                   onClick={() => setActiveTab('opportunities')}
-                  className="text-xs border-slate-700 text-slate-300"
+                  className="text-xs border-slate-200 text-slate-700"
                 >
                   View All ({allOpportunities.length})
                 </Button>
@@ -318,7 +318,7 @@ export function SeoDashboardView({
                 {initialOverview.topOpportunities.map((opp) => (
                   <div
                     key={opp.id}
-                    className="p-4 rounded-2xl bg-slate-900/70 border border-slate-700/80 hover:border-slate-600 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="p-4 rounded-2xl bg-[#FAFAF9]/70 border border-slate-200 hover:border-slate-600 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="space-y-1 max-w-xl">
                       <div className="flex items-center gap-2">
@@ -329,17 +329,17 @@ export function SeoDashboardView({
                         >
                           {opp.priority}
                         </Badge>
-                        <span className="text-xs font-semibold text-slate-300 font-mono">
+                        <span className="text-xs font-semibold text-slate-700 font-mono">
                           Score: {opp.opportunityScore}/100
                         </span>
                         {opp.keyword && (
-                          <span className="text-xs text-amber-300 font-mono truncate max-w-[200px]">
+                          <span className="text-xs text-[#D97706] font-mono truncate max-w-[200px]">
                             &quot;{opp.keyword}&quot;
                           </span>
                         )}
                       </div>
-                      <div className="text-sm font-bold text-white">{opp.title}</div>
-                      <p className="text-xs text-slate-400 leading-relaxed">{opp.description}</p>
+                      <div className="text-sm font-bold text-slate-900">{opp.title}</div>
+                      <p className="text-xs text-slate-500 leading-relaxed">{opp.description}</p>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
@@ -363,8 +363,8 @@ export function SeoDashboardView({
 
             {/* RANKING GAINS & LOSSES */}
             <div className="space-y-6">
-              <Card className="p-5 bg-slate-800/80 border-slate-700 space-y-3 rounded-3xl">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <Card className="p-5 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-3 rounded-3xl">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-emerald-400">
                     <TrendingUp className="h-3.5 w-3.5" /> Recent Ranking Gains
                   </span>
@@ -372,8 +372,8 @@ export function SeoDashboardView({
                 </div>
                 <div className="space-y-2 text-xs">
                   {initialOverview.recentRankingGains.slice(0, 4).map((g) => (
-                    <div key={g.keyword} className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60">
-                      <span className="text-slate-200 truncate max-w-[180px] font-mono">{g.keyword}</span>
+                    <div key={g.keyword} className="flex items-center justify-between p-2 rounded-lg bg-[#FAFAF9] border border-slate-200">
+                      <span className="text-slate-800 truncate max-w-[180px] font-mono">{g.keyword}</span>
                       <div className="flex items-center gap-1.5 font-bold text-emerald-400">
                         <span>#{g.position}</span>
                         <span className="text-[10px] text-emerald-300">
@@ -385,9 +385,9 @@ export function SeoDashboardView({
                 </div>
               </Card>
 
-              <Card className="p-5 bg-slate-800/80 border-slate-700 space-y-3 rounded-3xl">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-amber-400">
+              <Card className="p-5 bg-white border-slate-200/90 shadow-sm text-slate-900 space-y-3 rounded-3xl">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-[#D97706]">
                     <AlertTriangle className="h-3.5 w-3.5" /> Technical Health
                   </span>
                   <Badge variant="brand" size="sm" className="text-[10px]">
@@ -396,9 +396,9 @@ export function SeoDashboardView({
                 </div>
                 <div className="space-y-2 text-xs">
                   {initialOverview.technicalWarnings.map((w) => (
-                    <div key={w.id} className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-700/50 space-y-1">
-                      <div className="font-semibold text-slate-200">{w.title}</div>
-                      <p className="text-[11px] text-slate-400 leading-relaxed">{w.description}</p>
+                    <div key={w.id} className="p-2.5 rounded-xl bg-[#FAFAF9] border border-slate-200 border border-slate-200/50 space-y-1">
+                      <div className="font-semibold text-slate-800">{w.title}</div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">{w.description}</p>
                     </div>
                   ))}
                 </div>
@@ -414,9 +414,9 @@ export function SeoDashboardView({
       {activeTab === 'opportunities' && (
         <div className="space-y-6">
           {/* FILTER CONTROLS */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#FAFAF9]/80 rounded-2xl border border-slate-200">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 mr-2 flex items-center gap-1">
+              <span className="text-xs font-bold text-slate-500 mr-2 flex items-center gap-1">
                 <Filter className="h-3.5 w-3.5" /> Priority:
               </span>
               {(['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] as const).map((p) => (
@@ -426,7 +426,7 @@ export function SeoDashboardView({
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     selectedPriority === p
                       ? 'bg-[#FFAA4F] text-slate-950 font-bold'
-                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                      : 'bg-slate-800 text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   {p}
@@ -434,7 +434,7 @@ export function SeoDashboardView({
               ))}
             </div>
 
-            <div className="text-xs text-slate-400 font-mono">
+            <div className="text-xs text-slate-500 font-mono">
               Showing {filteredOpportunities.length} of {allOpportunities.length} opportunities
             </div>
           </div>
@@ -444,7 +444,7 @@ export function SeoDashboardView({
             {filteredOpportunities.map((opp) => (
               <Card
                 key={opp.id}
-                className="p-6 bg-slate-800/90 border-slate-700 hover:border-slate-600 transition-all rounded-3xl space-y-4"
+                className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 hover:border-slate-600 transition-all rounded-3xl space-y-4"
               >
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div className="space-y-2">
@@ -456,7 +456,7 @@ export function SeoDashboardView({
                       >
                         {opp.priority}
                       </Badge>
-                      <span className="text-xs font-bold text-amber-300 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-700 font-mono">
+                      <span className="text-xs font-bold text-[#D97706] bg-[#FAFAF9] px-2 py-0.5 rounded-md border border-slate-200 font-mono">
                         Score: {opp.opportunityScore}/100
                       </span>
                       {opp.leadPotentialScore && (
@@ -464,13 +464,13 @@ export function SeoDashboardView({
                           Lead Potential: {opp.leadPotentialScore}/100
                         </span>
                       )}
-                      <span className="text-xs text-slate-400 font-mono uppercase text-[10px]">
+                      <span className="text-xs text-slate-500 font-mono uppercase text-[10px]">
                         Sources: {opp.sourceApis.join(', ')}
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-white font-heading">{opp.title}</h3>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
+                    <h3 className="text-lg font-bold text-slate-900 font-heading">{opp.title}</h3>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed max-w-3xl">
                       {opp.description}
                     </p>
                   </div>
@@ -492,39 +492,39 @@ export function SeoDashboardView({
                 </div>
 
                 {/* METRICS ROW */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 p-3 bg-slate-900/80 rounded-2xl text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 p-3 bg-[#FAFAF9]/80 rounded-2xl text-xs">
                   {opp.currentPosition && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Position</span>
-                      <strong className="text-white font-mono">#{opp.currentPosition}</strong>
+                      <span className="text-[10px] text-slate-500 block">Position</span>
+                      <strong className="text-slate-900 font-mono">#{opp.currentPosition}</strong>
                     </div>
                   )}
                   {opp.searchVolume && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Monthly Vol</span>
-                      <strong className="text-white font-mono">{opp.searchVolume.toLocaleString()}</strong>
+                      <span className="text-[10px] text-slate-500 block">Monthly Vol</span>
+                      <strong className="text-slate-900 font-mono">{opp.searchVolume.toLocaleString()}</strong>
                     </div>
                   )}
                   {opp.impressions && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Impressions</span>
-                      <strong className="text-white font-mono">{opp.impressions.toLocaleString()}</strong>
+                      <span className="text-[10px] text-slate-500 block">Impressions</span>
+                      <strong className="text-slate-900 font-mono">{opp.impressions.toLocaleString()}</strong>
                     </div>
                   )}
                   {opp.ctr && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block">CTR</span>
-                      <strong className="text-white font-mono">{opp.ctr}%</strong>
+                      <span className="text-[10px] text-slate-500 block">CTR</span>
+                      <strong className="text-slate-900 font-mono">{opp.ctr}%</strong>
                     </div>
                   )}
                   {opp.keywordDifficulty && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Difficulty</span>
-                      <strong className="text-white font-mono">{opp.keywordDifficulty}/100</strong>
+                      <span className="text-[10px] text-slate-500 block">Difficulty</span>
+                      <strong className="text-slate-900 font-mono">{opp.keywordDifficulty}/100</strong>
                     </div>
                   )}
                   <div>
-                    <span className="text-[10px] text-slate-400 block">Estimated Impact</span>
+                    <span className="text-[10px] text-slate-500 block">Estimated Impact</span>
                     <span className="text-emerald-400 font-semibold text-[11px] truncate block">
                       {opp.estimatedImpact}
                     </span>
@@ -532,10 +532,10 @@ export function SeoDashboardView({
                 </div>
 
                 {/* RECOMMENDED ACTION */}
-                <div className="p-3 bg-slate-900/50 rounded-xl border border-slate-700/50 text-xs text-slate-300 flex items-start gap-2">
-                  <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="p-3 bg-[#FAFAF9]/50 rounded-xl border border-slate-200/50 text-xs text-slate-700 flex items-start gap-2">
+                  <Zap className="h-3.5 w-3.5 text-[#D97706] shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-white">Recommended Action: </strong>
+                    <strong className="text-slate-900">Recommended Action: </strong>
                     <span>{opp.recommendedAction}</span>
                   </div>
                 </div>
@@ -549,10 +549,10 @@ export function SeoDashboardView({
       {/* 3. KEYWORDS & RANKINGS SCREEN */}
       {/* ===================================================================== */}
       {activeTab === 'keywords' && (
-        <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-6">
+        <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-white font-heading">Tracked Construction Search Keywords</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h3 className="text-lg font-bold text-slate-900 font-heading">Tracked Construction Search Keywords</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               Live ranking data combined with search volume, CPC, commercial intent, and lead potential.
             </p>
           </div>
@@ -560,7 +560,7 @@ export function SeoDashboardView({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-700 text-slate-400 uppercase text-[10px] tracking-wider">
+                <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Keyword</th>
                   <th className="py-3 px-3">Intent</th>
                   <th className="py-3 px-3">Rank</th>
@@ -574,7 +574,7 @@ export function SeoDashboardView({
               <tbody className="divide-y divide-slate-700/60 font-mono">
                 {trackedKeywords.map((kw) => (
                   <tr key={kw.keyword} className="hover:bg-slate-750 transition-colors">
-                    <td className="py-3 px-3 text-white font-bold">{kw.keyword}</td>
+                    <td className="py-3 px-3 text-slate-900 font-bold">{kw.keyword}</td>
                     <td className="py-3 px-3">
                       <Badge
                         variant={kw.searchIntent === 'COMMERCIAL' || kw.searchIntent === 'LOCAL' ? 'brand' : 'slate'}
@@ -587,12 +587,12 @@ export function SeoDashboardView({
                     <td className="py-3 px-3">
                       <span className="text-emerald-400 font-bold">#{kw.currentPosition}</span>
                     </td>
-                    <td className="py-3 px-3 text-slate-300">{kw.searchVolumeMonthly.toLocaleString()}</td>
-                    <td className="py-3 px-3 text-slate-300">£{kw.cpcGbp.toFixed(2)}</td>
+                    <td className="py-3 px-3 text-slate-700">{kw.searchVolumeMonthly.toLocaleString()}</td>
+                    <td className="py-3 px-3 text-slate-700">£{kw.cpcGbp.toFixed(2)}</td>
                     <td className="py-3 px-3">
-                      <span className="text-amber-400 font-bold">{kw.leadPotentialScore}/100</span>
+                      <span className="text-[#D97706] font-bold">{kw.leadPotentialScore}/100</span>
                     </td>
-                    <td className="py-3 px-3 text-slate-400 text-[11px] truncate max-w-[140px]">
+                    <td className="py-3 px-3 text-slate-500 text-[11px] truncate max-w-[140px]">
                       {kw.serpTopCompetitor || '—'}
                     </td>
                     <td className="py-3 px-3 text-right">
@@ -600,7 +600,7 @@ export function SeoDashboardView({
                         variant="outline"
                         size="sm"
                         onClick={() => handleGenerateBrief(kw.keyword, kw.searchVolumeMonthly, kw.currentPosition)}
-                        className="text-[11px] h-7 px-2.5 border-slate-700 text-slate-300"
+                        className="text-[11px] h-7 px-2.5 border-slate-200 text-slate-700"
                       >
                         <Sparkles className="h-3 w-3 mr-1" /> Brief
                       </Button>
@@ -617,10 +617,10 @@ export function SeoDashboardView({
       {/* 4. PAGES & CONVERSIONS SCREEN */}
       {/* ===================================================================== */}
       {activeTab === 'pages' && (
-        <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-6">
+        <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-white font-heading">Organic Landing Page Revenue Attribution</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h3 className="text-lg font-bold text-slate-900 font-heading">Organic Landing Page Revenue Attribution</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               Tracks the entire conversion funnel: Organic Visit → Calculator Start → Plan My Project → Won Revenue.
             </p>
           </div>
@@ -628,7 +628,7 @@ export function SeoDashboardView({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-700 text-slate-400 uppercase text-[10px] tracking-wider">
+                <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Landing Page</th>
                   <th className="py-3 px-3">Sessions</th>
                   <th className="py-3 px-3">Calculators</th>
@@ -643,20 +643,20 @@ export function SeoDashboardView({
                 {initialOverview.topConversionPages.map((p) => (
                   <tr key={p.url} className="hover:bg-slate-750 transition-colors">
                     <td className="py-3 px-3">
-                      <Link href={p.url} target="_blank" className="text-white hover:text-brand-400 font-bold block">
+                      <Link href={p.url} target="_blank" className="text-slate-900 hover:text-brand-400 font-bold block">
                         {p.pageTitle}
                       </Link>
-                      <span className="text-[10px] text-slate-400">{p.url}</span>
+                      <span className="text-[10px] text-slate-500">{p.url}</span>
                     </td>
-                    <td className="py-3 px-3 text-slate-300">{p.organicSessions.toLocaleString()}</td>
-                    <td className="py-3 px-3 text-slate-300">{p.calculatorCompletions.toLocaleString()}</td>
-                    <td className="py-3 px-3 text-slate-300">{p.plannerStarts}</td>
-                    <td className="py-3 px-3 text-amber-400 font-bold">{p.leadsGenerated}</td>
+                    <td className="py-3 px-3 text-slate-700">{p.organicSessions.toLocaleString()}</td>
+                    <td className="py-3 px-3 text-slate-700">{p.calculatorCompletions.toLocaleString()}</td>
+                    <td className="py-3 px-3 text-slate-700">{p.plannerStarts}</td>
+                    <td className="py-3 px-3 text-[#D97706] font-bold">{p.leadsGenerated}</td>
                     <td className="py-3 px-3 text-emerald-400 font-bold">{p.wonProjects}</td>
                     <td className="py-3 px-3 text-emerald-300 font-bold">
                       £{(p.pipelineValueGbp / 1000).toFixed(0)}k
                     </td>
-                    <td className="py-3 px-3 text-right text-white font-bold">
+                    <td className="py-3 px-3 text-right text-slate-900 font-bold">
                       {p.conversionRatePercent}%
                     </td>
                   </tr>
@@ -672,77 +672,77 @@ export function SeoDashboardView({
       {/* ===================================================================== */}
       {activeTab === 'competitors' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-4">
-            <h3 className="text-base font-bold text-white font-heading">Competitor SERP Overlap &amp; Weaknesses</h3>
-            <p className="text-xs text-slate-400">
+          <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-4">
+            <h3 className="text-base font-bold text-slate-900 font-heading">Competitor SERP Overlap &amp; Weaknesses</h3>
+            <p className="text-xs text-slate-500">
               Audit results from DataForSEO analyzing Checkatrade, MyBuilder, and Resi.
             </p>
 
             <div className="space-y-3 text-xs">
-              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#FAFAF9]/80 border border-slate-200/60 space-y-2">
                 <div className="flex items-center justify-between">
-                  <strong className="text-white text-sm">checkatrade.com</strong>
+                  <strong className="text-slate-900 text-sm">checkatrade.com</strong>
                   <Badge variant="slate" size="sm">
                     High DA / Directory
                   </Badge>
                 </div>
-                <p className="text-slate-300">
+                <p className="text-slate-700">
                   <strong>Weakness:</strong> Generic nationwide averages without room-by-room architectural options or London Borough planning context.
                 </p>
-                <div className="text-amber-300 font-semibold">
+                <div className="text-[#D97706] font-semibold">
                   Opportunity: Outrank on &quot;rear extension cost london&quot; with itemized project scope calculator.
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#FAFAF9]/80 border border-slate-200/60 space-y-2">
                 <div className="flex items-center justify-between">
-                  <strong className="text-white text-sm">mybuilder.com</strong>
+                  <strong className="text-slate-900 text-sm">mybuilder.com</strong>
                   <Badge variant="slate" size="sm">
                     Directory
                   </Badge>
                 </div>
-                <p className="text-slate-300">
+                <p className="text-slate-700">
                   <strong>Weakness:</strong> Thin pricing pages with minimal mechanical / underfloor heating specifications.
                 </p>
-                <div className="text-amber-300 font-semibold">
+                <div className="text-[#D97706] font-semibold">
                   Opportunity: Provide complete specification breakdowns and verified local project case studies.
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-4">
-            <h3 className="text-base font-bold text-white font-heading">Identified Content Gaps (High Demand)</h3>
-            <p className="text-xs text-slate-400">
+          <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-4">
+            <h3 className="text-base font-bold text-slate-900 font-heading">Identified Content Gaps (High Demand)</h3>
+            <p className="text-xs text-slate-500">
               High search volume topics with low competition ready for creation.
             </p>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-[#FAFAF9]/80 border border-slate-200/60 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-white">Side Return Infill Extension Costs</div>
-                  <span className="text-slate-400 font-mono">4,400 monthly UK searches · Medium competition</span>
+                  <div className="font-bold text-slate-900">Side Return Infill Extension Costs</div>
+                  <span className="text-slate-500 font-mono">4,400 monthly UK searches · Medium competition</span>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleGenerateBrief('side return extension cost', 4400, 6)}
-                  className="text-[11px] border-slate-700"
+                  className="text-[11px] border-slate-200"
                 >
                   <Sparkles className="h-3 w-3 mr-1" /> Brief
                 </Button>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-[#FAFAF9]/80 border border-slate-200/60 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-white">RSJ Steel Beam Knockthrough Price</div>
-                  <span className="text-slate-400 font-mono">3,200 monthly searches · Low competition</span>
+                  <div className="font-bold text-slate-900">RSJ Steel Beam Knockthrough Price</div>
+                  <span className="text-slate-500 font-mono">3,200 monthly searches · Low competition</span>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleGenerateBrief('kitchen knockthrough cost', 5400, 11)}
-                  className="text-[11px] border-slate-700"
+                  className="text-[11px] border-slate-200"
                 >
                   <Sparkles className="h-3 w-3 mr-1" /> Brief
                 </Button>
@@ -757,11 +757,11 @@ export function SeoDashboardView({
       {/* ===================================================================== */}
       {activeTab === 'technical' && (
         <div className="space-y-6">
-          <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-6">
+          <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-white font-heading">On-Demand PageSpeed &amp; Core Web Vitals Audit</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h3 className="text-lg font-bold text-slate-900 font-heading">On-Demand PageSpeed &amp; Core Web Vitals Audit</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
                   Audits LCP, CLS, FID/INP, and accessibility on mobile and desktop.
                 </p>
               </div>
@@ -770,7 +770,7 @@ export function SeoDashboardView({
                 <select
                   value={auditUrl}
                   onChange={(e) => setAuditUrl(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono"
+                  className="bg-[#FAFAF9] border border-slate-200 text-slate-900 rounded-xl px-3 py-1.5 text-xs font-mono"
                 >
                   <option value="/">Homepage (/)</option>
                   <option value="/cost-guides/extension-cost">Extension Cost Guide</option>
@@ -781,7 +781,7 @@ export function SeoDashboardView({
                 <select
                   value={auditDevice}
                   onChange={(e) => setAuditDevice(e.target.value as any)}
-                  className="bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs"
+                  className="bg-[#FAFAF9] border border-slate-200 text-slate-900 rounded-xl px-3 py-1.5 text-xs"
                 >
                   <option value="MOBILE">Mobile</option>
                   <option value="DESKTOP">Desktop</option>
@@ -801,9 +801,9 @@ export function SeoDashboardView({
             </div>
 
             {/* AUDIT METRICS RESULT */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-900/90 rounded-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-[#FAFAF9]/90 rounded-2xl">
               <div className="p-3 bg-slate-800/80 rounded-xl space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Performance</span>
+                <span className="text-[10px] font-bold uppercase text-slate-500 block">Performance</span>
                 <div className="text-2xl font-bold text-emerald-400 font-heading">
                   {auditResult ? auditResult.performanceScore : 96} / 100
                 </div>
@@ -811,23 +811,23 @@ export function SeoDashboardView({
               </div>
 
               <div className="p-3 bg-slate-800/80 rounded-xl space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">LCP (Largest Paint)</span>
-                <div className="text-2xl font-bold text-white font-heading">
+                <span className="text-[10px] font-bold uppercase text-slate-500 block">LCP (Largest Paint)</span>
+                <div className="text-2xl font-bold text-slate-900 font-heading">
                   {auditResult ? auditResult.lcpSeconds : 1.2}s
                 </div>
                 <span className="text-[10px] text-emerald-400">&lt; 2.5s Target (Good)</span>
               </div>
 
               <div className="p-3 bg-slate-800/80 rounded-xl space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">CLS (Layout Shift)</span>
-                <div className="text-2xl font-bold text-white font-heading">
+                <span className="text-[10px] font-bold uppercase text-slate-500 block">CLS (Layout Shift)</span>
+                <div className="text-2xl font-bold text-slate-900 font-heading">
                   {auditResult ? auditResult.clsScore : 0.0}
                 </div>
                 <span className="text-[10px] text-emerald-400">&lt; 0.1 Target (Stable)</span>
               </div>
 
               <div className="p-3 bg-slate-800/80 rounded-xl space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">SEO &amp; Schema</span>
+                <span className="text-[10px] font-bold uppercase text-slate-500 block">SEO &amp; Schema</span>
                 <div className="text-2xl font-bold text-emerald-400 font-heading">
                   {auditResult ? auditResult.seoScore : 100} / 100
                 </div>
@@ -842,10 +842,10 @@ export function SeoDashboardView({
       {/* 7. LOCAL SEO SCREEN */}
       {/* ===================================================================== */}
       {activeTab === 'local' && (
-        <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-6">
+        <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-white font-heading">Local Service Area Coverage &amp; Postcode Tiers</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h3 className="text-lg font-bold text-slate-900 font-heading">Local Service Area Coverage &amp; Postcode Tiers</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               Authentic borough landing hubs with verified planning rules, outward postcode resolution, and local case studies.
             </p>
           </div>
@@ -857,19 +857,19 @@ export function SeoDashboardView({
               { name: 'Chiswick (W4)', mult: '1.20x', demand: '3,100/mo', slug: 'chiswick', status: 'Active Hub' },
               { name: 'Harrow (HA1 / HA2)', mult: '1.14x', demand: '2,700/mo', slug: 'harrow', status: 'Active Hub' },
             ].map((loc) => (
-              <div key={loc.name} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700 space-y-2">
+              <div key={loc.name} className="p-4 rounded-2xl bg-[#FAFAF9]/80 border border-slate-200 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-white">{loc.name}</span>
+                  <span className="font-bold text-slate-900">{loc.name}</span>
                   <Badge variant="brand" size="sm" className="text-[10px]">
                     {loc.status}
                   </Badge>
                 </div>
-                <div className="text-xs text-slate-400 space-y-1 font-mono">
-                  <div>Price Tier: <strong className="text-white">{loc.mult}</strong></div>
-                  <div>Search Demand: <strong className="text-white">{loc.demand}</strong></div>
+                <div className="text-xs text-slate-500 space-y-1 font-mono">
+                  <div>Price Tier: <strong className="text-slate-900">{loc.mult}</strong></div>
+                  <div>Search Demand: <strong className="text-slate-900">{loc.demand}</strong></div>
                 </div>
                 <Link href={`/areas/${loc.slug}`} target="_blank" className="block pt-2">
-                  <Button variant="outline" size="sm" className="w-full text-xs border-slate-700">
+                  <Button variant="outline" size="sm" className="w-full text-xs border-slate-200">
                     <span>View Borough Hub</span>
                     <ExternalLink className="h-3 w-3 ml-1" />
                   </Button>
@@ -885,11 +885,11 @@ export function SeoDashboardView({
       {/* ===================================================================== */}
       {activeTab === 'integrations' && (
         <div className="space-y-6">
-          <Card className="p-6 bg-slate-800/80 border-slate-700 rounded-3xl space-y-6">
+          <Card className="p-6 bg-white border-slate-200/90 shadow-sm text-slate-900 rounded-3xl space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-white font-heading">External API Connection Health</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h3 className="text-lg font-bold text-slate-900 font-heading">External API Connection Health</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
                   Server-side health checks with safe fallback modes. Zero public downtime if credentials are missing.
                 </p>
               </div>
@@ -909,12 +909,12 @@ export function SeoDashboardView({
               {healthResults.map((h) => (
                 <div
                   key={h.serviceId}
-                  className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/80 space-y-3"
+                  className="p-4 rounded-2xl bg-[#FAFAF9]/80 border border-slate-200 space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold text-white text-sm">{h.name}</h4>
-                      <span className="text-[11px] text-slate-400 font-mono">{h.message}</span>
+                      <h4 className="font-bold text-slate-900 text-sm">{h.name}</h4>
+                      <span className="text-[11px] text-slate-500 font-mono">{h.message}</span>
                     </div>
                     <Badge
                       variant={
@@ -935,10 +935,10 @@ export function SeoDashboardView({
                   </div>
 
                   {h.troubleshooting && (
-                    <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-[11px] text-slate-300 space-y-1">
-                      <div className="text-amber-400 font-semibold">Diagnostic Note:</div>
-                      <p className="text-slate-400">{h.troubleshooting.likelyReason}</p>
-                      <div className="text-slate-300 pt-1">
+                    <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-200/60 text-[11px] text-slate-700 space-y-1">
+                      <div className="text-[#D97706] font-semibold">Diagnostic Note:</div>
+                      <p className="text-slate-500">{h.troubleshooting.likelyReason}</p>
+                      <div className="text-slate-700 pt-1">
                         <strong>Fix:</strong> {h.troubleshooting.recommendedFix}
                       </div>
                     </div>
@@ -954,45 +954,45 @@ export function SeoDashboardView({
       {/* AI CONTENT BRIEF MODAL */}
       {/* ===================================================================== */}
       {activeBrief && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 space-y-6 shadow-2xl">
-            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#FAFAF9]/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#FAFAF9] border border-slate-200 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 space-y-6 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-200 pb-4">
               <div>
                 <Badge variant="brand" size="sm" className="mb-1 text-[10px]">
                   Draft Pending Approval
                 </Badge>
-                <h3 className="text-xl font-bold text-white font-heading">
+                <h3 className="text-xl font-bold text-slate-900 font-heading">
                   AI Content Brief: &quot;{activeBrief.targetKeyword}&quot;
                 </h3>
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="text-xs text-slate-500 font-mono">
                   {activeBrief.estimatedSearchVolume.toLocaleString()} searches/mo · {activeBrief.targetWordCount} words
                 </span>
               </div>
               <button
                 onClick={() => setActiveBrief(null)}
-                className="text-slate-400 hover:text-white text-lg font-bold p-1"
+                className="text-slate-500 hover:text-slate-900 text-lg font-bold p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-4 text-xs text-slate-300">
+            <div className="space-y-4 text-xs text-slate-700">
               <div className="p-3 bg-slate-800/70 rounded-xl space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Suggested H1 Title</span>
-                <strong className="text-white text-sm">{activeBrief.suggestedH1}</strong>
+                <span className="text-[10px] uppercase font-bold text-slate-500 block">Suggested H1 Title</span>
+                <strong className="text-slate-900 text-sm">{activeBrief.suggestedH1}</strong>
               </div>
 
               <div className="p-3 bg-slate-800/70 rounded-xl space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Meta Description</span>
-                <p className="text-slate-300 leading-relaxed">{activeBrief.suggestedMetaDescription}</p>
+                <span className="text-[10px] uppercase font-bold text-slate-500 block">Meta Description</span>
+                <p className="text-slate-700 leading-relaxed">{activeBrief.suggestedMetaDescription}</p>
               </div>
 
               <div className="space-y-2">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Recommended Content Structure</span>
+                <span className="text-[10px] uppercase font-bold text-slate-500 block">Recommended Content Structure</span>
                 {activeBrief.structure.map((sec, idx) => (
-                  <div key={idx} className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 space-y-1">
-                    <div className="font-bold text-white text-xs">{idx + 1}. {sec.heading}</div>
-                    <ul className="list-disc list-inside text-[11px] text-slate-400 space-y-0.5">
+                  <div key={idx} className="p-3 bg-[#FAFAF9]/60 rounded-xl border border-slate-200 space-y-1">
+                    <div className="font-bold text-slate-900 text-xs">{idx + 1}. {sec.heading}</div>
+                    <ul className="list-disc list-inside text-[11px] text-slate-500 space-y-0.5">
                       {sec.bulletPoints.map((pt, i) => (
                         <li key={i}>{pt}</li>
                       ))}
@@ -1001,7 +1001,7 @@ export function SeoDashboardView({
                 ))}
               </div>
 
-              <div className="p-3 bg-amber-950/30 border border-amber-800/50 rounded-xl text-amber-300 text-[11px] flex items-center gap-2">
+              <div className="p-3 bg-amber-950/30 border border-amber-800/50 rounded-xl text-[#D97706] text-[11px] flex items-center gap-2">
                 <Shield className="h-4 w-4 shrink-0" />
                 <span>
                   <strong>Strict Quality Guard:</strong> All AI drafts remain in draft state until reviewed and approved by an administrator.
@@ -1009,8 +1009,8 @@ export function SeoDashboardView({
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
-              <Button variant="outline" size="sm" onClick={() => setActiveBrief(null)} className="text-xs border-slate-700">
+            <div className="flex justify-end gap-3 pt-2 border-t border-slate-200">
+              <Button variant="outline" size="sm" onClick={() => setActiveBrief(null)} className="text-xs border-slate-200">
                 Close
               </Button>
               <Button

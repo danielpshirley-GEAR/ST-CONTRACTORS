@@ -24,6 +24,7 @@ import {
   Calendar,
   Building,
   Target,
+  PoundSterling,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -94,24 +95,24 @@ export default function AdminLearningPage() {
   };
 
   if (loading || !data) {
-    return <div className="p-12 text-center text-slate-400">Loading Continuous Learning &amp; CRO Engine...</div>;
+    return <div className="p-12 text-center text-slate-500 font-bold">Loading Continuous Learning &amp; CRO Engine...</div>;
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-6xl mx-auto space-y-8 text-left text-white">
+    <div className="py-10 px-4 sm:px-8 max-w-7xl mx-auto space-y-8 text-left bg-[#F4F5F7] min-h-screen text-slate-900">
       {/* 1. HEADER */}
-      <div className="border-b border-slate-800 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-slate-200 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="brand" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-              <Sparkles className="h-3 w-3 mr-1" />
+            <Badge variant="brand" className="bg-[#FFAA4F]/20 text-[#D97706] border-[#FFAA4F]/40 font-bold text-xs">
+              <Sparkles className="h-3 w-3 mr-1 text-[#D97706]" />
               Self-Improving Feedback Loop
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 tracking-tight">
             Conversion Rate Optimisation &amp; Pricing Calibration
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
             Compares initial algorithm estimates against actual completed project outturns to fine-tune future estimations and optimize commercial conversion funnels.
           </p>
         </div>
@@ -120,7 +121,7 @@ export default function AdminLearningPage() {
           onClick={() => setIsModalOpen(true)}
           variant="primary"
           size="sm"
-          className="font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 gap-1.5 shrink-0"
+          className="font-extrabold text-xs bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 gap-1.5 shrink-0 px-5 py-3 rounded-xl shadow-md cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>Log Project Outturn Actuals</span>
@@ -129,154 +130,158 @@ export default function AdminLearningPage() {
 
       {/* 2. EXECUTIVE ACCURACY & FUNNEL KPIS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Estimate Accuracy</span>
-          <div className="text-2xl font-bold text-emerald-400 font-heading">
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Estimate Accuracy</span>
+          <div className="text-3xl font-extrabold text-emerald-700 font-heading mt-1">
             {data.averageEstimateAccuracyPercent}%
           </div>
-          <span className="text-[11px] text-slate-400">Average variance &lt;2.1%</span>
+          <span className="text-[11px] text-slate-500">Average variance &lt;2.1%</span>
         </Card>
 
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Projects Calibrated</span>
-          <div className="text-2xl font-bold text-blue-400 font-heading">
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Projects Calibrated</span>
+          <div className="text-3xl font-extrabold text-slate-900 font-heading mt-1">
             {data.totalWonProjectsAnalyzed + data.totalLostProjectsAnalyzed}
           </div>
-          <span className="text-[11px] text-slate-400">{data.totalWonProjectsAnalyzed} won / {data.totalLostProjectsAnalyzed} lost cases</span>
+          <span className="text-[11px] text-slate-500">{data.totalWonProjectsAnalyzed} won / {data.totalLostProjectsAnalyzed} lost cases</span>
         </Card>
 
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">End-to-End Funnel CVR</span>
-          <div className="text-2xl font-bold text-amber-400 font-heading">
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">End-to-End Funnel CVR</span>
+          <div className="text-3xl font-extrabold text-[#D97706] font-heading mt-1">
             {data.overallFunnelConversionRatePercent}%
           </div>
-          <span className="text-[11px] text-slate-400">Visitor to won contract</span>
+          <span className="text-[11px] text-slate-500">Visitor to won contract</span>
         </Card>
 
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Avg Cost Delta</span>
-          <div className="text-2xl font-bold text-amber-400 font-heading">
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Avg Cost Delta</span>
+          <div className="text-3xl font-extrabold text-[#D97706] font-heading mt-1">
             +£{data.averageCostVarianceGbp.toLocaleString()}
           </div>
-          <span className="text-[11px] text-slate-400">Unforeseen strip-out reserve</span>
+          <span className="text-[11px] text-slate-500">Unforeseen strip-out reserve</span>
         </Card>
       </div>
 
-      {/* 3. FULL-FUNNEL CONVERSION DROP-OFF VISUALISER */}
+      {/* 3. END-TO-END COMMERCIAL CONVERSION FUNNEL */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-amber-400" />
-          End-to-End Commercial Conversion Funnel
+        <h2 className="text-base font-extrabold text-slate-900 font-heading flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-[#D97706]" />
+          <span>End-to-End Commercial Conversion Funnel</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {data.funnelStages.slice(0, 4).map((st) => (
-            <Card key={st.stageId} className="p-4 bg-slate-900 border-slate-800 rounded-2xl space-y-2">
-              <span className="text-[10px] font-bold uppercase text-slate-400">{st.stageName}</span>
-              <div className="text-xl font-bold text-white font-heading">{st.visitorsCount.toLocaleString()}</div>
-              <div className="text-[11px] flex items-center justify-between pt-1 border-t border-slate-800 text-slate-400">
-                <span>Conversion: <strong className="text-emerald-400">{st.conversionFromPreviousPercent}%</strong></span>
-                <span>Drop-off: <strong className="text-rose-400">{st.dropOffPercent}%</strong></span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {data.funnelStages.map((stage) => (
+            <Card key={stage.stageId} className="p-5 bg-white border-slate-200/90 rounded-2xl shadow-sm space-y-3">
+              <div className="text-[10px] font-bold uppercase text-slate-500 tracking-wider truncate">
+                {stage.stageName}
               </div>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {data.funnelStages.slice(4).map((st) => (
-            <Card key={st.stageId} className="p-4 bg-slate-900 border-slate-800 rounded-2xl space-y-2">
-              <span className="text-[10px] font-bold uppercase text-slate-400">{st.stageName}</span>
-              <div className="text-xl font-bold text-white font-heading">{st.visitorsCount.toLocaleString()}</div>
-              <div className="text-[11px] flex items-center justify-between pt-1 border-t border-slate-800 text-slate-400">
-                <span>Stage CVR: <strong className="text-emerald-400">{st.conversionFromPreviousPercent}%</strong></span>
-                <span>Drop-off: <strong className="text-rose-400">{st.dropOffPercent}%</strong></span>
+              <div className="text-2xl font-extrabold text-slate-900 font-heading">
+                {stage.visitorsCount.toLocaleString()}
+              </div>
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 font-medium">
+                <span className="text-emerald-700 font-bold">Conversion: {stage.conversionFromPreviousPercent}%</span>
+                <span className="text-slate-400">Drop-off: {stage.dropOffPercent}%</span>
               </div>
             </Card>
           ))}
         </div>
       </div>
 
-      {/* 4. PRICING CALIBRATION BENCHMARK RECOMMENDATIONS */}
+      {/* 4. PRICING CALIBRATION RECOMMENDATIONS */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-amber-400" />
-          Live Pricing Calibration Recommendations
+        <h2 className="text-base font-extrabold text-slate-900 font-heading flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-[#D97706]" />
+          <span>Live Pricing Calibration Recommendations</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data.pricingCalibrationFactors.map((cal, idx) => (
-            <Card key={idx} className="p-5 bg-slate-900 border-slate-800 rounded-2xl space-y-2">
+          {(data.pricingCalibrationFactors || []).map((adj, idx) => (
+            <Card key={idx} className="p-5 bg-white border-slate-200/90 rounded-2xl shadow-sm space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-xs text-white font-heading">{cal.category}</h3>
+                <h3 className="font-bold text-xs text-slate-900">{adj.category}</h3>
                 <Badge
                   variant="brand"
                   className={clsx(
-                    'text-[10px] font-bold',
-                    cal.currentBenchmarkDeltaPercent > 0
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    'text-[10px] font-extrabold',
+                    adj.currentBenchmarkDeltaPercent > 0
+                      ? 'bg-[#FFAA4F]/20 text-[#D97706] border-[#FFAA4F]/40'
+                      : 'bg-emerald-100 text-emerald-700 border-emerald-200'
                   )}
                 >
-                  {cal.currentBenchmarkDeltaPercent > 0 ? `+${cal.currentBenchmarkDeltaPercent}%` : `${cal.currentBenchmarkDeltaPercent}%`}
+                  {adj.currentBenchmarkDeltaPercent > 0 ? `+${adj.currentBenchmarkDeltaPercent}%` : `${adj.currentBenchmarkDeltaPercent}%`}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">{cal.recommendedAdjustment}</p>
+              <p className="text-xs text-slate-600 leading-relaxed">{adj.recommendedAdjustment}</p>
             </Card>
           ))}
         </div>
       </div>
 
-      {/* 5. VERIFIED PROJECT OUTTURNS TABLE */}
+      {/* 5. OUTTURN AUDITS & WIN/LOSS INTELLIGENCE */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-          <Award className="h-5 w-5 text-amber-400" />
-          Real Project Outturn Audits &amp; Win/Loss Intelligence
+        <h2 className="text-base font-extrabold text-slate-900 font-heading flex items-center gap-2">
+          <Award className="h-4 w-4 text-[#D97706]" />
+          <span>Real Project Outturn Audits &amp; Win/Loss Intelligence</span>
         </h2>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+        <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-[#FAFAF9] text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-200 font-bold">
                 <tr>
-                  <th className="p-4 font-bold">Project / Reference</th>
-                  <th className="p-4 font-bold">Location &amp; Era</th>
-                  <th className="p-4 font-bold text-right">Initial Estimate</th>
-                  <th className="p-4 font-bold text-right">Quoted Value</th>
-                  <th className="p-4 font-bold text-right">Final Actual</th>
-                  <th className="p-4 font-bold text-right">Variance</th>
-                  <th className="p-4 font-bold">Win / Loss Rationale</th>
+                  <th className="py-4 px-5">Project / Reference</th>
+                  <th className="py-4 px-5">Location &amp; Era</th>
+                  <th className="py-4 px-5">Initial Estimate</th>
+                  <th className="py-4 px-5">Quoted Value</th>
+                  <th className="py-4 px-5">Final Actual</th>
+                  <th className="py-4 px-5">Variance</th>
+                  <th className="py-4 px-5">Win / Loss Rationale</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {data.outturns.map((out) => (
-                  <tr key={out.id} className="hover:bg-slate-850 transition-colors">
-                    <td className="p-4">
-                      <div className="font-bold text-white font-heading">{out.customerName}</div>
-                      <span className="text-[11px] text-slate-400 font-mono">{out.referenceCode}</span>
+              <tbody className="divide-y divide-slate-100">
+                {(data.outturns || []).map((rec) => (
+                  <tr key={rec.id} className="hover:bg-amber-50/40 transition-colors">
+                    <td className="py-4 px-5 font-semibold text-slate-900">
+                      <div>{rec.customerName}</div>
+                      <div className="text-[10px] font-mono text-[#D97706] font-bold">{rec.referenceCode}</div>
                     </td>
-                    <td className="p-4">
-                      <div className="text-slate-300">{out.borough}</div>
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">{out.propertyEra}</span>
+                    <td className="py-4 px-5">
+                      <div>{rec.borough}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">{rec.propertyEra}</div>
                     </td>
-                    <td className="p-4 text-right font-mono text-slate-400">£{out.initialEstimatedCostGbp.toLocaleString()}</td>
-                    <td className="p-4 text-right font-mono text-amber-400 font-bold">£{out.quotedContractValueGbp.toLocaleString()}</td>
-                    <td className="p-4 text-right font-mono text-emerald-400 font-bold">
-                      {out.finalActualCostGbp ? `£${out.finalActualCostGbp.toLocaleString()}` : 'In Progress'}
+                    <td className="py-4 px-5 tabular-numbers font-medium text-slate-600">
+                      £{rec.initialEstimatedCostGbp.toLocaleString()}
                     </td>
-                    <td className="p-4 text-right font-mono font-bold">
-                      {out.variancePercentage !== undefined ? (
-                        <span className={out.variancePercentage > 2 ? 'text-amber-400' : 'text-emerald-400'}>
-                          {out.variancePercentage > 0 ? `+${out.variancePercentage}%` : `${out.variancePercentage}%`}
+                    <td className="py-4 px-5 tabular-numbers font-bold text-slate-900">
+                      £{rec.quotedContractValueGbp.toLocaleString()}
+                    </td>
+                    <td className="py-4 px-5 tabular-numbers font-extrabold text-slate-900">
+                      {rec.finalActualCostGbp ? `£${rec.finalActualCostGbp.toLocaleString()}` : <span className="text-[#D97706]">In Progress</span>}
+                    </td>
+                    <td className="py-4 px-5">
+                      {rec.variancePercentage !== undefined ? (
+                        <span
+                          className={clsx(
+                            'font-extrabold text-[11px]',
+                            rec.variancePercentage <= 2 ? 'text-emerald-700' : 'text-[#D97706]'
+                          )}
+                        >
+                          {rec.variancePercentage > 0 ? `+${rec.variancePercentage}%` : `${rec.variancePercentage}%`}
                         </span>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </td>
-                    <td className="p-4 max-w-xs">
-                      <Badge variant="brand" className="bg-slate-800 text-slate-300 text-[10px] uppercase mb-1">
-                        {out.winLossCategory.replace(/_/g, ' ')}
+                    <td className="py-4 px-5">
+                      <Badge variant="brand" className="text-[9px] bg-slate-100 text-slate-800 border-slate-200 font-bold mb-1">
+                        {rec.winLossCategory.replace(/_/g, ' ')}
                       </Badge>
-                      <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{out.clientFeedbackNotes}</p>
+                      {rec.clientFeedbackNotes && (
+                        <p className="text-[11px] text-slate-600 leading-snug line-clamp-2">
+                          {rec.clientFeedbackNotes}
+                        </p>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -286,119 +291,54 @@ export default function AdminLearningPage() {
         </div>
       </div>
 
-      {/* 6. LOG OUTTURN MODAL */}
+      {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-800 space-y-4 text-left max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div>
-                <Badge variant="brand" className="bg-amber-500/20 text-amber-400 text-xs mb-1">
-                  Pricing Feedback Loop
-                </Badge>
-                <h3 className="text-xl font-bold font-heading text-white">Log Project Outturn Actuals</h3>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white text-lg font-bold p-1 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <Card className="bg-white border-slate-200 p-6 sm:p-8 max-w-lg w-full space-y-4 rounded-3xl shadow-2xl text-slate-900">
+            <h3 className="text-lg font-extrabold font-heading text-slate-900">Log Completed Project Outturn</h3>
             <form onSubmit={handleCreateOutturn} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newOutturn.customerName}
+                  onChange={(e) => setNewOutturn({ ...newOutturn, customerName: e.target.value })}
+                  className="w-full p-2.5 rounded-xl bg-[#FAFAF9] border border-slate-300 text-slate-900"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Reference Code</label>
-                  <input
-                    type="text"
-                    required
-                    value={newOutturn.referenceCode}
-                    onChange={(e) => setNewOutturn((p) => ({ ...p, referenceCode: e.target.value }))}
-                    className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">Customer Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Julian Thorne"
-                    value={newOutturn.customerName}
-                    onChange={(e) => setNewOutturn((p) => ({ ...p, customerName: e.target.value }))}
-                    className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">Initial Est. (£)</label>
+                  <label className="block text-slate-700 font-bold mb-1">Initial Estimate (£)</label>
                   <input
                     type="number"
                     required
                     value={newOutturn.initialEstimatedCostGbp}
-                    onChange={(e) => setNewOutturn((p) => ({ ...p, initialEstimatedCostGbp: Number(e.target.value) }))}
-                    className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white font-mono"
+                    onChange={(e) => setNewOutturn({ ...newOutturn, initialEstimatedCostGbp: Number(e.target.value) })}
+                    className="w-full p-2.5 rounded-xl bg-[#FAFAF9] border border-slate-300 text-slate-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Quoted (£)</label>
-                  <input
-                    type="number"
-                    required
-                    value={newOutturn.quotedContractValueGbp}
-                    onChange={(e) => setNewOutturn((p) => ({ ...p, quotedContractValueGbp: Number(e.target.value) }))}
-                    className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">Final Actual (£)</label>
+                  <label className="block text-slate-700 font-bold mb-1">Final Actual Cost (£)</label>
                   <input
                     type="number"
                     required
                     value={newOutturn.finalActualCostGbp}
-                    onChange={(e) => setNewOutturn((p) => ({ ...p, finalActualCostGbp: Number(e.target.value) }))}
-                    className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white font-mono"
+                    onChange={(e) => setNewOutturn({ ...newOutturn, finalActualCostGbp: Number(e.target.value) })}
+                    className="w-full p-2.5 rounded-xl bg-[#FAFAF9] border border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-slate-300 font-bold mb-1">Win/Loss Category</label>
-                <select
-                  value={newOutturn.winLossCategory}
-                  onChange={(e) => setNewOutturn((p) => ({ ...p, winLossCategory: e.target.value as any }))}
-                  className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white"
-                >
-                  <option value="TRUST_AND_EXPERTISE">Trust &amp; Expert Advice</option>
-                  <option value="SPECIFICATION_QUALITY">Specification Quality &amp; Transparency</option>
-                  <option value="PRICE_COMPETITIVENESS">Price Competitiveness</option>
-                  <option value="TIMELINE">Timeline &amp; Guaranteed Schedule</option>
-                </select>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" size="sm" className="bg-[#FFAA4F] text-slate-950 font-bold">
+                  Save Calibration Data
+                </Button>
               </div>
-
-              <div>
-                <label className="block text-slate-300 font-bold mb-1">Client Feedback Notes</label>
-                <textarea
-                  rows={2}
-                  required
-                  placeholder="Why the customer chose our proposal..."
-                  value={newOutturn.clientFeedbackNotes}
-                  onChange={(e) => setNewOutturn((p) => ({ ...p, clientFeedbackNotes: e.target.value }))}
-                  className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-white"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 py-3"
-              >
-                Ingest Outturn into Calibration Engine
-              </Button>
             </form>
-          </div>
+          </Card>
         </div>
       )}
     </div>

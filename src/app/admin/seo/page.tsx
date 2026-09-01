@@ -8,6 +8,7 @@ import { dataForSeoService } from '@/lib/seo/dataforseo';
 import { pageSpeedService } from '@/lib/seo/pagespeed';
 import { opportunityEngineService } from '@/lib/seo/opportunity-engine';
 import { checkAllIntegrationHealth } from '@/lib/seo/health';
+import { Container } from '@/components/ui/Container';
 
 export default async function AdminSeoPage() {
   const session = await verifyAdminAuth();
@@ -59,11 +60,13 @@ export default async function AdminSeoPage() {
   };
 
   return (
-    <SeoDashboardView
-      initialOverview={overviewData}
-      trackedKeywords={trackedKeywords}
-      allOpportunities={opportunities}
-      healthStatuses={healthStatuses}
-    />
+    <div className="py-10 px-4 sm:px-8 bg-[#F4F5F7] min-h-screen text-slate-900">
+      <SeoDashboardView
+        initialOverview={overviewData}
+        trackedKeywords={trackedKeywords}
+        allOpportunities={opportunities}
+        healthStatuses={healthStatuses}
+      />
+    </div>
   );
 }

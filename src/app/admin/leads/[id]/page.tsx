@@ -27,21 +27,23 @@ export default async function AdminLeadDetailPage({
   const project = await db.getProjectByLeadId(lead.id);
 
   return (
-    <Container>
-      <div className="space-y-6">
-        {/* Navigation Back Link */}
-        <div>
-          <Link
-            href="/admin/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-[#FFAA4F] transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>← Back to CRM Pipeline Dashboard</span>
-          </Link>
-        </div>
+    <div className="py-10 bg-[#F4F5F7] min-h-screen text-slate-900">
+      <Container>
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Navigation Back Link */}
+          <div>
+            <Link
+              href="/admin/dashboard"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#D97706] transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>← Back to CRM Pipeline Dashboard</span>
+            </Link>
+          </div>
 
-        <LeadDetailManager initialLead={lead} initialProject={project} />
-      </div>
-    </Container>
+          <LeadDetailManager initialLead={lead} initialProject={project} />
+        </div>
+      </Container>
+    </div>
   );
 }

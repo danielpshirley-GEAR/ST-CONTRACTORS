@@ -40,7 +40,7 @@ export default function AdminAttributionPage() {
         const data = await res.json();
         if (data.report) {
           setReport(data.report);
-          setSelectedJourney(data.report.journeys[0] || null);
+          setSelectedJourney(data.report.journeys?.[0] || null);
         }
       } catch (err) {
         console.error('Error fetching attribution report:', err);
@@ -52,7 +52,7 @@ export default function AdminAttributionPage() {
   }, []);
 
   if (loading || !report) {
-    return <div className="p-12 text-center text-slate-400">Loading Revenue Attribution Engine...</div>;
+    return <div className="p-12 text-center text-slate-500 font-bold">Loading Revenue Attribution Engine...</div>;
   }
 
   const getAttributedRevenue = (asset: AssetAttributionSummary) => {
@@ -67,211 +67,127 @@ export default function AdminAttributionPage() {
     }
   };
 
+  const assetList = report.topAcquisitionAssets || [];
+
   return (
-    <div className="p-6 sm:p-8 max-w-6xl mx-auto space-y-8 text-left text-white">
+    <div className="py-10 px-4 sm:px-8 max-w-7xl mx-auto space-y-8 text-left bg-[#F4F5F7] min-h-screen text-slate-900">
       {/* 1. HEADER */}
-      <div className="border-b border-slate-800 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border-b border-slate-200 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant="brand" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-              <TrendingUp className="h-3 w-3 mr-1" />
+            <Badge variant="brand" className="bg-[#FFAA4F]/20 text-[#D97706] border-[#FFAA4F]/40 font-bold text-xs">
+              <TrendingUp className="h-3 w-3 mr-1 text-[#D97706]" />
               Closed-Loop Revenue Attribution
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 tracking-tight">
             Revenue Attribution &amp; Multi-Touch Analytics
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
             Tracks commercial construction revenue (£) back to originating SEO keywords, cost guides, calculators, and customer conversion paths.
           </p>
         </div>
 
         {/* Model Switcher Buttons */}
-        <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 self-start sm:self-auto">
-          <span className="text-[10px] uppercase font-bold text-slate-400 px-2">Model:</span>
+        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm self-start sm:self-auto">
+          <span className="text-[10px] uppercase font-bold text-slate-500 px-2">Model:</span>
           {(['w_shaped', 'first_touch', 'last_touch'] as AttributionModelType[]).map((model) => (
             <button
               key={model}
               onClick={() => setSelectedModel(model)}
               className={clsx(
-                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer capitalize',
+                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer capitalize',
                 selectedModel === model
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#FFAA4F] text-slate-950 font-black shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               )}
             >
-              {model.replace('_', ' ')}
+              {model.replace('_', '-')}
             </button>
           ))}
         </div>
       </div>
 
-      {/* 2. EXECUTIVE REVENUE KPIS */}
+      {/* 2. STATS CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Won Contract Revenue</span>
-          <div className="text-2xl font-bold text-emerald-400 font-heading">
-            £{report.totalRealisedWonRevenueGbp.toLocaleString()}
-          </div>
-          <span className="text-[11px] text-slate-400">{report.totalWonContracts} signed residential contracts</span>
-        </Card>
-
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Active Tender Pipeline</span>
-          <div className="text-2xl font-bold text-amber-400 font-heading">
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Total Pipeline</span>
+          <div className="text-3xl font-extrabold text-slate-900 font-heading tabular-numbers">
             £{report.totalPipelineValueGbp.toLocaleString()}
           </div>
-          <span className="text-[11px] text-slate-400">{report.totalConsultations} qualified consultations</span>
+          <span className="text-[11px] text-slate-500">{report.journeys?.length || 0} Tracked Projects</span>
         </Card>
 
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Average Contract Value</span>
-          <div className="text-2xl font-bold text-blue-400 font-heading">
-            £{report.averageContractValueGbp.toLocaleString()}
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Won Revenue</span>
+          <div className="text-3xl font-extrabold text-emerald-700 font-heading tabular-numbers">
+            £{report.totalRealisedWonRevenueGbp.toLocaleString()}
           </div>
-          <span className="text-[11px] text-slate-400">Across London &amp; South East</span>
+          <span className="text-[11px] text-emerald-700 font-bold">{report.totalWonContracts} Executed Contracts</span>
         </Card>
 
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-1">
-          <span className="text-[10px] font-bold uppercase text-slate-400">Avg. Days to Close</span>
-          <div className="text-2xl font-bold text-amber-400 font-heading">
-            {report.averageDaysToClose} days
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Top Value Channel</span>
+          <div className="text-xl font-extrabold text-[#D97706] font-heading truncate mt-1">
+            {assetList[0]?.assetTitle || 'Wraparound Extension'}
           </div>
-          <span className="text-[11px] text-slate-400">First touch to signed tender</span>
+          <span className="text-[11px] text-slate-500">Highest attributed revenue</span>
+        </Card>
+
+        <Card className="p-6 bg-white border-slate-200/90 rounded-3xl shadow-sm space-y-1">
+          <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Avg Contract Value</span>
+          <div className="text-3xl font-extrabold text-slate-900 font-heading tabular-numbers">
+            £{(report.averageContractValueGbp || 0).toLocaleString()}
+          </div>
+          <span className="text-[11px] text-slate-500">Across won contracts</span>
         </Card>
       </div>
 
-      {/* 3. ASSET ATTRIBUTION LEADERBOARD */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-amber-400" />
-            Top Revenue Generating Assets ({selectedModel.replace('_', ' ').toUpperCase()})
+      {/* 3. ASSETS REVENUE TABLE */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-base font-extrabold text-slate-900 font-heading">
+            Content Asset &amp; Calculator Attribution Breakdown
           </h2>
-          <span className="text-xs text-slate-400 font-medium">Sorted by Attributed Construction Revenue</span>
+          <span className="text-xs text-slate-500 font-mono font-bold">
+            Active Model: {selectedModel.toUpperCase()}
+          </span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-                <tr>
-                  <th className="p-4 font-bold">Acquisition Asset / Landing Page</th>
-                  <th className="p-4 font-bold">Category</th>
-                  <th className="p-4 font-bold text-right">Organic Visits</th>
-                  <th className="p-4 font-bold text-right">Consultations</th>
-                  <th className="p-4 font-bold text-right">Won Contracts</th>
-                  <th className="p-4 font-bold text-right">Attributed Revenue (£)</th>
-                  <th className="p-4 font-bold text-right">Marketing ROMI</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-[#FAFAF9] text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-200 font-bold">
+              <tr>
+                <th className="py-4 px-5">Asset / Content URL</th>
+                <th className="py-4 px-5">Type</th>
+                <th className="py-4 px-5">First Touch</th>
+                <th className="py-4 px-5">Last Touch</th>
+                <th className="py-4 px-5 font-bold text-slate-900">Attributed Revenue (£)</th>
+                <th className="py-4 px-5 text-right">Won Contracts</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {assetList.map((asset, idx) => (
+                <tr key={idx} className="hover:bg-amber-50/40 transition-colors">
+                  <td className="py-4 px-5 font-bold text-slate-900">
+                    <div>{asset.assetTitle}</div>
+                    <div className="text-[10px] text-slate-400 font-mono font-normal">{asset.assetUrl}</div>
+                  </td>
+                  <td className="py-4 px-5">
+                    <span className="px-2 py-0.5 rounded-md bg-[#FFAA4F]/20 text-[#D97706] text-[10px] font-bold uppercase">
+                      {asset.assetCategory}
+                    </span>
+                  </td>
+                  <td className="py-4 px-5 font-mono text-slate-600">£{asset.firstTouchAttributedRevenueGbp.toLocaleString()}</td>
+                  <td className="py-4 px-5 font-mono text-slate-600">£{asset.lastTouchAttributedRevenueGbp.toLocaleString()}</td>
+                  <td className="py-4 px-5 font-extrabold text-emerald-700 tabular-numbers text-sm font-mono">
+                    £{getAttributedRevenue(asset).toLocaleString()}
+                  </td>
+                  <td className="py-4 px-5 text-right font-extrabold text-slate-900">{asset.wonProjectsCount}</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {report.topAcquisitionAssets.map((asset) => (
-                  <tr key={asset.assetUrl} className="hover:bg-slate-850 transition-colors">
-                    <td className="p-4">
-                      <div className="font-bold text-white font-heading">{asset.assetTitle}</div>
-                      <span className="text-[11px] text-slate-400 font-mono">{asset.assetUrl}</span>
-                    </td>
-                    <td className="p-4">
-                      <Badge variant="brand" className="bg-slate-800 text-slate-300 border-slate-700 text-[10px] uppercase">
-                        {asset.assetCategory.replace('_', ' ')}
-                      </Badge>
-                    </td>
-                    <td className="p-4 text-right font-mono text-slate-300">{asset.totalOrganicVisits.toLocaleString()}</td>
-                    <td className="p-4 text-right font-mono text-amber-400 font-bold">{asset.consultationsBooked}</td>
-                    <td className="p-4 text-right font-mono text-emerald-400 font-bold">{asset.wonProjectsCount}</td>
-                    <td className="p-4 text-right font-mono font-bold text-white text-sm">
-                      £{getAttributedRevenue(asset).toLocaleString()}
-                    </td>
-                    <td className="p-4 text-right font-mono text-emerald-400 font-bold">
-                      {asset.romiMultiplier}x
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. REAL CUSTOMER MULTI-TOUCH JOURNEY VIEWER */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-          <Target className="h-5 w-5 text-amber-400" />
-          Verified Multi-Touch Customer Journey Timelines
-        </h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left: Journey Select List */}
-          <div className="lg:col-span-5 space-y-2">
-            {report.journeys.map((j) => (
-              <Card
-                key={j.leadId}
-                onClick={() => setSelectedJourney(j)}
-                className={clsx(
-                  'p-4 rounded-2xl cursor-pointer transition-all border text-left',
-                  selectedJourney?.leadId === j.leadId
-                    ? 'bg-slate-850 border-amber-500 shadow-md scale-[1.01]'
-                    : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                )}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-sm text-white font-heading">{j.customerName}</span>
-                  <Badge variant="brand" className="bg-emerald-500 text-emerald-950 font-extrabold text-[10px]">
-                    WON £{j.realisedWonRevenueGbp?.toLocaleString()}
-                  </Badge>
-                </div>
-                <div className="text-xs text-slate-400">{j.projectType} • {j.borough}</div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-800 mt-2">
-                  <span>{j.touchpoints.length} touchpoints</span>
-                  <span>Converted in {j.daysToConvert} days</span>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {/* Right: Detailed Touchpoint Flow */}
-          <div className="lg:col-span-7">
-            {selectedJourney && (
-              <Card className="p-6 bg-slate-900 border-slate-800 rounded-3xl space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-amber-400">Customer Conversion Path</span>
-                    <h3 className="text-lg font-bold font-heading text-white">{selectedJourney.customerName}</h3>
-                    <p className="text-xs text-slate-400">{selectedJourney.referenceCode} • {selectedJourney.borough}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase text-slate-400 font-bold block">Contract Revenue</span>
-                    <strong className="text-emerald-400 text-lg font-heading">£{selectedJourney.realisedWonRevenueGbp?.toLocaleString()}</strong>
-                  </div>
-                </div>
-
-                {/* Touchpoint Timeline */}
-                <div className="space-y-4 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-slate-800">
-                  {selectedJourney.touchpoints.map((tp, idx) => (
-                    <div key={tp.id} className="flex items-start gap-4 relative">
-                      <div className="h-8 w-8 rounded-full bg-slate-850 border-2 border-amber-500 text-white font-mono text-xs font-bold flex items-center justify-center shrink-0 z-10">
-                        {tp.stepNumber}
-                      </div>
-                      <div className="bg-slate-850 p-3.5 rounded-2xl border border-slate-800 flex-1 space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-xs text-white">{tp.pageTitle}</span>
-                          <Badge variant="brand" className="bg-slate-800 text-slate-300 text-[10px] uppercase">
-                            {tp.channel.replace('_', ' ')}
-                          </Badge>
-                        </div>
-                        <span className="text-[11px] font-mono text-slate-400 block">{tp.pageUrl}</span>
-                        <div className="text-[10px] text-slate-500 pt-1 flex items-center gap-2">
-                          <span>Action: <strong>{tp.interactionType}</strong></span>
-                          {tp.utmSource && <span>• Source: <strong>{tp.utmSource}</strong></span>}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
