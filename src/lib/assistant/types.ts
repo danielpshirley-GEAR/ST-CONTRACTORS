@@ -1,5 +1,5 @@
 /**
- * AI Construction Assistant Type Definitions (Phase 6)
+ * AI Construction Assistant Type Definitions (Phase 6 & 11)
  * Conforms to BUILD_SPEC.md & GEMINI.md Section 13 (AI Rules)
  */
 
@@ -22,6 +22,7 @@ export interface ExtractedWorkItem {
   description: string;
   tradeRequired: string;
   structuralImplication?: string;
+  estimatedCostRange?: string;
 }
 
 export interface MissingQuestion {
@@ -38,10 +39,45 @@ export interface PotentialConsideration {
   riskLevel: 'low' | 'medium' | 'high';
 }
 
+export interface CustomSpecificationOption {
+  tier: 'Essential' | 'Architectural Premium' | 'Luxury Master';
+  title: string;
+  priceImpact: string;
+  description: string;
+  highlights: string[];
+  isRecommended?: boolean;
+}
+
+export interface TradePhaseBreakdown {
+  phase: number;
+  title: string;
+  estimatedWeeks: string;
+  estimatedCostRange: string;
+  items: string[];
+}
+
+export interface ThingToConsider {
+  category: 'Structural & Engineering' | 'Planning & Legal' | 'Drainage & Utilities' | 'Living & Logistics';
+  title: string;
+  explanation: string;
+  impactLevel: 'high' | 'medium' | 'low';
+}
+
 export interface ExtractedProject {
   projectType: ProjectType;
   projectTypeDisplay: string;
   originalDescription: string;
+  generalDescription: string;
+  costEstimate: {
+    low: number;
+    high: number;
+    formatted: string;
+    benchmarkPerM2: string;
+    notes: string;
+  };
+  customSpecifications: CustomSpecificationOption[];
+  thingsToConsider: ThingToConsider[];
+  tradePhaseBreakdown: TradePhaseBreakdown[];
   projectRequirements: string[];
   rooms: ExtractedRoom[];
   likelyWorks: ExtractedWorkItem[];

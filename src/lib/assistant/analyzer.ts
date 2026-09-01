@@ -2,16 +2,26 @@
  * AI Construction Assistant Analysis Engine
  * Extracts:
  * 1. Project type
- * 2. Project requirements
- * 3. Rooms
- * 4. Likely works
- * 5. Missing questions
- * 6. Potential considerations
+ * 2. General Description of work required
+ * 3. Cost Estimate & Price Range (London 2026 rates)
+ * 4. Custom Specification Options (Essential / Architectural Premium / Luxury Master)
+ * 5. Things to Consider (Structural, Planning, Party Wall, Utilities, Living Logistics)
+ * 6. Phase-by-Phase Trade Breakdown
+ * 7. Rooms, Works, and Missing Questions
  *
  * Conforms to GEMINI.md Section 13 (AI Rules) & Section 14 (AI Cost Control)
  */
 
-import { ExtractedProject, ExtractedRoom, ExtractedWorkItem, MissingQuestion, PotentialConsideration } from './types';
+import {
+  ExtractedProject,
+  ExtractedRoom,
+  ExtractedWorkItem,
+  MissingQuestion,
+  PotentialConsideration,
+  CustomSpecificationOption,
+  ThingToConsider,
+  TradePhaseBreakdown,
+} from './types';
 import { ProjectType } from '@/lib/planner/quiz-engine';
 
 /**
@@ -25,8 +35,6 @@ export function extractWithUKBuildingRules(text: string): ExtractedProject {
   // ---------------------------------------------------------------------------
   // 1. SEMANTIC ENTITY & INTENT DETECTION
   // ---------------------------------------------------------------------------
-
-  // Source spaces
   const isGarage = lower.includes('garage');
   const isLoft = lower.includes('loft') || lower.includes('attic') || lower.includes('dormer') || lower.includes('mansard');
   const isBasement = lower.includes('basement') || lower.includes('cellar');
@@ -61,929 +69,449 @@ export function extractWithUKBuildingRules(text: string): ExtractedProject {
     lower.includes('open plan') ||
     lower.includes('together');
 
-  // Mentioned rooms in text
   const mentionsHallway = lower.includes('hallway') || lower.includes('hall') || lower.includes('corridor');
-  const mentionsKitchen = lower.includes('kitchen');
-  const mentionsDining = lower.includes('dining') || lower.includes('diner');
-  const mentionsLiving = lower.includes('living') || lower.includes('lounge') || lower.includes('reception');
-  const mentionsGarden = lower.includes('garden');
+  const mentionsCrittall = lower.includes('crittall') || lower.includes('steel door') || lower.includes('black frame');
+  const mentionsBifolds = lower.includes('bifold') || lower.includes('bi-fold') || lower.includes('sliding');
+  const mentionsUnderfloor = lower.includes('underfloor') || lower.includes('ufh') || lower.includes('heated floor');
+  const mentionsIsland = lower.includes('island') || lower.includes('breakfast bar');
+  const mentionsUtility = lower.includes('utility') || lower.includes('boot room') || lower.includes('laundry') || lower.includes('cloakroom') || lower.includes('wc');
 
   // Dimensions
-  let extractedLength = 4;
-  let extractedWidth = 3;
+  let extractedLength = 5;
+  let extractedWidth = 4;
   const meterMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:m|metre|meter|metres|meters)/i);
-  const wordMeterMatch = text.match(/(three|four|five|six|seven|eight)\s*(?:m|metre|meter|metres|meters)/i);
   if (meterMatch) {
     extractedLength = parseFloat(meterMatch[1]);
-  } else if (wordMeterMatch) {
-    const wordMap = { three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 } as Record<string, number>;
-    extractedLength = wordMap[wordMeterMatch[1].toLowerCase()] || 4;
   }
 
   // ---------------------------------------------------------------------------
-  // 2. BESPOKE PROJECT HANDLERS
+  // 2. SCENARIO A: GARAGE CONVERSION
   // ---------------------------------------------------------------------------
-
-  // ===========================================================================
-  // SCENARIO A: GARAGE CONVERSION (e.g. Cinema, Gym, Office, Bedroom, Door to Hallway)
-  // ===========================================================================
   if (isGarage) {
-    const targetPurposeName = isCinema
-      ? 'Dedicated Home Cinema & Media Suite'
-      : isGym
-      ? 'Private Home Gym & Fitness Studio'
-      : isOffice
-      ? 'Executive Home Office & Study'
-      : isBedroom
-      ? 'Ground Floor Guest Bedroom Suite'
-      : isAnnexe
-      ? 'Self-Contained Garden Annexe'
-      : 'Converted Habitable Living Room';
+    const purposeTitle = isCinema ? 'Cinema & Media Suite' : isGym ? 'Home Gym Studio' : isOffice ? 'Executive Home Office' : isBedroom ? 'Guest Bedroom Suite' : 'Habitable Living Room';
+    const lowCost = isCinema ? 28000 : 22000;
+    const highCost = isCinema ? 48000 : 38000;
 
-    const projectType: ProjectType = 'other';
-    const projectTypeDisplay = `Integrated Garage Conversion to ${targetPurposeName}${isDoorwayFormation && mentionsHallway ? ' with Hallway Access' : ''}`;
-
-    const projectRequirements: string[] = [
-      `Convert existing cold garage space into a fully insulated, habitable ${targetPurposeName}`,
-      'Infill existing external vehicle door opening with matching cavity masonry, damp-proof course (DPC), and energy-efficient window/glazing',
-      'Construct a raised, insulated floating floor slab (100mm rigid PIR insulation + Vapour Control Layer + screed/timber) over the existing concrete slab',
-    ];
-
-    if (isDoorwayFormation) {
-      projectRequirements.push(
-        `Form a new structural doorway opening between ${mentionsHallway ? 'the main hallway' : 'the house'} and the converted garage space`,
-        'Install a certified pre-stressed structural lintel over the new opening with minimum 150mm padstone end bearings',
-        'Install an FD30S certified fire-rated door set with intumescent smoke seals and automatic self-closing mechanism conforming to Building Regs Part B'
-      );
-    }
-
-    if (isCinema) {
-      projectRequirements.push(
-        'Install dedicated acoustic soundproofing package (resilient decoupling bars, high-density acoustic mineral wool 60kg/m³, and dual-layer SoundBloc plasterboard)',
-        'Professional first-fix AV infrastructure: concealed in-wall conduits for 4K projector/OLED display, 7.1.4 Dolby Atmos surround sound cabling, and subwoofers',
-        'Zoned architectural lighting: concealed perimeter LED coffer trough lighting, dimmable spotlight circuits, and step lighting'
-      );
-    }
-
-    if (isGym) {
-      projectRequirements.push(
-        'Heavy-duty reinforced shock-absorbent acoustic sports flooring suitable for free weights',
-        'Mechanical extract ventilation / heat recovery (MVHR) for continuous fresh air circulation',
-        'Full-height mirrored feature wall and reinforced structural ceiling fixings for suspension trainers/punchbags'
-      );
-    }
-
-    const rooms: ExtractedRoom[] = [
-      {
-        name: isCinema ? 'Bespoke Home Cinema' : isGym ? 'Home Gym Studio' : 'Converted Garage Living Suite',
-        sizeCategory: 'medium',
-        dimensions: { length: 5.5, width: 2.8, areaM2: 15.4 },
-        purpose: isCinema
-          ? 'Dedicated acoustic cinema room with projector/screen, surround sound, and tiered luxury seating'
-          : 'High-comfort habitable living and leisure zone',
+    return {
+      projectType: 'other',
+      projectTypeDisplay: `Garage Conversion to ${purposeTitle}`,
+      originalDescription: text,
+      generalDescription: `Conversion of an existing cold single/double garage into a fully insulated, Building Regulations Part L compliant ${purposeTitle.toLowerCase()}.${isDoorwayFormation ? ' Includes cutting a structural opening into the hallway with a load-bearing lintel and FD30 fire door.' : ''} The vehicle door is bricked up with matching cavity masonry and high-performance double glazing, and a raised insulated floating floor is constructed over the existing concrete slab.`,
+      costEstimate: {
+        low: lowCost,
+        high: highCost,
+        formatted: `£${lowCost.toLocaleString()} – £${highCost.toLocaleString()}`,
+        benchmarkPerM2: '£1,450 – £2,400 / m²',
+        notes: 'Includes vehicle door infill, floor/wall insulation, electrics, heating, plastering, and Building Control sign-off.',
       },
-    ];
-
-    if (isDoorwayFormation) {
-      rooms.push({
-        name: `${mentionsHallway ? 'Hallway' : 'House'} Direct Access Doorway`,
-        sizeCategory: 'small',
-        dimensions: { length: 1.0, width: 0.9, areaM2: 0.9 },
-        purpose: 'Internal transition with FD30S fire door connecting main ground floor to converted room',
-      });
-    }
-
-    const likelyWorks: ExtractedWorkItem[] = [
-      {
-        category: 'Structural & Groundworks',
-        workTitle: isDoorwayFormation
-          ? 'Structural Doorway Knockthrough & Concrete Lintel Installation'
-          : 'Structural Openings & Infill Masonry',
-        description: isDoorwayFormation
-          ? 'Carefully cut structural opening in internal dividing wall, insert pre-stressed concrete or steel Catnic lintel on concrete padstones, and make good structural reveals.'
-          : 'Remove vehicle door, excavate perimeter footing if required, and construct matching cavity wall with wall ties.',
-        tradeRequired: 'Bricklayers & Structural Builders',
-        structuralImplication: 'Requires structural calculation check and Building Control inspection.',
-      },
-      {
-        category: 'Building Envelope',
-        workTitle: 'Garage Front Infill Masonry & Raised Insulated Floor',
-        description: 'Cavity brickwork matching house facade with 100mm PIR insulation, high-spec double glazed casement window, and floating timber floor over damp-proof membrane (DPM).',
-        tradeRequired: 'Bricklayers, Carpenters & Window Specialists',
-        structuralImplication: 'Brings thermal U-values to modern Part L standards (0.18 W/m²K).',
-      },
-    ];
-
-    if (isCinema) {
-      likelyWorks.push({
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Acoustic Decoupling & SoundBloc Drylining System',
-        description: 'Independent timber/metal acoustic stud framing with 60kg/m³ RW3 rockwool insulation, resilient sound isolation clips, dual 15mm SoundBloc boards with Green Glue damping.',
-        tradeRequired: 'Specialist Acoustic Dryliners',
-      });
-      likelyWorks.push({
-        category: 'Plumbing & Electrics',
-        workTitle: 'Dedicated AV Power Submain, Dimmable Lighting & MVHR',
-        description: 'Clean power radial circuit for AV rack/amplifiers, star-wired HDMI/Cat6/speaker conduits, coffer LED mood lighting, and quiet continuous extract ventilation.',
-        tradeRequired: 'NICEIC Electricians & AV Specialists',
-      });
-    } else {
-      likelyWorks.push({
-        category: 'Plumbing & Electrics',
-        workTitle: 'Electrical Rewire, Central Heating Extension & Sockets',
-        description: 'New consumer unit circuits, LED spotlights, double USB sockets, and new radiator / underfloor heating loop extended from existing boiler.',
-        tradeRequired: 'NICEIC Electricians & Gas Safe Plumbers',
-      });
-      likelyWorks.push({
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Plaster Skimming, FD30S Fire Door & Internal Carpentry',
-        description: 'Full multi-finish plaster skim, certified FD30S fire door with intumescent seals, skirting boards, architraves, and premium floor finishes.',
-        tradeRequired: 'Plasterers & Finish Carpenters',
-      });
-    }
-
-    const missingQuestions: MissingQuestion[] = [
-      {
-        id: 'garage_floor_level',
-        question: 'Is the garage concrete slab lower than your hallway floor level?',
-        reason: 'Most UK garages sit 100mm–250mm below the house floor level. We need to know if you want a flush level floor (requiring raised timber joists & insulation) or a small threshold step.',
-        options: ['Lower by 100-250mm (Need raised flush subfloor)', 'Already level with hallway', 'Not sure / Need survey'],
-      },
-      {
-        id: 'garage_attached_type',
-        question: 'Is the garage integrated under the main house roofline, attached to the side, or detached?',
-        reason: 'Integrated garages share ceiling joists with first-floor bedrooms and require enhanced fire-boarding (Part B) and acoustic floor isolation (Part E).',
-        options: ['Integrated under first-floor bedrooms', 'Side-attached single storey', 'Detached garage'],
-      },
-    ];
-
-    if (isCinema) {
-      missingQuestions.push({
-        id: 'cinema_acoustic_tier',
-        question: 'What level of acoustic sound isolation do you require for the cinema?',
-        reason: 'Determines whether standard acoustic plasterboard is sufficient or if a full isolated "room-within-a-room" with acoustic ceiling decoupling is required for high-volume viewing.',
-        options: ['Standard acoustic plasterboard & rockwool', 'High-performance room-within-a-room decoupling', 'Consult with Audio Specialist'],
-      });
-    }
-
-    const potentialConsiderations: PotentialConsideration[] = [
-      {
-        topic: 'Building Regulations Part B (Fire Safety) for Internal Door',
-        consideration: 'Creating a new doorway between an attached garage and the main hallway strictly requires an FD30S certified fire door (30-minute fire resistance) with intumescent smoke seals, fire-rated frame, and self-closing device.',
-        regulatoryRef: 'Building Regulations 2010 — Approved Document B (Fire Safety)',
-        riskLevel: 'high',
-      },
-      {
-        topic: 'Building Regulations Part L (Thermal Performance & Insulation)',
-        consideration: 'Garage conversion walls and floors must achieve strict thermal targets (U-value 0.18 W/m²K). Existing single-skin walls and uninsulated slabs must be lined with minimum 100mm rigid PIR insulation.',
-        regulatoryRef: 'Building Regulations 2010 — Approved Document L1B (Existing Dwellings)',
-        riskLevel: 'medium',
-      },
-      {
-        topic: 'Building Regulations Part A (Structural Lintel over New Doorway)',
-        consideration: 'Cutting into internal masonry walls to form the new hallway entrance requires a structural lintel with minimum 150mm end bearings to safely support upper floor joists or masonry above.',
-        regulatoryRef: 'Building Regulations 2010 — Approved Document A (Structure)',
-        riskLevel: 'medium',
-      },
-      {
-        topic: 'Planning Permission & Permitted Development (Parking Conditions)',
-        consideration: 'Most garage conversions are Permitted Development, but some local councils or modern housing developments have specific conditions preserving off-street parking quotas that require a minor planning application.',
-        regulatoryRef: 'Town and Country Planning (General Permitted Development) Order 2015',
-        riskLevel: 'low',
-      },
-    ];
-
-    const initialAnswers: Record<string, any> = {
-      project_type: 'other',
-      other_scope: 'garage_conversion',
-      postcode: 'W5 2UP',
-      property_style: 'semi-detached',
-      property_age: '1930_1960',
-      timeline: '1_3_months',
-      project_stage: 'starting_to_plan',
-      natural_description: text,
-      other_notes: text,
-      goals: [
-        isCinema ? 'Bespoke home cinema & media suite' : 'Habitable living space',
-        'Internal doorway connection to hallway',
-        'Full thermal & acoustic insulation',
-        'Turnkey high-spec build',
+      customSpecifications: [
+        {
+          tier: 'Essential',
+          title: 'Standard Habitable Spec',
+          priceImpact: 'Baseline (£22k–£28k)',
+          description: '100mm PIR insulation, white uPVC window, radiator extension, and plastered painted finish.',
+          highlights: ['Cavity wall infill with standard brick', '100mm floor insulation + chipboard', 'LED downlights & 6 double sockets', 'Standard radiator plumbed to boiler'],
+        },
+        {
+          tier: 'Architectural Premium',
+          title: 'Acoustic & Designer Spec',
+          priceImpact: '+£8,000 – £14,000',
+          description: 'Acoustic decoupling for cinema/gym, aluminium slimline glazing, and electric underfloor heating.',
+          highlights: ['SoundBloc dual-layer acoustic plasterboard', 'Slimline anthracite aluminium window', 'Engineered oak or heavy-duty gym rubber flooring', 'Smart zoned dimmable lighting circuits'],
+          isRecommended: true,
+        },
+        {
+          tier: 'Luxury Master',
+          title: 'Full Integrated Suite with Ensuite / AV',
+          priceImpact: '+£18,000 – £26,000',
+          description: 'Adds compact ensuite shower room, built-in acoustic cabinetry, and MVHR ventilation.',
+          highlights: ['Integrated ensuite with walk-in shower & macerator', 'Concealed 7.1.4 Dolby Atmos in-wall conduits', 'Mechanical ventilation with heat recovery (MVHR)', 'Custom architectural joinery'],
+        },
       ],
-    };
-
-    const summary = `Interpreted ${projectTypeDisplay} comprising ${rooms.map((r) => r.name).join(' & ')}, involving structural doorway formation, garage door infill, complete thermal insulation, and bespoke ${isCinema ? 'acoustic cinema AV integration' : 'fit-out'}.`;
-
-    return {
-      projectType,
-      projectTypeDisplay,
-      originalDescription: text,
-      projectRequirements,
-      rooms,
-      likelyWorks,
-      missingQuestions,
-      potentialConsiderations,
-      initialAnswers,
-      summary,
-      estimatedTimelineWeeks: {
-        min: 4,
-        max: 8,
-      },
-    };
-  }
-
-  // ===========================================================================
-  // SCENARIO B: HOUSE EXTENSION & STRUCTURAL KNOCKTHROUGH
-  // ===========================================================================
-  if (isExtension || (mentionsGarden && (isWallRemoval || mentionsKitchen))) {
-    const isKnockthrough = isWallRemoval || (mentionsKitchen && mentionsDining);
-    const projectType: ProjectType = 'extension';
-    const projectTypeDisplay = isKnockthrough
-      ? `Kitchen Knockthrough & ${extractedLength}m Rear Extension`
-      : `${extractedLength}m Single-Storey House Extension`;
-
-    const projectRequirements: string[] = [];
-
-    if (isKnockthrough) {
-      projectRequirements.push(
-        `Remove dividing load-bearing wall between ${mentionsKitchen ? 'kitchen' : 'existing room'} and ${mentionsDining ? 'dining room' : 'living space'} to form open-plan living hub`,
-        'Design, supply, and install fabricated structural universal steel beams (RSJ) on concrete padstones with structural calculations'
-      );
-    }
-
-    projectRequirements.push(
-      `${extractedLength}m single-storey rear extension projection into garden area with insulated concrete strip foundations`,
-      'High-performance aluminium bi-fold or slimline sliding patio doors with flush floor threshold',
-      'Architectural flat glass skylight or lantern roof for enhanced natural illumination'
-    );
-
-    if (mentionsKitchen) {
-      projectRequirements.push('Design, supply, and installation of bespoke modern kitchen cabinetry, central island, and quartz worktops');
-    }
-
-    const rooms: ExtractedRoom[] = [];
-    if (isKnockthrough && mentionsKitchen) {
-      rooms.push({
-        name: 'Open-Plan Kitchen & Dining Space',
-        sizeCategory: 'large',
-        dimensions: { length: 7.5, width: 4.8, areaM2: 36 },
-        purpose: 'Unified culinary, family dining, and entertainment zone',
-      });
-    }
-
-    rooms.push({
-      name: 'Rear Garden Extension Zone',
-      sizeCategory: 'medium',
-      dimensions: { length: extractedLength, width: 5.5, areaM2: extractedLength * 5.5 },
-      purpose: `New ${extractedLength}m building footprint connecting home to patio`,
-    });
-
-    const likelyWorks: ExtractedWorkItem[] = [
-      {
-        category: 'Structural & Groundworks',
-        workTitle: 'Excavation & Concrete Strip Foundations',
-        description: 'Excavate trench footings to minimum 1.0m–1.2m depth (subject to soil type and tree roots) and pour C20/C25 ready-mix concrete.',
-        tradeRequired: 'Groundworks & Civil Engineering',
-        structuralImplication: 'Critical for structural load transfer of new extension walls and roof.',
-      },
-      {
-        category: 'Building Envelope',
-        workTitle: 'Cavity Wall Masonry & Insulated Floor Slab',
-        description: 'Outer skin matching existing brickwork with 100mm rigid PIR insulation and thermal blockwork inner leaf.',
-        tradeRequired: 'Bricklayers & Groundworkers',
-        structuralImplication: 'Full compliance with Part L thermal insulation targets.',
-      },
-    ];
-
-    if (isKnockthrough) {
-      likelyWorks.push({
-        category: 'Structural & Groundworks',
-        workTitle: 'Load-Bearing Wall Demolition & Steel Beam Installation',
-        description: 'Temporary Acrow prop support system, mechanical demolition of dividing wall, and installation of fabricated RSJ steel beam.',
-        tradeRequired: 'Structural Steel Erectors & Builders',
-        structuralImplication: 'Requires structural engineer calculation package for Building Control sign-off.',
-      });
-    }
-
-    likelyWorks.push(
-      {
-        category: 'Plumbing & Electrics',
-        workTitle: 'M&E Submain Distribution, Rewiring & Plumbing Rerouting',
-        description: 'First fix electrics (cooker circuits, LED spotlights, island power) and plumbing relocations for kitchen sink/island and underfloor heating.',
-        tradeRequired: 'NICEIC Electricians & Gas Safe Plumbers',
-      },
-      {
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Drylining, Plaster Skimming & Architectural Finishes',
-        description: '12.5mm plasterboard with multi-finish skim coating, bespoke kitchen installation, engineered timber / porcelain tiled flooring.',
-        tradeRequired: 'Plasterers, Kitchen Fitters & Decorators',
-      }
-    );
-
-    const missingQuestions: MissingQuestion[] = [
-      {
-        id: 'property_type',
-        question: 'What type of property is this (Terraced, Semi-Detached, or Detached)?',
-        reason: 'Determines whether Party Wall notices apply to one or both sides, and establishes Permitted Development projection limits (3m attached vs 4m detached standard, or 6m/8m under Prior Approval).',
-        options: ['Terraced House', 'Semi-Detached House', 'Detached House', 'Bungalow / Other'],
-      },
-      {
-        id: 'drainage_sewer',
-        question: 'Are there any public sewers, inspection manholes, or shared drains in your garden?',
-        reason: 'If building within 3 metres of a public sewer, Thames Water / local water authority requires a formal Build-Over Agreement.',
-        options: ['No manholes visible', 'Manhole present within 3m', 'Not sure / Need survey'],
-      },
-    ];
-
-    if (isKnockthrough) {
-      missingQuestions.push({
-        id: 'steel_position',
-        question: 'Do you prefer the structural steel beam to be completely flush (hidden in ceiling) or downstand?',
-        reason: 'A flush steel requires joists to be trimmed into the steel web, providing a continuous seamless ceiling but requiring additional joist hangers and labour.',
-        options: ['Completely flush (flat ceiling)', 'Downstand boxed beam is acceptable', 'Consult with Surveyor'],
-      });
-    }
-
-    const potentialConsiderations: PotentialConsideration[] = [
-      {
-        topic: 'Planning Permission & Permitted Development',
-        consideration: `Single-storey rear extensions up to 4m (detached) or 3m (attached) are generally Permitted Development. Projections between 4m and 8m are feasible via the Larger Home Extension Prior Approval scheme (a 42-day neighbour consultation process).`,
-        regulatoryRef: 'Town and Country Planning (General Permitted Development) Order 2015',
-        riskLevel: extractedLength > 3 ? 'medium' : 'low',
-      },
-      {
-        topic: 'Party Wall etc. Act 1996',
-        consideration: 'If excavating foundations within 3 metres of a neighbouring structure to a depth lower than their existing footings, you must serve formal Party Wall notices at least 1–2 months before work starts.',
-        regulatoryRef: 'Party Wall etc. Act 1996 Section 6',
-        riskLevel: 'medium',
-      },
-      {
-        topic: 'Building Regulations Part A (Structural Safety) & Part L (Energy Efficiency)',
-        consideration: 'All structural wall removals and new extensions require building control approval. Structural calculations and steel beam sizing must be submitted, along with SAP energy efficiency compliance for glazing exceeding 25% of floor area.',
-        regulatoryRef: 'Building Regulations 2010 (Parts A, L, P)',
-        riskLevel: 'high',
-      },
-    ];
-
-    const initialAnswers: Record<string, any> = {
-      project_type: 'extension',
-      postcode: 'W5 2UP',
-      property_style: 'semi-detached',
-      property_age: '1930_1960',
-      timeline: '1_3_months',
-      project_stage: 'starting_to_plan',
-      natural_description: text,
-      extension_type: 'rear_single',
-      extension_length: extractedLength,
-      extension_width: 5.5,
-      extension_knockthrough: isKnockthrough ? 'knockthrough_open' : 'separate',
-      kitchen_flush_steel: isKnockthrough ? 'yes' : 'no',
-      goals: ['Create open-plan family layout', 'Expand space into garden', 'Maximize natural light', 'Modern turnkey build'],
-    };
-
-    const summary = `Interpreted ${projectTypeDisplay} comprising ${rooms.map((r) => r.name).join(' & ')}, involving ${likelyWorks.length} key construction packages and structural steel integration.`;
-
-    return {
-      projectType,
-      projectTypeDisplay,
-      originalDescription: text,
-      projectRequirements,
-      rooms,
-      likelyWorks,
-      missingQuestions,
-      potentialConsiderations,
-      initialAnswers,
-      summary,
-      estimatedTimelineWeeks: {
-        min: isKnockthrough ? 10 : 8,
-        max: isKnockthrough ? 16 : 12,
-      },
+      thingsToConsider: [
+        {
+          category: 'Planning & Legal',
+          title: 'Permitted Development vs Planning Permission',
+          explanation: 'Garage conversions are usually Permitted Development unless your property is in a Conservation Area or your original planning permission had a condition retaining parking spaces.',
+          impactLevel: 'medium',
+        },
+        {
+          category: 'Structural & Engineering',
+          title: 'Doorway Formation into Hallway',
+          explanation: isDoorwayFormation ? 'Cutting through an existing masonry wall requires a pre-stressed concrete lintel with 150mm padstone end bearings and an FD30 fire door.' : 'Ensure adequate internal access is planned without compromising hallway circulation.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Drainage & Utilities',
+          title: 'Floor Slab Damp Proofing & Floor Level Step',
+          explanation: 'Existing garage slabs rarely have a DPM. A new liquid DPM and 100mm rigid PIR insulation is required to match house floor levels.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Living & Logistics',
+          title: 'Alternative Storage & Meter Relocation',
+          explanation: 'If gas or electric meters and consumer units are located in the garage, boxed joinery housing must be built with fire-rated inspection hatches.',
+          impactLevel: 'low',
+        },
+      ],
+      tradePhaseBreakdown: [
+        { phase: 1, title: 'Strip-out & Vehicle Door Removal', estimatedWeeks: 'Week 1', estimatedCostRange: '£2,500 – £4,000', items: ['Remove garage door', 'Excavate toe footing for masonry infill', 'Form structural opening to hallway'] },
+        { phase: 2, title: 'Masonry Infill & Subfloor Insulation', estimatedWeeks: 'Week 2', estimatedCostRange: '£5,000 – £8,500', items: ['Cavity wall brick/block infill', 'Damp proof membrane and 100mm PIR insulation', 'Install new double glazed window'] },
+        { phase: 3, title: 'First Fix MEP & Acoustic Insulation', estimatedWeeks: 'Week 3–4', estimatedCostRange: '£6,000 – £11,000', items: ['Electrical ring main & AV cabling', 'Plumbing for radiator/underfloor heating', 'Acoustic mineral wool wall lining'] },
+        { phase: 4, title: 'Plastering, Flooring & Second Fix Handover', estimatedWeeks: 'Week 5–6', estimatedCostRange: '£8,500 – £14,500', items: ['Full plaster skim', 'Flooring installation (oak/carpet/rubber)', 'Second fix lighting, fire door, and decorating'] },
+      ],
+      projectRequirements: [
+        `Convert existing garage into insulated ${purposeTitle}`,
+        'Brick infill vehicle opening with matching masonry',
+        'Install insulated floating floor slab over existing concrete',
+        ...(isDoorwayFormation ? ['Form structural opening into hallway with lintel and FD30 fire door'] : []),
+      ],
+      rooms: [
+        { name: purposeTitle, sizeCategory: 'medium', dimensions: { length: 5.5, width: 2.8, areaM2: 15.4 }, purpose: `Habitable ${purposeTitle.toLowerCase()}` },
+      ],
+      likelyWorks: [
+        { category: 'Structural & Groundworks', workTitle: 'Vehicle Opening Infill & Footing', description: 'Excavate pad footing and lay matching cavity brickwork.', tradeRequired: 'Bricklayer', structuralImplication: 'Tied to existing garage piers with helical ties.' },
+        { category: 'Building Envelope', workTitle: 'Floor Slab Insulation & DPM', description: 'Install liquid DPM, 100mm PIR, and 22mm T&G flooring.', tradeRequired: 'Carpenter / Screeder' },
+        { category: 'Plumbing & Electrics', workTitle: 'First Fix Electrics & Heating', description: 'Dedicated consumer unit circuit and heating extension.', tradeRequired: 'NICEIC Electrician / Gas Safe Plumber' },
+        { category: 'Fit-Out & Joinery', workTitle: 'Plastering & FD30 Fire Door Installation', description: 'Skim all walls and fit self-closing fire door set.', tradeRequired: 'Plasterer & Joiner' },
+      ],
+      missingQuestions: [
+        { id: 'meter_location', question: 'Are gas or electric meters located inside the garage?', reason: 'Determines boxing and ventilation requirements.' },
+        { id: 'floor_level', question: 'Is the garage floor significantly lower than the house hallway?', reason: 'Dictates step-down threshold vs ramped insulated screed.' },
+      ],
+      potentialConsiderations: [
+        { topic: 'Building Regulations Part B', consideration: 'Connecting doors between garage conversions and hallways require FD30 fire resistance.', riskLevel: 'medium' },
+        { topic: 'Building Regulations Part L', consideration: 'U-values must achieve 0.18 W/m²K on walls and 0.13 W/m²K on floors.', riskLevel: 'medium' },
+      ],
+      initialAnswers: { project_type: 'other', goals: ['Garage conversion', 'Extra living space'] },
+      summary: `Garage conversion to ${purposeTitle} with complete Building Control compliance.`,
+      estimatedTimelineWeeks: { min: 4, max: 7 },
     };
   }
 
-  // ===========================================================================
-  // SCENARIO C: LOFT CONVERSION
-  // ===========================================================================
+  // ---------------------------------------------------------------------------
+  // 3. SCENARIO B: HOUSE EXTENSION / WRAPAROUND / KITCHEN KNOCKTHROUGH
+  // ---------------------------------------------------------------------------
+  if (isExtension || (isKitchen && isWallRemoval)) {
+    const isWrap = lower.includes('wraparound') || lower.includes('wrap around');
+    const isSide = lower.includes('side return');
+    const typeTitle = isWrap ? 'Wraparound Rear & Side Extension' : isSide ? 'Side Return Kitchen Extension' : 'Single Storey Rear Kitchen Extension';
+    const areaM2 = Math.round(extractedLength * extractedWidth) || 30;
+
+    const basePerM2 = 2500;
+    const lowCost = Math.round(areaM2 * basePerM2 * 0.95 + (isWallRemoval ? 8000 : 0));
+    const highCost = Math.round(areaM2 * basePerM2 * 1.35 + (isWallRemoval ? 16000 : 0) + (mentionsCrittall ? 12000 : 0));
+
+    return {
+      projectType: 'extension',
+      projectTypeDisplay: `${typeTitle} (~${areaM2}m²) with Open-Plan Living`,
+      originalDescription: text,
+      generalDescription: `Construction of a bespoke ${typeTitle.toLowerCase()} creating an open-plan kitchen, dining, and family living space. Includes groundworks in London clay, reinforced concrete foundations, structural steelwork (RSJ goalpost frame) to remove internal load-bearing walls, aluminium sliding/bifold or Crittall doors, flat roof with roof lanterns, wet underfloor heating, and turnkey kitchen installation.`,
+      costEstimate: {
+        low: lowCost,
+        high: highCost,
+        formatted: `£${lowCost.toLocaleString()} – £${highCost.toLocaleString()}`,
+        benchmarkPerM2: `£2,400 – £3,400 / m²`,
+        notes: `Turnkey indicative London estimate including structural steel RSJ, padstones, glazing, underfloor heating, and kitchen fitting.`,
+      },
+      customSpecifications: [
+        {
+          tier: 'Essential',
+          title: 'Contemporary Standard Spec',
+          priceImpact: `Baseline (~£${lowCost.toLocaleString()})`,
+          description: 'Aluminium bifolds (standard 3-pane), flat roof with Velux rooflights, screeded underfloor heating, and high-quality porcelain tiling.',
+          highlights: ['Aluminium 3-pane bifolds (standard RAL)', '2x Velux flat glass rooflights', 'Wet underfloor heating over 100mm PIR', 'Plaster skim and standard electrical pack'],
+        },
+        {
+          tier: 'Architectural Premium',
+          title: 'Architectural Glazing & Flush Steel Spec',
+          priceImpact: `+£18,000 – £32,000`,
+          description: 'Slimline sliding glass panels (20mm sightlines), frameless structural roof lantern, flush recessed ceiling steel, and herringbone engineered oak.',
+          highlights: ['20mm ultra-slim sliding patio doors', 'Frameless structural glass roof lantern (3m × 1.5m)', 'Fully concealed flush ceiling steel RSJ frame', 'Bespoke kitchen layout with 30mm Quartz island'],
+          isRecommended: true,
+        },
+        {
+          tier: 'Luxury Master',
+          title: 'Industrial Crittall & High-End Architectural Spec',
+          priceImpact: `+£40,000 – £65,000`,
+          description: 'Bespoke black steel Crittall glazed screens, microcement seamless flooring, recessed linear LED coffers, and automated climate control.',
+          highlights: ['Genuine or architectural steel Crittall glazed doors & screens', 'Seamless architectural microcement or polished concrete', 'Integrated utility room & downstairs guest cloakroom', 'Smart home lighting, automated blinds, and acoustic ceiling'],
+        },
+      ],
+      thingsToConsider: [
+        {
+          category: 'Structural & Engineering',
+          title: 'Structural Steel Goalpost & Padstones',
+          explanation: 'Removing the rear house wall and side outrigger requires a fabricated 3-steel goalpost frame bearing on reinforced concrete padstones to carry upper floors and roof loads safely.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Planning & Legal',
+          title: 'Party Wall etc. Act 1996 Compliance',
+          explanation: 'Party Wall notices must be served to adjoining neighbours at least 2 months prior to work if excavating within 3m or building on the boundary line.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Drainage & Utilities',
+          title: 'Thames Water Sewer Build-Over Agreement',
+          explanation: 'Shared public sewers running along rear gardens require formal Thames Water approval, CCTV drainage survey, and protective lintels over pipe runs.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Living & Logistics',
+          title: 'Temporary Kitchen & Living Arrangements',
+          explanation: 'During the 4-week period when structural knockthroughs and kitchen installations occur, setting up a temporary utility cooking station is highly recommended.',
+          impactLevel: 'medium',
+        },
+      ],
+      tradePhaseBreakdown: [
+        { phase: 1, title: 'Demolition & Groundworks', estimatedWeeks: 'Weeks 1–3', estimatedCostRange: '£18,000 – £26,000', items: ['Demolish existing outriggers/conservatory', 'Trench excavation to 1.5m depth (London clay)', 'Concrete foundation pour and below-ground drainage'] },
+        { phase: 2, title: 'Structural Steelwork & Shell Masonry', estimatedWeeks: 'Weeks 4–7', estimatedCostRange: '£28,000 – £42,000', items: ['Erect structural steel goalpost frame on padstones', 'Build external cavity walls with insulation', 'Construct flat roof structure with EPDM/GRP waterproofing'] },
+        { phase: 3, title: 'Glazing & First Fix MEP', estimatedWeeks: 'Weeks 8–10', estimatedCostRange: '£22,000 – £35,000', items: ['Install slimline patio sliding doors & roof lantern', 'First fix electrical ring circuits and lighting', 'First fix plumbing and wet underfloor heating screed'] },
+        { phase: 4, title: 'Plastering, Flooring & Second Fix Fit-out', estimatedWeeks: 'Weeks 11–14', estimatedCostRange: '£20,000 – £32,000', items: ['Full plaster skim and drylining', 'Lay floor finishes (porcelain / herringbone oak)', 'Second fix electrical switches, lighting, and plumbing'] },
+        { phase: 5, title: 'Kitchen Fitting, Decorating & Handover', estimatedWeeks: 'Weeks 14–16', estimatedCostRange: '£15,000 – £30,000', items: ['Install cabinetry, quartz island, and appliances', 'Full interior painting and decorating', 'Building Control final inspection and completion certificate'] },
+      ],
+      projectRequirements: [
+        `Construct ${typeTitle.toLowerCase()} (~${areaM2}m²)`,
+        'Install structural steel frame to open up rear ground floor',
+        'Install energy-efficient architectural glazing and rooflights',
+        'Install wet underfloor heating and open-plan kitchen diner',
+      ],
+      rooms: [
+        { name: 'Open-Plan Kitchen & Dining Room', sizeCategory: 'large', dimensions: { length: extractedLength, width: extractedWidth, areaM2 }, purpose: 'Family dining, entertaining, and culinary preparation' },
+        ...(mentionsUtility ? [{ name: 'Utility / Laundry Room', sizeCategory: 'small' as const, dimensions: { length: 2.2, width: 1.8, areaM2: 4 }, purpose: 'Washing machine, dryer, and secondary sink' }] : []),
+      ],
+      likelyWorks: [
+        { category: 'Structural & Groundworks', workTitle: 'Foundation Excavation & Concrete Pour', description: '1.5m deep trench foundations in London clay with C25/30 ready-mix concrete.', tradeRequired: 'Groundworks Crew', structuralImplication: 'Engineered strip foundations with rebar cage.' },
+        { category: 'Structural & Groundworks', workTitle: 'Structural Steel Goalpost Installation', description: 'Universal columns (UC) and beams (UB) connected with high-tensile bolts on concrete padstones.', tradeRequired: 'Steel Fabricator & Erectors' },
+        { category: 'Building Envelope', workTitle: 'Flat Roof & Architectural Glazing', description: 'Warm roof deck with 130mm PIR, GRP fiberglass roof, and slimline sliding doors.', tradeRequired: 'Roofer & Glazier' },
+        { category: 'Plumbing & Electrics', workTitle: 'Wet Underfloor Heating & Kitchen Electrics', description: 'Multi-zone manifold system screeded with liquid anhydrite.', tradeRequired: 'Plumber & Electrician' },
+        { category: 'Fit-Out & Joinery', workTitle: 'Kitchen Installation & Quartz Worktops', description: 'Precision fitting of cabinetry, undermount sinks, and stone island.', tradeRequired: 'Master Kitchen Fitter' },
+      ],
+      missingQuestions: [
+        { id: 'drainage_location', question: 'Is there a manhole or shared sewer in the extension footprint?', reason: 'Determines Thames Water build-over requirements.' },
+        { id: 'glazing_style', question: 'Do you prefer slimline sliding doors, bifolds, or Crittall steel doors?', reason: 'Affects structural opening spans and pricing.' },
+      ],
+      potentialConsiderations: [
+        { topic: 'Party Wall Notice', consideration: 'Notices required under Section 6 of Party Wall Act for foundations within 3m.', riskLevel: 'high' },
+        { topic: 'Building Control Part L', consideration: 'Requires SAP energy calculation if glazing exceeds 25% of floor area.', riskLevel: 'medium' },
+      ],
+      initialAnswers: { project_type: 'extension', goals: ['Open-plan living', 'More natural light', 'Modern kitchen'] },
+      summary: `${typeTitle} of ~${areaM2}m² with full structural opening and architectural finishes.`,
+      estimatedTimelineWeeks: { min: 12, max: 16 },
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. SCENARIO C: LOFT CONVERSION (DORMER / MANSARD / HIP-TO-GABLE)
+  // ---------------------------------------------------------------------------
   if (isLoft) {
-    const projectType: ProjectType = 'loft';
-    const isEnsuite = isBathroom || lower.includes('ensuite');
-    const projectTypeDisplay = isEnsuite ? 'Loft Conversion with Master Ensuite Suite' : 'Dormer Loft Conversion';
+    const isMansard = lower.includes('mansard');
+    const isHipToGable = lower.includes('hip to gable') || lower.includes('hip-to-gable');
+    const typeTitle = isMansard ? 'Mansard Loft Conversion' : isHipToGable ? 'Hip-to-Gable Loft Conversion' : 'Rear Dormer Loft Conversion';
 
-    const projectRequirements: string[] = [
-      'Rear flat-roof dormer extension with timber framework, exterior cladding, and EPDM waterproofing membrane',
-      'Structural steel support beams (RSJs) to support new suspended timber floor and dormer walls',
-      'New bespoke timber staircase constructed directly over existing flight complying with Part K 2.0m headroom',
-      'High-performance breathable insulation between and under rafters conforming to Part L 0.18 U-value',
-    ];
-
-    if (isEnsuite) {
-      projectRequirements.push('Installation of luxury ensuite shower room with waste connection to existing soil vent pipe');
-    }
-
-    const rooms: ExtractedRoom[] = [
-      {
-        name: 'Master Loft Bedroom Suite',
-        sizeCategory: 'large',
-        dimensions: { length: 5.2, width: 4.2, areaM2: 21.8 },
-        purpose: 'Spacious primary bedroom with built-in eaves storage',
-      },
-    ];
-
-    if (isEnsuite) {
-      rooms.push({
-        name: 'Loft Ensuite Shower Room',
-        sizeCategory: 'small',
-        dimensions: { length: 2.2, width: 1.8, areaM2: 3.96 },
-        purpose: 'Private ensuite with walk-in shower, vanity, and WC',
-      });
-    }
-
-    const likelyWorks: ExtractedWorkItem[] = [
-      {
-        category: 'Structural & Groundworks',
-        workTitle: 'Structural Steel Ridge & Floor Beams Installation',
-        description: 'Hoist and install fabricated structural universal steel beams onto concrete padstones to carry new floor joists and dormer structure.',
-        tradeRequired: 'Structural Steel Erectors & Carpenters',
-        structuralImplication: 'Requires structural engineer calculation package.',
-      },
-      {
-        category: 'Building Envelope',
-        workTitle: 'Rear Dormer Construction & Weatherproof Cladding',
-        description: 'Timber stud dormer construction with EPDM flat roof, breathable membrane, and composite / slate tile hung cheeks.',
-        tradeRequired: 'Roofers & Specialist Cladders',
-      },
-      {
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Part K Bespoke Staircase & FD30 Fire Doors',
-        description: 'Install matched timber staircase with spindle balustrade and upgrade escape route doors to FD30 fire resistance.',
-        tradeRequired: 'Joiners & Carpenters',
-      },
-      {
-        category: 'Plumbing & Electrics',
-        workTitle: 'M&E First Fix, Soil Stack Connection & Smoke Alarms',
-        description: 'Extend hot/cold water feeds, connect ensuite waste to soil stack, wire LED spotlights, and install interlinked mains smoke alarms.',
-        tradeRequired: 'NICEIC Electricians & Gas Safe Plumbers',
-      },
-    ];
-
-    const missingQuestions: MissingQuestion[] = [
-      {
-        id: 'ridge_height',
-        question: 'What is the existing height from floor joists to the apex roof ridge?',
-        reason: 'A minimum height of 2.2m–2.4m is required to achieve the statutory 2.0m clear standing headroom above finished floor and stairs.',
-        options: ['Above 2.4m (Ideal)', '2.2m to 2.4m (Tight but workable)', 'Under 2.2m (May need roof raise / tie-in)'],
-      },
-      {
-        id: 'water_pressure_cylinder',
-        question: 'What type of boiler/water heating system does your property have?',
-        reason: 'Combi boilers or unvented Megaflo cylinders provide mains pressure to top-floor showers; gravity tanks in lofts require relocation or pump.',
-        options: ['Combi Boiler (Mains Pressure)', 'System Boiler with Megaflo', 'Conventional gravity tank in loft'],
-      },
-    ];
-
-    const potentialConsiderations: PotentialConsideration[] = [
-      {
-        topic: 'Permitted Development Volume Allowance (40m³ / 50m³)',
-        consideration: 'Terraced properties have a 40m³ roof enlargement allowance under Permitted Development; semi-detached/detached have 50m³.',
-        regulatoryRef: 'Class B, Part 1, Schedule 2 — GPDO 2015',
-        riskLevel: 'low',
-      },
-      {
-        topic: 'Building Regulations Part B (Fire Safety & Escape Route)',
-        consideration: 'Converting a 2-storey house into 3 storeys requires a protected fire escape stairway with FD30 doors and interlinked mains smoke detectors.',
-        regulatoryRef: 'Approved Document B (Fire Safety)',
-        riskLevel: 'high',
-      },
-    ];
-
-    const initialAnswers: Record<string, any> = {
-      project_type: 'loft',
-      loft_type: 'rear_dormer',
-      loft_bathroom: isEnsuite ? 'full_ensuite' : 'no_bathroom',
-      loft_stairs: 'matched_timber',
-      postcode: 'W5 2UP',
-      property_style: 'terraced',
-      property_age: 'pre_1900',
-      timeline: '1_3_months',
-      project_stage: 'starting_to_plan',
-      natural_description: text,
-      goals: ['Create master bedroom suite', 'Add property value', 'Maximize natural light', 'Turnkey build'],
-    };
-
-    const summary = `Interpreted ${projectTypeDisplay} comprising ${rooms.map((r) => r.name).join(' & ')}, involving structural steel floor insertion, dormer construction, Part K staircase, and complete turnkey fit-out.`;
+    const lowCost = isMansard ? 68000 : 52000;
+    const highCost = isMansard ? 98000 : 78000;
 
     return {
-      projectType,
-      projectTypeDisplay,
+      projectType: 'loft',
+      projectTypeDisplay: `${typeTitle} with Luxury Master Suite & Ensuite`,
       originalDescription: text,
-      projectRequirements,
-      rooms,
-      likelyWorks,
-      missingQuestions,
-      potentialConsiderations,
-      initialAnswers,
-      summary,
-      estimatedTimelineWeeks: {
-        min: 6,
-        max: 10,
+      generalDescription: `Conversion of roof space creating a master bedroom suite with ensuite bathroom and built-in wardrobe storage. Involves structural steel floor beams, timber dormer/mansard construction, breathable multi-foil/PIR roof insulation to Part L standards, bespoke staircase over the existing flight, Velux rooflights, and statutory Building Control fire safety doors and alarms.`,
+      costEstimate: {
+        low: lowCost,
+        high: highCost,
+        formatted: `£${lowCost.toLocaleString()} – £${highCost.toLocaleString()}`,
+        benchmarkPerM2: `£1,800 – £2,600 / m²`,
+        notes: 'Includes steel beams, dormer timber frame, roof waterproofing, ensuite plumbing, staircase, and fire door upgrades.',
       },
+      customSpecifications: [
+        {
+          tier: 'Essential',
+          title: 'Standard Dormer Spec',
+          priceImpact: `Baseline (~£${lowCost.toLocaleString()})`,
+          description: 'Rear dormer with UPVC French doors and Juliet balcony, 3-piece ensuite, and standard Velux rooflights.',
+          highlights: ['Timber frame dormer with slate/tile hanging', 'Ensuite with quadrant shower, basin, and WC', 'Bespoke timber staircase matching ground floor balustrade', 'FD30 fire doors to hallway escape route'],
+        },
+        {
+          tier: 'Architectural Premium',
+          title: 'Architectural Master Suite Spec',
+          priceImpact: `+£12,000 – £20,000`,
+          description: 'Aluminium anthracite French doors, walk-in wetroom shower with frameless glass, and bespoke eaves wardrobe joinery.',
+          highlights: ['Full-width rear dormer with aluminium glazing', 'Walk-in wetroom with thermostatic rainfall shower & niche lighting', 'Custom-built fitted wardrobes in low eaves zones', 'Dimmable LED perimeter cove lighting'],
+          isRecommended: true,
+        },
+        {
+          tier: 'Luxury Master',
+          title: 'Mansard & Spa Bathroom Spec',
+          priceImpact: `+£24,000 – £38,000`,
+          description: '70-degree slate mansard with timber box sash windows, freestanding bath, microcement bathroom, and air conditioning.',
+          highlights: ['Conservation-compliant slate mansard with lead dormers', 'Freestanding composite stone bathtub in master bedroom', 'Integrated low-profile climate control / air conditioning', 'Acoustic soundproof subfloor system'],
+        },
+      ],
+      thingsToConsider: [
+        {
+          category: 'Structural & Engineering',
+          title: 'Ridge Height & Headroom Clearance',
+          explanation: 'Building Regulations require a minimum of 2.0m clear headroom above the finished staircase and master bedroom landing.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Planning & Legal',
+          title: 'Fire Safety & Means of Escape (Part B)',
+          explanation: 'Converting a 2-storey house to 3 storeys requires upgrading all doors leading to the staircase to FD30 fire-resistant door sets and installing mains interlinked smoke alarms.',
+          impactLevel: 'high',
+        },
+        {
+          category: 'Drainage & Utilities',
+          title: 'Soil Vent Pipe & Water Pressure',
+          explanation: 'Adding a top-floor ensuite requires connecting to the soil vent pipe and checking whether mains water pressure or an unvented cylinder is needed.',
+          impactLevel: 'medium',
+        },
+        {
+          category: 'Living & Logistics',
+          title: 'Scaffolding & Minimal Disruption',
+          explanation: 'Up to 80% of loft construction takes place externally via scaffolding through the roof, keeping internal household disruption to a minimum until the stairs are installed.',
+          impactLevel: 'low',
+        },
+      ],
+      tradePhaseBreakdown: [
+        { phase: 1, title: 'Scaffolding & Structural Steel', estimatedWeeks: 'Weeks 1–2', estimatedCostRange: '£12,000 – £18,000', items: ['Erect full perimeter scaffolding with tin hat weather protection', 'Crane in structural steel ridge and floor beams into party walls', 'Install suspended floor joists'] },
+        { phase: 2, title: 'Dormer Framing & Roof Weatherproofing', estimatedWeeks: 'Weeks 3–4', estimatedCostRange: '£16,000 – £24,000', items: ['Build timber stud dormer frame', 'Install EPDM rubber flat roof and external slate tile cladding', 'Fit Velux rooflights and rear balcony French doors'] },
+        { phase: 3, title: 'Insulation & First Fix MEP', estimatedWeeks: 'Weeks 5–6', estimatedCostRange: '£12,000 – £18,000', items: ['Fit 100mm rigid PIR insulation + multi-foil blanket', 'First fix electrical cabling, spotlights, and smoke alarms', 'First fix ensuite plumbing and waste pipes'] },
+        { phase: 4, title: 'Staircase, Plastering & Second Fix', estimatedWeeks: 'Weeks 7–9', estimatedCostRange: '£12,000 – £18,000', items: ['Cut stairwell and install bespoke wooden staircase', 'Plaster skim all ceilings and walls', 'Fit bathroom sanitaryware, tiles, and internal doors'] },
+      ],
+      projectRequirements: [
+        `Construct ${typeTitle.toLowerCase()}`,
+        'Install structural steel floor beams and timber dormer',
+        'Install new staircase over existing stairs',
+        'Create luxury master bedroom with ensuite bathroom',
+      ],
+      rooms: [
+        { name: 'Master Loft Bedroom', sizeCategory: 'large', dimensions: { length: 5.5, width: 4.2, areaM2: 23 }, purpose: 'Master suite with eaves storage and garden views' },
+        { name: 'Ensuite Shower Room', sizeCategory: 'small', dimensions: { length: 2.4, width: 1.6, areaM2: 3.8 }, purpose: 'Walk-in shower, basin vanity, and WC' },
+      ],
+      likelyWorks: [
+        { category: 'Structural & Groundworks', workTitle: 'Structural Steel Floor & Ridge Beams', description: 'Insert RSJ beams into party walls to support floor and dormer loads.', tradeRequired: 'Steel Fabricator / Carpenter' },
+        { category: 'Building Envelope', workTitle: 'Timber Dormer & EPDM Flat Roof', description: 'Weatherproof dormer carcass with breathable membranes and slate tiles.', tradeRequired: 'Roofer' },
+        { category: 'Plumbing & Electrics', workTitle: 'Ensuite Plumbing & Fire Alarms', description: 'Pressurized water feeds, waste connections, and Part P electrical wiring.', tradeRequired: 'Plumber & Electrician' },
+        { category: 'Fit-Out & Joinery', workTitle: 'Bespoke Staircase & Eaves Cupboards', description: 'Crafted timber staircase with matching balustrades and custom doors.', tradeRequired: 'Joiner' },
+      ],
+      missingQuestions: [
+        { id: 'water_system', question: 'Do you have a combi boiler or traditional water tank in the loft?', reason: 'Water tanks must be relocated or upgraded to unvented cylinder.' },
+        { id: 'roof_height', question: 'What is the internal height from ceiling joists to the ridge apex?', reason: 'Confirms headroom feasibility without lowering ceilings.' },
+      ],
+      potentialConsiderations: [
+        { topic: 'Building Regulations Part B (Fire)', consideration: 'Staircase enclosure must be 30-minute fire protected with FD30 doors.', riskLevel: 'high' },
+        { topic: 'Permitted Development volume', consideration: 'Permitted Development limits additional roof volume to 40m³ (terraced) or 50m³ (semi-detached).', riskLevel: 'medium' },
+      ],
+      initialAnswers: { project_type: 'loft', goals: ['Master bedroom', 'Add value to home'] },
+      summary: `${typeTitle} adding master bedroom suite and ensuite bathroom.`,
+      estimatedTimelineWeeks: { min: 7, max: 10 },
     };
   }
 
-  // ===========================================================================
-  // SCENARIO D: KITCHEN RENOVATION & STRUCTURAL WALL REMOVAL
-  // ===========================================================================
-  if (isKitchen && !isExtension) {
-    const isKnockthrough = isWallRemoval || mentionsDining;
-    const projectType: ProjectType = 'kitchen';
-    const projectTypeDisplay = isKnockthrough ? 'Bespoke Kitchen & Dining Knockthrough' : 'Bespoke Kitchen Renovation';
+  // ---------------------------------------------------------------------------
+  // 5. DEFAULT / FULL RENOVATION / STRUCTURAL KNOCKTHROUGH
+  // ---------------------------------------------------------------------------
+  const projectType: ProjectType = isFullRenovation ? 'full-renovation' : isBathroom ? 'bathroom' : 'other';
+  const displayTitle = isFullRenovation
+    ? 'Complete Period Home Renovation & Modernisation'
+    : isBathroom
+    ? 'Luxury Bathroom & Wetroom Renovation'
+    : 'Bespoke Architectural Reconfiguration & Structural Works';
 
-    const projectRequirements: string[] = [
-      'Supply and installation of bespoke kitchen cabinetry, soft-close hardware, and integrated appliances',
-      'Fabrication and installation of 20mm/30mm Quartz or Dekton solid stone worktops with undermount sink',
-    ];
-
-    if (isKnockthrough) {
-      projectRequirements.push(
-        'Demolition of dividing internal wall with temporary Acrow prop support',
-        'Installation of structural steel RSJ beam on concrete padstones with calculations for Building Control'
-      );
-    }
-
-    projectRequirements.push(
-      'Full electrical rewire: dedicated induction hob circuit, LED under-cabinet illumination, and island socket drops',
-      'Plumbing modifications: sink, dishwasher, Quooker boiling water tap, and water supply to fridge'
-    );
-
-    const rooms: ExtractedRoom[] = [
-      {
-        name: isKnockthrough ? 'Open-Plan Kitchen & Dining Space' : 'Kitchen',
-        sizeCategory: 'medium',
-        dimensions: { length: 5.0, width: 4.0, areaM2: 20 },
-        purpose: 'Modern kitchen and culinary entertainment area',
-      },
-    ];
-
-    const likelyWorks: ExtractedWorkItem[] = [
-      {
-        category: 'Plumbing & Electrics',
-        workTitle: 'Kitchen M&E First Fix & Island Power Routing',
-        description: 'New electrical radial circuits from consumer unit, plumbing first fix, and waste drainage connections.',
-        tradeRequired: 'NICEIC Electricians & Gas Safe Plumbers',
-      },
-      {
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Bespoke Kitchen Fitting, Quartz Templating & Installation',
-        description: 'Base and tall cabinet installation, laser templating and fitting of solid Quartz worktops, splashbacks, and integrated appliances.',
-        tradeRequired: 'Specialist Kitchen Fitters & Stone Masons',
-      },
-    ];
-
-    if (isKnockthrough) {
-      likelyWorks.unshift({
-        category: 'Structural & Groundworks',
-        workTitle: 'Wall Removal & Structural Steel Support',
-        description: 'Propping, dust screening, structural wall demolition, and RSJ beam installation on padstones.',
-        tradeRequired: 'Structural Builders',
-        structuralImplication: 'Requires structural engineer calculation package.',
-      });
-    }
-
-    const missingQuestions: MissingQuestion[] = [
-      {
-        id: 'wall_load_bearing',
-        question: 'Is the wall to be removed load-bearing (carrying first floor joists or roof structure)?',
-        reason: 'Load-bearing walls require structural steel calculations and building control approval; non-load-bearing stud partitions do not.',
-        options: ['Load-bearing masonry wall', 'Non-load-bearing stud partition', 'Not sure / Need builder inspection'],
-      },
-    ];
-
-    const potentialConsiderations: PotentialConsideration[] = [
-      {
-        topic: 'Building Regulations Part P (Electrical Safety)',
-        consideration: 'Kitchen electrical alterations require a Part P certified electrician with full testing and NICEIC certificate issuance.',
-        regulatoryRef: 'Approved Document P (Electrical Safety)',
-        riskLevel: 'medium',
-      },
-    ];
-
-    const initialAnswers: Record<string, any> = {
-      project_type: 'kitchen',
-      kitchen_scope: isKnockthrough ? 'full_knockthrough' : 'full_renovation',
-      kitchen_flush_steel: isKnockthrough ? 'yes' : 'no',
-      postcode: 'W5 2UP',
-      property_style: 'terraced',
-      property_age: '1900_1930',
-      timeline: '1_3_months',
-      project_stage: 'starting_to_plan',
-      natural_description: text,
-      goals: ['Modern kitchen design', 'More storage & counter space', 'Better layout', 'Quality stone worktops'],
-    };
-
-    const summary = `Interpreted ${projectTypeDisplay} comprising ${rooms[0].name}, involving high-spec kitchen cabinetry, stone worktops, full M&E infrastructure, and structural opening.`;
-
-    return {
-      projectType,
-      projectTypeDisplay,
-      originalDescription: text,
-      projectRequirements,
-      rooms,
-      likelyWorks,
-      missingQuestions,
-      potentialConsiderations,
-      initialAnswers,
-      summary,
-      estimatedTimelineWeeks: {
-        min: 3,
-        max: 6,
-      },
-    };
-  }
-
-  // ===========================================================================
-  // SCENARIO E: BATHROOM / WET ROOM / ENSUITE
-  // ===========================================================================
-  if (isBathroom) {
-    const projectType: ProjectType = 'bathroom';
-    const projectTypeDisplay = 'Luxury Bathroom & Walk-In Wetroom Renovation';
-
-    const projectRequirements: string[] = [
-      'Complete strip out of existing sanitaryware, wall tiles, floorboards, and redundant pipework',
-      'Full wetroom tanking and waterproof tanking membrane system across shower zone and floor',
-      'Installation of floor-level walk-in shower with linear drain and frameless fluted glass screen',
-      'Supply and fit of wall-hung rimless WC with concealed cistern frame and dual-flush plate',
-      'Large-format porcelain wall and floor tiling with matching grout and silicone expansion joints',
-      'Electric or wet underfloor heating with digital touch-screen programmable thermostat',
-    ];
-
-    const rooms: ExtractedRoom[] = [
-      {
-        name: 'Family Bathroom / Wetroom Suite',
-        sizeCategory: 'small',
-        dimensions: { length: 2.8, width: 2.2, areaM2: 6.16 },
-        purpose: 'High-end spa bathroom and shower sanctuary',
-      },
-    ];
-
-    const likelyWorks: ExtractedWorkItem[] = [
-      {
-        category: 'Plumbing & Electrics',
-        workTitle: 'Sanitary Plumbing First Fix & Concealed Shower Valves',
-        description: 'Reroute hot/cold feeds, install concealed thermostatic valves, wall-hung WC frame, and low-profile linear shower waste.',
-        tradeRequired: 'CIPHE Plumbers',
-      },
-      {
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Substrate Tanking Membrane & Large-Format Porcelain Tiling',
-        description: 'Apply waterproof tanking kit to wet zones, install thermal backing boards, and precision-cut 1200x600 porcelain tiles with mitred edges.',
-        tradeRequired: 'Specialist Tile Artisans',
-      },
-    ];
-
-    const missingQuestions: MissingQuestion[] = [
-      {
-        id: 'water_pressure',
-        question: 'Do you have high mains water pressure (Combi / Megaflo) for a rainfall shower head?',
-        reason: 'Large 300mm ceiling rainfall shower heads require minimum 2.0–3.0 bar pressure to deliver an optimal experience.',
-        options: ['High pressure (Combi/Megaflo)', 'Low pressure (Gravity tank - may need pump)', 'Not sure'],
-      },
-    ];
-
-    const potentialConsiderations: PotentialConsideration[] = [
-      {
-        topic: 'Building Regulations Part F (Ventilation)',
-        consideration: 'Bathrooms without opening windows or with walk-in showers require mechanical extract ventilation capable of minimum 15 litres/second extract rate with overrun timer.',
-        regulatoryRef: 'Approved Document F (Ventilation)',
-        riskLevel: 'low',
-      },
-    ];
-
-    const initialAnswers: Record<string, any> = {
-      project_type: 'bathroom',
-      bathroom_scope: 'full_renovation',
-      postcode: 'W5 2UP',
-      property_style: 'terraced',
-      property_age: 'pre_1900',
-      timeline: '1_3_months',
-      project_stage: 'starting_to_plan',
-      natural_description: text,
-      goals: ['Luxury spa finish', 'Walk-in rainfall shower', 'Underfloor heating', 'Porcelain tiling'],
-    };
-
-    const summary = `Interpreted ${projectTypeDisplay} comprising ${rooms[0].name}, involving waterproof tanking, walk-in shower, wall-hung sanitaryware, and precision porcelain tiling.`;
-
-    return {
-      projectType,
-      projectTypeDisplay,
-      originalDescription: text,
-      projectRequirements,
-      rooms,
-      likelyWorks,
-      missingQuestions,
-      potentialConsiderations,
-      initialAnswers,
-      summary,
-      estimatedTimelineWeeks: {
-        min: 2,
-        max: 4,
-      },
-    };
-  }
-
-  // ===========================================================================
-  // SCENARIO F: FULL HOUSE RENOVATION & PERIOD OVERHAUL
-  // ===========================================================================
-  if (isFullRenovation) {
-    const projectType: ProjectType = 'full-renovation';
-    const projectTypeDisplay = 'Complete Period Property Gut Renovation & Fit-Out';
-
-    const projectRequirements: string[] = [
-      'Complete strip out of existing finishes, redundant wiring, outdated plumbing, and fixtures',
-      'Structural alterations to ground floor layout to create open-plan family kitchen-diner',
-      'Full electrical rewire with new consumer unit, smart lighting circuits, and Part P sign-off',
-      'Complete central heating overhaul: new high-efficiency system boiler, unvented cylinder, and ground floor underfloor heating',
-      'Plaster skim coating throughout all ceilings and walls with restoration of period cornicing',
-      'New bespoke luxury kitchen and multiple designer bathrooms/ensuites',
-    ];
-
-    const rooms: ExtractedRoom[] = [
-      { name: 'Open-Plan Kitchen & Dining Hub', sizeCategory: 'large', dimensions: { length: 8.0, width: 5.0, areaM2: 40 }, purpose: 'Primary family culinary and living zone' },
-      { name: 'Formal Living Room / Reception', sizeCategory: 'medium', dimensions: { length: 4.5, width: 3.8, areaM2: 17.1 }, purpose: 'Relaxation and entertaining' },
-      { name: 'Master Bedroom Suite & Ensuite', sizeCategory: 'large', dimensions: { length: 5.0, width: 4.0, areaM2: 20 }, purpose: 'Primary suite with private bathroom' },
-      { name: 'Secondary Bedrooms (x3)', sizeCategory: 'large', dimensions: { length: 7.0, width: 4.5, areaM2: 31.5 }, purpose: 'Family bedrooms and guest rooms' },
-      { name: 'Family Bathroom & Cloakroom', sizeCategory: 'medium', dimensions: { length: 3.0, width: 2.5, areaM2: 7.5 }, purpose: 'Main bathroom and ground floor WC' },
-    ];
-
-    const likelyWorks: ExtractedWorkItem[] = [
-      {
-        category: 'Structural & Groundworks',
-        workTitle: 'Internal Wall Knockthroughs & Structural Steels',
-        description: 'Demolish dividing ground floor walls and install structural steel box frames to create expansive open-plan layout.',
-        tradeRequired: 'Structural Builders & Steel Erectors',
-      },
-      {
-        category: 'Plumbing & Electrics',
-        workTitle: 'Whole-House Electrical Rewire & Heating System',
-        description: 'Complete rewiring, CAT6 data cabling, system boiler with Megaflo cylinder, and wet underfloor heating.',
-        tradeRequired: 'NICEIC Electricians & Gas Safe Plumbers',
-      },
-      {
-        category: 'Fit-Out & Joinery',
-        workTitle: 'Full Plaster Skim, Joinery & Turnkey Finishes',
-        description: 'Replastering throughout, engineered hardwood flooring, bespoke fitted wardrobes, designer kitchen, and luxury bathrooms.',
-        tradeRequired: 'Plasterers, Joiners, Kitchen Fitters & Tilers',
-      },
-    ];
-
-    const missingQuestions: MissingQuestion[] = [
-      {
-        id: 'property_period',
-        question: 'What is the architectural era of the property (Victorian, Edwardian, 1930s, or Modern)?',
-        reason: 'Period properties require breathable lime materials, party wall considerations, and specific lintel details for high ceilings.',
-        options: ['Victorian / Georgian (Pre-1900)', 'Edwardian (1900-1930)', '1930s-1960s Semi', 'Modern Build'],
-      },
-    ];
-
-    const potentialConsiderations: PotentialConsideration[] = [
-      {
-        topic: 'Building Regulations Full Plans Approval',
-        consideration: 'Full property renovations involving structural changes, thermal insulation upgrades (Part L), and complete rewiring (Part P) require comprehensive Building Control certification.',
-        regulatoryRef: 'Building Regulations 2010 (All Approved Documents)',
-        riskLevel: 'high',
-      },
-    ];
-
-    const initialAnswers: Record<string, any> = {
-      project_type: 'full-renovation',
-      renovation_scope: 'complete_back_to_brick',
-      postcode: 'W5 2UP',
-      property_style: 'terraced',
-      property_age: 'pre_1900',
-      timeline: '1_3_months',
-      project_stage: 'starting_to_plan',
-      natural_description: text,
-      goals: ['Complete modernisation', 'Open-plan living', 'High-end turnkey finish', 'Energy efficiency'],
-    };
-
-    const summary = `Interpreted ${projectTypeDisplay} comprising complete internal overhaul across ${rooms.length} zones, involving structural reconfiguration, new M&E systems, and luxury fit-out.`;
-
-    return {
-      projectType,
-      projectTypeDisplay,
-      originalDescription: text,
-      projectRequirements,
-      rooms,
-      likelyWorks,
-      missingQuestions,
-      potentialConsiderations,
-      initialAnswers,
-      summary,
-      estimatedTimelineWeeks: {
-        min: 12,
-        max: 24,
-      },
-    };
-  }
-
-  // ===========================================================================
-  // DEFAULT / GENERAL STRUCTURAL & BUILDING ALTERATIONS
-  // ===========================================================================
-  const projectType: ProjectType = 'other';
-  const projectTypeDisplay = isDoorwayFormation
-    ? 'Internal Structural Doorway & Room Connection'
-    : isWallRemoval
-    ? 'Internal Wall Knockthrough & Structural Steel'
-    : 'Custom Residential Building & Conversion';
-
-  const projectRequirements: string[] = [
-    isDoorwayFormation
-      ? 'Form a new internal structural doorway opening in internal wall with pre-stressed lintel and certified door set'
-      : isWallRemoval
-      ? 'Demolish dividing wall and install structural steel beam (RSJ) on concrete padstones'
-      : 'Architectural reconfiguration and building works according to customer brief',
-    'Structural calculations and Building Regulations inspection package',
-    'Making good reveals, plaster skimming, architraves, and matching existing decor',
-  ];
-
-  const rooms: ExtractedRoom[] = [
-    {
-      name: 'Main Alteration Space',
-      sizeCategory: 'medium',
-      dimensions: { length: 5.0, width: 4.0, areaM2: 20 },
-      purpose: 'Target area for structural alterations and renovation',
-    },
-  ];
-
-  const likelyWorks: ExtractedWorkItem[] = [
-    {
-      category: 'Structural & Groundworks',
-      workTitle: isDoorwayFormation ? 'Structural Doorway Opening & Concrete Lintel' : 'Wall Demolition & Steel Support',
-      description: 'Careful cutting of opening, propping, insertion of structural lintel/steel with padstones, and debris removal.',
-      tradeRequired: 'Structural Builders',
-      structuralImplication: 'Requires Building Control compliance check.',
-    },
-    {
-      category: 'Fit-Out & Joinery',
-      workTitle: 'Plaster Skimming, Joinery & Making Good',
-      description: 'Dryline opening reveals, apply multi-finish plaster skim, install door frame, door, architraves, and skirting.',
-      tradeRequired: 'Plasterers & Finish Carpenters',
-    },
-  ];
-
-  const missingQuestions: MissingQuestion[] = [
-    {
-      id: 'structural_wall_type',
-      question: 'Is the target wall solid masonry, brickwork, or lightweight timber studwork?',
-      reason: 'Determines temporary propping engineering, lintel type (steel Catnic vs pre-stressed concrete), and demolition method.',
-      options: ['Solid brick / block masonry', 'Timber stud partition', 'Not sure / Need builder survey'],
-    },
-  ];
-
-  const potentialConsiderations: PotentialConsideration[] = [
-    {
-      topic: 'Building Regulations Part A (Structural Safety)',
-      consideration: 'Creating new openings in structural walls or partitions requires Building Control notification and verified lintel bearings.',
-      regulatoryRef: 'Approved Document A (Structure)',
-      riskLevel: 'medium',
-    },
-  ];
-
-  const initialAnswers: Record<string, any> = {
-    project_type: 'other',
-    other_scope: isDoorwayFormation || isWallRemoval ? 'structural_rsj' : 'general_carpentry',
-    postcode: 'W5 2UP',
-    property_style: 'terraced',
-    property_age: '1930_1960',
-    timeline: '1_3_months',
-    project_stage: 'starting_to_plan',
-    natural_description: text,
-    other_notes: text,
-    goals: ['Structural reconfiguration', 'Better room access', 'Quality clean finish'],
-  };
-
-  const summary = `Interpreted ${projectTypeDisplay} comprising ${rooms[0].name}, involving structural opening, lintel installation, and complete making good.`;
+  const lowCost = isFullRenovation ? 110000 : isBathroom ? 14000 : 35000;
+  const highCost = isFullRenovation ? 240000 : isBathroom ? 28000 : 75000;
 
   return {
     projectType,
-    projectTypeDisplay,
+    projectTypeDisplay: displayTitle,
     originalDescription: text,
-    projectRequirements,
-    rooms,
-    likelyWorks,
-    missingQuestions,
-    potentialConsiderations,
-    initialAnswers,
-    summary,
-    estimatedTimelineWeeks: {
-      min: 2,
-      max: 5,
+    generalDescription: `Comprehensive architectural building works including structural modifications, MEP upgrades, and turnkey finishes. All work executed by experienced trade craftsmen in full compliance with UK Building Regulations.`,
+    costEstimate: {
+      low: lowCost,
+      high: highCost,
+      formatted: `£${lowCost.toLocaleString()} – £${highCost.toLocaleString()}`,
+      benchmarkPerM2: `£1,500 – £2,800 / m²`,
+      notes: 'Itemised budget based on current London trade labour rates and high-specification materials.',
     },
+    customSpecifications: [
+      {
+        tier: 'Essential',
+        title: 'High-Quality Contemporary Finish',
+        priceImpact: `Baseline (~£${lowCost.toLocaleString()})`,
+        description: 'Quality building products, clean plaster finish, and certified MEP installations.',
+        highlights: ['Certified structural calculations', 'Quality timber and sanitaryware', 'NICEIC / Gas Safe certification'],
+      },
+      {
+        tier: 'Architectural Premium',
+        title: 'Architectural Specification',
+        priceImpact: `+£15,000 – £35,000`,
+        description: 'Designer finishes, underfloor heating, bespoke joinery, and concealed lighting.',
+        highlights: ['Zoned smart lighting', 'Custom-made joinery units', 'Engineered oak flooring'],
+        isRecommended: true,
+      },
+      {
+        tier: 'Luxury Master',
+        title: 'Turnkey Luxury Specification',
+        priceImpact: `+£40,000 – £80,000`,
+        description: 'Marble and microcement surfaces, bespoke cabinetry, and smart home automation.',
+        highlights: ['Full HVAC climate control', 'Bookmatched marble stone', 'Complete architectural project management'],
+      },
+    ],
+    thingsToConsider: [
+      {
+        category: 'Structural & Engineering',
+        title: 'Structural Load Paths & Padstones',
+        explanation: 'All removed walls require calculation by a chartered structural engineer to ensure upper floor and roof loads are safely supported.',
+        impactLevel: 'high',
+      },
+      {
+        category: 'Planning & Legal',
+        title: 'Building Regulations Compliance',
+        explanation: 'Statutory site inspections required for structural alterations, electrical wiring (Part P), and insulation (Part L).',
+        impactLevel: 'high',
+      },
+      {
+        category: 'Living & Logistics',
+        title: 'Phased Sequencing of Trades',
+        explanation: 'Proper sequencing prevents damage to new finishes and ensures project timelines are met.',
+        impactLevel: 'medium',
+      },
+    ],
+    tradePhaseBreakdown: [
+      { phase: 1, title: 'Strip-Out & Structural Works', estimatedWeeks: 'Weeks 1–3', estimatedCostRange: '£8,000 – £20,000', items: ['Back to brick strip-out', 'Steel beam installation', 'Structural openings'] },
+      { phase: 2, title: 'First Fix Plumbing & Electrics', estimatedWeeks: 'Weeks 4–6', estimatedCostRange: '£12,000 – £28,000', items: ['New consumer unit & wiring', 'Heating pipework & unvented cylinder', 'Underfloor heating screed'] },
+      { phase: 3, title: 'Plastering, Joinery & Second Fix', estimatedWeeks: 'Weeks 7–10', estimatedCostRange: '£15,000 – £35,000', items: ['Plaster skim', 'Bespoke joinery & doors', 'Sanitaryware & tiling'] },
+    ],
+    projectRequirements: [
+      'Carry out structural and architectural reconfiguration',
+      'Update plumbing, electrical, and heating systems',
+      'Provide turnkey decoration and Building Control sign-off',
+    ],
+    rooms: [
+      { name: 'Main Project Space', sizeCategory: 'large', dimensions: { length: 6, width: 4, areaM2: 24 }, purpose: 'Reconfigured living and functional space' },
+    ],
+    likelyWorks: [
+      { category: 'Structural & Groundworks', workTitle: 'Structural Opening & Steelwork', description: 'Install RSJ beam and concrete padstones.', tradeRequired: 'Structural Builder' },
+      { category: 'Plumbing & Electrics', workTitle: 'MEP Upgrades & Certification', description: 'Full rewire and heating upgrades.', tradeRequired: 'Electrician & Plumber' },
+      { category: 'Fit-Out & Joinery', workTitle: 'Carpentry, Plastering & Decorating', description: 'High-end interior finishing.', tradeRequired: 'Joiner & Plasterer' },
+    ],
+    missingQuestions: [
+      { id: 'property_age', question: 'What era is your property (e.g. Victorian, Edwardian, 1930s, Modern)?', reason: 'Affects plaster types, floor joists, and structural requirements.' },
+    ],
+    potentialConsiderations: [
+      { topic: 'Building Regulations', consideration: 'All structural work requires full Building Control certification.', riskLevel: 'high' },
+    ],
+    initialAnswers: { project_type: projectType, goals: ['Quality renovation', 'Added comfort'] },
+    summary: `${displayTitle} with complete turnkey management.`,
+    estimatedTimelineWeeks: { min: 6, max: 12 },
   };
 }
 
 /**
  * Server-side AI Project Analyzer
- * Tries Gemini API if key is configured with high-precision UK construction instructions,
- * and falls back seamlessly to the deep semantic UK building rules engine.
  */
 export async function analyzeProjectWithAI(prompt: string): Promise<ExtractedProject> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
@@ -993,25 +521,51 @@ export async function analyzeProjectWithAI(prompt: string): Promise<ExtractedPro
   }
 
   try {
-    const systemInstruction = `You are an expert UK Senior Construction Surveyor & Principal Building Contractor for high-end residential projects in London and the South East.
-Analyze the homeowner's exact project description and return ONLY valid JSON matching this exact TypeScript schema:
+    const fallbackRules = extractWithUKBuildingRules(prompt);
+
+    const systemInstruction = `You are an expert UK Senior Construction Surveyor & Quantity Surveyor for ST CONTRACTORS in London.
+Analyze the homeowner's project description and return ONLY valid JSON matching this exact structure:
 
 {
-  "projectType": "extension" | "kitchen" | "loft" | "bathroom" | "full-renovation" | "garden" | "driveway" | "other",
-  "projectTypeDisplay": string,
-  "projectRequirements": string[],
-  "rooms": Array<{ "name": string, "sizeCategory": "small" | "medium" | "large", "dimensions": { "length": number, "width": number, "areaM2": number }, "purpose": string }>,
-  "likelyWorks": Array<{ "category": "Structural & Groundworks" | "Building Envelope" | "Plumbing & Electrics" | "Fit-Out & Joinery" | "Compliance & Approvals", "workTitle": string, "description": string, "tradeRequired": string, "structuralImplication"?: string }>,
-  "missingQuestions": Array<{ "id": string, "question": string, "reason": string, "options"?: string[] }>,
-  "potentialConsiderations": Array<{ "topic": string, "consideration": string, "regulatoryRef"?: string, "riskLevel": "low" | "medium" | "high" }>,
-  "summary": string,
-  "estimatedTimelineWeeks": { "min": number, "max": number }
+  "generalDescription": string,
+  "costEstimate": {
+    "low": number,
+    "high": number,
+    "formatted": string,
+    "benchmarkPerM2": string,
+    "notes": string
+  },
+  "customSpecifications": [
+    {
+      "tier": "Essential" | "Architectural Premium" | "Luxury Master",
+      "title": string,
+      "priceImpact": string,
+      "description": string,
+      "highlights": string[],
+      "isRecommended": boolean
+    }
+  ],
+  "thingsToConsider": [
+    {
+      "category": "Structural & Engineering" | "Planning & Legal" | "Drainage & Utilities" | "Living & Logistics",
+      "title": string,
+      "explanation": string,
+      "impactLevel": "high" | "medium" | "low"
+    }
+  ],
+  "tradePhaseBreakdown": [
+    {
+      "phase": number,
+      "title": string,
+      "estimatedWeeks": string,
+      "estimatedCostRange": string,
+      "items": string[]
+    }
+  ]
 }
 
-RULES FOR BESPOKE ACCURACY:
-- Be 100% bespoke to the homeowner's specific words. If they mention converting a garage to a cinema with a door to a hallway, your output MUST be specifically about garage conversion, cinema acoustics, AV infrastructure, structural doorway formation in the hallway, and FD30 fire safety doors!
-- Ground all advice in UK Building Regulations (Part A Structural, Part B Fire Safety, Part E Acoustics, Part L Thermal U-Values, Part P Electrical), the Party Wall etc. Act 1996, and UK Permitted Development standards.
-- Never return generic filler like "Custom architectural reconfiguration" if specific details are supplied in the prompt.`;
+Ensure all prices reflect realistic 2026 London residential construction rates (extensions ~£2,400-£3,400/m², lofts ~£50k-£90k, garage conversions ~£22k-£45k).
+Ground all advice in UK Building Regulations (Part A, Part B, Part L, Part P), the Party Wall etc. Act 1996, and Thames Water drainage standards.`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -1036,32 +590,22 @@ RULES FOR BESPOKE ACCURACY:
     );
 
     if (!response.ok) {
-      console.warn(`Gemini API returned ${response.status}. Using UK Building Rules Engine fallback.`);
-      return extractWithUKBuildingRules(prompt);
+      return fallbackRules;
     }
 
     const data = await response.json();
     const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawJson) {
-      return extractWithUKBuildingRules(prompt);
-    }
+    if (!rawJson) return fallbackRules;
 
     const parsed = JSON.parse(rawJson);
-    const fallbackRules = extractWithUKBuildingRules(prompt);
 
     return {
-      projectType: parsed.projectType || fallbackRules.projectType,
-      projectTypeDisplay: parsed.projectTypeDisplay || fallbackRules.projectTypeDisplay,
-      originalDescription: prompt,
-      projectRequirements: parsed.projectRequirements?.length ? parsed.projectRequirements : fallbackRules.projectRequirements,
-      rooms: parsed.rooms?.length ? parsed.rooms : fallbackRules.rooms,
-      likelyWorks: parsed.likelyWorks?.length ? parsed.likelyWorks : fallbackRules.likelyWorks,
-      missingQuestions: parsed.missingQuestions?.length ? parsed.missingQuestions : fallbackRules.missingQuestions,
-      potentialConsiderations: parsed.potentialConsiderations?.length ? parsed.potentialConsiderations : fallbackRules.potentialConsiderations,
-      initialAnswers: fallbackRules.initialAnswers,
-      summary: parsed.summary || fallbackRules.summary,
-      estimatedTimelineWeeks: parsed.estimatedTimelineWeeks || fallbackRules.estimatedTimelineWeeks,
+      ...fallbackRules,
+      generalDescription: parsed.generalDescription || fallbackRules.generalDescription,
+      costEstimate: parsed.costEstimate?.low ? parsed.costEstimate : fallbackRules.costEstimate,
+      customSpecifications: parsed.customSpecifications?.length ? parsed.customSpecifications : fallbackRules.customSpecifications,
+      thingsToConsider: parsed.thingsToConsider?.length ? parsed.thingsToConsider : fallbackRules.thingsToConsider,
+      tradePhaseBreakdown: parsed.tradePhaseBreakdown?.length ? parsed.tradePhaseBreakdown : fallbackRules.tradePhaseBreakdown,
     };
   } catch (error) {
     console.error('Error invoking Gemini Assistant API, falling back to rule engine:', error);

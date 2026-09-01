@@ -15,6 +15,7 @@ import { ReviewsSection } from '@/components/home/ReviewsSection';
 import { AboutSection } from '@/components/home/AboutSection';
 import { HowItWorksSection } from '@/components/home/HowItWorksSection';
 import { ServicesSection } from '@/components/home/ServicesSection';
+import { HomeAiScopeSection } from '@/components/home/HomeAiScopeSection';
 import {
   ArrowRight,
   Shield,
@@ -113,6 +114,9 @@ export default function HomePage() {
           </div>
         </Container>
       </section>
+
+      {/* INTERACTIVE 'WHAT ARE YOU BUILDING?' AI SCOPE & COST INTERPRETER */}
+      <HomeAiScopeSection />
 
       {/* 1. STATS & 3D PREVIEW STRIP (LIGHT GREY) */}
       <section className="bg-slate-50 border-b border-slate-200/80 py-6 sm:py-8 relative z-20 shadow-xs">
