@@ -660,6 +660,92 @@ export const COST_GUIDES_DATA: CostGuide[] = [
       buttonHref: '/plan-my-project?type=driveway',
     },
   },
+  // =========================================================================
+  // 9. WRAPAROUND EXTENSION COST GUIDE
+  // =========================================================================
+  {
+    id: 'wraparound-extension-cost',
+    slug: 'wraparound-extension-cost',
+    title: 'Victorian Wraparound Extension Cost Guide UK (2026 London Rates)',
+    h1: 'Victorian Wraparound Extension Costs & Structural Feasibility (2026 Guide)',
+    subtitle: 'Comprehensive pricing guide for L-shaped wraparound extensions, 3-steel goalpost frame requirements, Thames Water build-overs, and cost per m² benchmarks.',
+    metaTitle: 'Wraparound Extension Cost UK 2026 | London Price Per m2 & Steel Guide',
+    metaDescription: 'Complete 2026 UK wraparound house extension cost guide. Average price per m², 3-way RSJ goalpost engineering, Thames Water sewer build-over rules, and realistic budgets.',
+    keywords: ['wraparound extension cost london', 'victorian wraparound extension cost', 'side return and rear extension price', 'l shaped extension cost uk', 'rsj goalpost extension cost'],
+    category: 'extensions',
+    publishedDate: '2026-03-01',
+    lastUpdated: '2026-03-01',
+    status: 'published',
+    indicativeRange: {
+      low: 105000,
+      high: 220000,
+      unit: 'standard wraparound (35–55m²)',
+      formatted: '£105,000 – £220,000',
+    },
+    introParagraphs: [
+      'A wraparound extension combines a traditional Victorian side return with a rear extension, creating a massive L-shaped open-plan living and kitchen space that dramatically increases both the usable floor area and commercial value of a London period home.',
+      'In 2026, standard wraparound house extension build costs in London and the South East typically range between £2,850 and £3,800 per square metre (m²) for architectural specifications, rising to £4,200+ per m² for ultra-slimline structural glass and bespoke joinery.',
+      'Because a wraparound involves removing the entire corner of the original house, it requires extensive structural steel goalpost framing, foundation underpinning in London clay, and formal Thames Water sewer build-over approvals.',
+    ],
+    priceTable: {
+      title: 'London Wraparound Extension Cost Benchmarks (2026)',
+      rows: [
+        {
+          type: '30m² Compact Wraparound (Side + Small Rear)',
+          guideRange: '£85,000 – £115,000',
+          perM2: '£2,850 – £3,400/m²',
+          notes: 'Standard pitched side glazing and slimline aluminium bi-folds',
+        },
+        {
+          type: '45m² Mid-Size Wraparound (Typical Victorian Terrace)',
+          guideRange: '£135,000 – £175,000',
+          perM2: '£3,000 – £3,900/m²',
+          notes: 'Full 3-steel goalpost frame, floor-to-ceiling sliding glass & underfloor heating',
+        },
+        {
+          type: '60m² Large Wraparound (Semi-Detached / Period Villa)',
+          guideRange: '£185,000 – £245,000',
+          perM2: '£3,100 – £4,100/m²',
+          notes: 'Minimalist frameless glass box, bespoke architectural island & subfloor tanking',
+        },
+      ],
+    },
+    costFactors: [
+      { title: '3-Steel Interconnected Goalpost System', description: 'Removing the outrigger corner wall requires 3 heavy Universal Column (UC) steel beams bearing on engineered concrete padstones (£7,500–£14,000).' },
+      { title: 'Thames Water Build-Over Agreement', description: 'Building over public sewer lines requires CCTV surveys, non-return valves, and manhole relocations (£1,500–£3,500).' },
+      { title: 'London Clay Groundworks & Foundations', description: 'Deep 1.2m–1.8m concrete strip foundations or engineered mini-piles to resist tree root shrinkage.' },
+    ],
+    projectSizeConsiderations: [
+      { sizeCategory: 'Standard 40m² London Wraparound', dimensions: 'Approx 40m²', typicalCost: '£120,000 – £160,000', description: 'Combines a 2.5m wide side return with a 3m rear projection.' },
+    ],
+    finishLevels: [
+      { level: 'Architectural Spec', multiplier: '1.0x', description: 'Flush 20mm sliding glass, hydronic underfloor heating, and large-format porcelain.', features: ['20mm sightline sliding glass', 'Hydronic manifold UFH', 'Engineered concrete padstones', 'Thames Water sign-off'] },
+    ],
+    regionalConsiderations: ['West and South West London (Chiswick, Richmond, Ealing, Wimbledon) require Party Wall notices served 2 months in advance.'],
+    timeline: [
+      { stage: 'Strip-Out & Groundworks', duration: 'Weeks 1–3', description: 'Demolish side return walls, dig foundation trenches, and relocate sewer lines.' },
+      { stage: 'Structural Steel & Shell', duration: 'Weeks 4–7', description: 'Erect 3-steel goalpost frame, build cavity brickwork, and install roof lanterns.' },
+      { stage: 'Glazing & First Fix MEP', duration: 'Weeks 8–11', description: 'Install sliding doors, plumbing, electrical rewiring, and subfloor screed.' },
+      { stage: 'Second Fix & Kitchen Fit', duration: 'Weeks 12–16', description: 'Plastering, flooring, kitchen cabinetry, and Building Control completion.' },
+    ],
+    commonAdditionalCosts: [
+      { item: 'Party Wall Surveyor Awards', cost: '£1,800 – £3,500', description: 'Mandatory notices and schedule of condition surveys for both shared boundaries.' },
+    ],
+    faqs: [
+      { question: 'Do I need planning permission for a wraparound extension?', answer: 'Because a wraparound wraps around the side and rear simultaneously, it often exceeds Permitted Development side-width rules (half the width of the original house) and typically requires a Householder Full Planning Application.' },
+      { question: 'How long does a wraparound extension take to build?', answer: 'A typical London 40–55m² wraparound extension takes between 14 and 18 weeks from initial site strip-out to final decorator snagging.' },
+    ],
+    relatedCalculatorSlug: 'extension-cost-calculator',
+    relatedServiceSlug: 'extensions',
+    relatedCaseStudySlug: 'ealing-contemporary-rear-extension',
+    relatedAdviceSlugs: ['party-wall-act-guide', 'planning-permission-vs-building-regulations'],
+    commercialCta: {
+      title: 'Planning a Wraparound Extension on Your London Home?',
+      description: 'Our principal contracting team handles architectural design, structural engineering, Thames Water agreements, and construction under a single turnkey contract.',
+      buttonText: 'Plan My Wraparound Project →',
+      buttonHref: '/plan-my-project?type=extension',
+    },
+  },
 ];
 
 export function getCostGuideBySlug(slug: string): CostGuide | undefined {

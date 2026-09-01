@@ -94,6 +94,7 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
     )
     .join('');
 
+  const previewUrl = `${siteConfig.url}/admin/editorial/preview?slug=${encodeURIComponent(data.seoArticle.slug)}`;
   const publishUrl = `${siteConfig.url}/admin/editorial/publish?slug=${encodeURIComponent(data.seoArticle.slug)}&title=${encodeURIComponent(data.seoArticle.title)}&category=cost-guides`;
 
   return `
@@ -125,10 +126,13 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
                       Target Keyword: <strong style="color: #e2e8f0;">${data.targetKeyword}</strong> • Estimated Job Value: <strong style="color: #10b981;">${data.targetJobValue}</strong>
                     </p>
 
-                    <!-- 1-CLICK PUBLISH HERO BUTTON -->
+                    <!-- DUAL ACTION BUTTONS: PREVIEW & PUBLISH -->
                     <div style="margin-top: 14px;">
-                      <a href="${publishUrl}" target="_blank" style="display: inline-block; background-color: #FFAA4F; color: #020617; font-weight: 800; font-size: 14px; padding: 12px 24px; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(255, 170, 79, 0.35); text-align: center;">
-                        🚀 1-Click Publish to Website →
+                      <a href="${previewUrl}" target="_blank" style="display: inline-block; background-color: #FFAA4F; color: #020617; font-weight: 800; font-size: 13px; padding: 11px 22px; border-radius: 9px; text-decoration: none; box-shadow: 0 4px 12px rgba(255, 170, 79, 0.35); margin-right: 8px; margin-bottom: 8px;">
+                        👁️ View Test Version &amp; Edit →
+                      </a>
+                      <a href="${publishUrl}" target="_blank" style="display: inline-block; background-color: #1e293b; color: #f8fafc; border: 1px solid #334155; font-weight: 700; font-size: 13px; padding: 10px 18px; border-radius: 9px; text-decoration: none; margin-bottom: 8px;">
+                        🚀 1-Click Instant Publish
                       </a>
                     </div>
                   </td>
@@ -150,9 +154,14 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
                 <p style="margin: 0 0 14px; font-size: 13px; color: #94a3b8;">${data.seoArticle.summary}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center; pt: 10px; border-top: 1px solid #1e293b; padding-top: 12px;">
                   <span style="font-size: 11px; color: #64748b;">Target URL: <code style="color: #38bdf8;">/cost-guides/${data.seoArticle.slug}</code></span>
-                  <a href="${publishUrl}" target="_blank" style="display: inline-block; background-color: #FFAA4F; color: #020617; font-size: 12px; font-weight: bold; padding: 6px 14px; border-radius: 6px; text-decoration: none;">
-                    Publish Now →
-                  </a>
+                  <div>
+                    <a href="${previewUrl}" target="_blank" style="display: inline-block; background-color: #334155; color: #f8fafc; font-size: 12px; font-weight: bold; padding: 6px 12px; border-radius: 6px; text-decoration: none; margin-right: 6px;">
+                      👁️ Test Version
+                    </a>
+                    <a href="${publishUrl}" target="_blank" style="display: inline-block; background-color: #FFAA4F; color: #020617; font-size: 12px; font-weight: bold; padding: 6px 12px; border-radius: 6px; text-decoration: none;">
+                      Publish Live →
+                    </a>
+                  </div>
                 </div>
               </div>
             </td>
