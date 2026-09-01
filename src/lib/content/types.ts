@@ -1,9 +1,4 @@
-/**
- * PHASE 4: SEO & CONTENT ENGINE TYPES
- * Conforms to GEMINI.md Section 11, 12 & BUILD_SPEC.md Phase 4
- */
-
-export type ContentStatus = 'draft' | 'review' | 'scheduled' | 'published' | 'archived';
+export type ContentStatus = 'draft' | 'published' | 'archived';
 
 export interface ContentFaq {
   question: string;
@@ -12,6 +7,8 @@ export interface ContentFaq {
 
 export interface CostGuidePriceRow {
   type: string;
+  low?: number;
+  high?: number;
   guideRange: string;
   perM2?: string;
   notes: string;
@@ -31,30 +28,30 @@ export interface CostGuide {
   subtitle: string;
   metaTitle: string;
   metaDescription: string;
-  keywords: string[];
-  category: 'extensions' | 'renovations' | 'kitchens' | 'bathrooms' | 'lofts' | 'outdoor' | 'conversions';
+  keywords?: string[];
+  category: string;
+  status: ContentStatus;
   publishedDate: string;
   lastUpdated: string;
-  status: ContentStatus;
+  author?: {
+    name: string;
+    role: string;
+    avatar?: string;
+  };
   indicativeRange: {
     low: number;
     high: number;
-    unit: string;
     formatted: string;
+    unit: string;
   };
   introParagraphs: string[];
   priceTable: {
     title: string;
+    description?: string;
     rows: CostGuidePriceRow[];
   };
   costFactors: {
     title: string;
-    description: string;
-  }[];
-  projectSizeConsiderations: {
-    sizeCategory: string;
-    dimensions: string;
-    typicalCost: string;
     description: string;
   }[];
   finishLevels: {
@@ -71,6 +68,12 @@ export interface CostGuide {
     description: string;
   }[];
   faqs: ContentFaq[];
+  projectSizeConsiderations?: any[];
+  hiddenCostTraps?: any[];
+  timelineBreakdown?: any[];
+  costSavingTips?: any[];
+  builderFirstHandAdvice?: any[];
+  realProjectCaseStudy?: any;
   relatedCalculatorSlug: string;
   relatedServiceSlug: string;
   relatedCaseStudySlug: string;
@@ -133,6 +136,12 @@ export interface AdviceArticle {
   };
 }
 
+export interface LocationCostBenchmark {
+  projectType: string;
+  range: string;
+  notes: string;
+}
+
 export interface LocationAreaGuide {
   id: string;
   slug: string;
@@ -145,6 +154,8 @@ export interface LocationAreaGuide {
   keywords: string[];
   heroImage: string;
   intro: string;
+  opportunityScore?: number;
+  tier?: 'TIER_1' | 'TIER_2' | 'TIER_3';
   localArchitecture: {
     title: string;
     description: string;
@@ -155,6 +166,8 @@ export interface LocationAreaGuide {
     permittedDevelopmentNotes: string;
     conservationAreaNotes: string;
   };
+  costBenchmarks?: LocationCostBenchmark[];
+  builderInsights?: string[];
   servicesAvailable: {
     title: string;
     slug: string;
@@ -165,6 +178,10 @@ export interface LocationAreaGuide {
     slug: string;
     type: string;
     summary: string;
+  }[];
+  nearbyAreas?: {
+    name: string;
+    slug: string;
   }[];
   faqs: ContentFaq[];
   relatedCalculatorSlug: string;
