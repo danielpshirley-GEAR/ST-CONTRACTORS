@@ -94,8 +94,13 @@ export function generateContentReportHtml(data: ContentReportPayload): string {
     )
     .join('');
 
-  const previewUrl = `${siteConfig.url}/admin/editorial/preview?slug=${encodeURIComponent(data.seoArticle.slug)}`;
-  const publishUrl = `${siteConfig.url}/admin/editorial/publish?slug=${encodeURIComponent(data.seoArticle.slug)}&title=${encodeURIComponent(data.seoArticle.title)}&category=cost-guides`;
+  const baseUrl =
+    process.env.APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : siteConfig.url);
+
+  const previewUrl = `${baseUrl}/admin/editorial/preview?slug=${encodeURIComponent(data.seoArticle.slug)}`;
+  const publishUrl = `${baseUrl}/admin/editorial/publish?slug=${encodeURIComponent(data.seoArticle.slug)}&title=${encodeURIComponent(data.seoArticle.title)}&category=cost-guides`;
 
   return `
 <!DOCTYPE html>
