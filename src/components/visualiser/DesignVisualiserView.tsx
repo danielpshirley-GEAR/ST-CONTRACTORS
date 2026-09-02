@@ -94,6 +94,10 @@ const PROPERTY_ERA_RULES: Record<PropertyEra, { label: string; rules: string[] }
 
 const SAMPLE_PROMPTS = [
   {
+    label: 'Paint Bedroom, New Flooring & Spotlights',
+    text: 'paint bedroom, change flooring, put in spot lights',
+  },
+  {
     label: 'Decorate Kitchen',
     text: 'decorate kitchen',
   },
