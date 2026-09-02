@@ -56,12 +56,12 @@ export const Accordion: React.FC<AccordionProps> = ({
           <div key={idx} className="py-4 sm:py-5">
             <button
               onClick={() => toggleItem(idx)}
-              className="flex w-full items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFAA4F] rounded-sm group transition-colors"
+              className="flex w-full items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFAA4F] rounded-sm group transition-colors cursor-pointer"
               aria-expanded={isOpen}
             >
               <span
                 className={clsx(
-                  'text-base sm:text-lg font-medium pr-4 transition-colors',
+                  'text-base sm:text-lg font-bold pr-4 transition-colors',
                   isLiquid
                     ? 'text-white group-hover:text-[#FFAA4F] drop-shadow-xs'
                     : isDark
@@ -76,11 +76,11 @@ export const Accordion: React.FC<AccordionProps> = ({
                   'flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center transition-all duration-200',
                   isLiquid
                     ? isOpen
-                      ? 'rotate-180 bg-[#FFAA4F] text-neutral-950 font-bold shadow-md'
-                      : 'bg-white/15 text-white border border-white/30 group-hover:bg-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]'
+                      ? 'rotate-180 bg-[#FFAA4F] text-slate-950 font-extrabold shadow-md'
+                      : 'bg-black/35 text-white border border-white/35 group-hover:bg-black/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]'
                     : isDark
                     ? isOpen
-                      ? 'rotate-180 bg-[#FFAA4F] text-slate-950'
+                      ? 'rotate-180 bg-[#FFAA4F] text-slate-950 font-bold'
                       : 'bg-slate-800 text-slate-300'
                     : isOpen
                     ? 'rotate-180 bg-[#FFAA4F]/20 text-[#FFAA4F]'
@@ -95,7 +95,7 @@ export const Accordion: React.FC<AccordionProps> = ({
                 className={clsx(
                   'mt-3 pr-8 text-sm sm:text-base leading-relaxed',
                   isLiquid
-                    ? 'text-white/90 drop-shadow-xs font-normal'
+                    ? 'text-white/95 font-medium drop-shadow-xs'
                     : isDark
                     ? 'text-slate-300 font-normal'
                     : 'text-slate-600'
