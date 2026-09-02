@@ -58,23 +58,121 @@ export type CRMStage =
   | 'lost'
   | 'future_opportunity';
 
+export interface ServiceQuickFact {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
+export interface ServiceTypeOption {
+  title: string;
+  description: string;
+  advantages: string[];
+  disadvantages: string[];
+  spaceRequired?: string;
+  costTier: string;
+  planningNotes: string;
+}
+
+export type ServiceComparisonRow = Record<string, string>;
+
+export interface ServiceDesignIdea {
+  title: string;
+  description: string;
+  category: string;
+}
+
+export interface ServiceCostFactor {
+  title: string;
+  explanation: string;
+}
+
+export interface ServiceJargonItem {
+  term: string;
+  plainEnglishMeaning: string;
+}
+
+export interface ServiceMistakeItem {
+  mistake: string;
+  whyItCausesProblems: string;
+  howToAvoid: string;
+}
+
+export interface ServiceDecisionScenario {
+  scenario: string;
+  recommendation: string;
+  why: string;
+}
+
+export interface ServiceTimelinePhase {
+  phase: string;
+  duration: string;
+  description: string;
+}
+
 export interface ServiceDefinition {
   id: string;
   slug: string;
   title: string;
+  h1: string;
+  seoTitle: string;
+  metaDescription: string;
+  primarySearchIntent: string;
+  secondaryTopics: string[];
   shortDescription: string;
   fullDescription: string;
   iconName: string;
   heroImage: string;
   indicativePriceRange: string;
   typicalDuration: string;
+  quickFacts: ServiceQuickFact[];
   keyBenefits: string[];
+  whatIs: {
+    summary: string;
+    problemsSolved: string[];
+    suitableFor: string[];
+    whenAlternativeBetter: string;
+  };
+  typesAndOptions: ServiceTypeOption[];
+  comparisonTable?: {
+    headers: string[];
+    rows: ServiceComparisonRow[];
+  };
+  designIdeas: ServiceDesignIdea[];
+  homeownerChecklist: string[];
+  costFactorsDetailed: ServiceCostFactor[];
+  budgetFormula: {
+    constructionPercent: string;
+    feesPercent: string;
+    finishesPercent: string;
+    contingencyPercent: string;
+    notes: string;
+  };
   stages: {
     title: string;
     description: string;
   }[];
+  timelinePhasing?: ServiceTimelinePhase[];
+  technicalJargonBuster: ServiceJargonItem[];
+  planningAndRegulations: {
+    planningPermission: string;
+    permittedDevelopment: string;
+    buildingRegulations: string;
+    partyWallNotes?: string;
+  };
   planningGuidance: string;
   costDrivers: string[];
+  londonPropertyRealities: {
+    title: string;
+    description: string;
+  }[];
+  commonMistakes: ServiceMistakeItem[];
+  decisionMatrix: ServiceDecisionScenario[];
+  connectedCalculator?: {
+    slug: string;
+    title: string;
+    ctaText: string;
+  };
   faqs: {
     question: string;
     answer: string;
