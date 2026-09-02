@@ -19,5 +19,15 @@ export const metadata: Metadata = {
 };
 
 export default function VisualiserPage() {
-  return <DesignVisualiserView />;
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-8">
+          <div className="text-slate-400 text-sm font-medium animate-pulse">Loading Architectural Studio...</div>
+        </div>
+      }
+    >
+      <DesignVisualiserView />
+    </React.Suspense>
+  );
 }
