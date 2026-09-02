@@ -252,99 +252,49 @@ export const TypeformWizard: React.FC = () => {
 
   const handleSubOptionSelect = (questionId: string, parentOptionId: string, subOptionId: string) => {
     setAnswers((prev) => {
-      const parentList = (prev[questionId] as string[]) || [];
+      const list = (prev[questionId] as string[]) || [];
+      const isParentSelected = list.includes(parentOptionId);
+      const updatedList = isParentSelected ? list : [...list, parentOptionId];
+
       const subMapKey = `${questionId}_suboptions_map`;
       const currentMap = { ...((prev[subMapKey] as Record<string, string>) || {}) };
 
-      const isCurrentlySelected = currentMap[parentOptionId] === subOptionId;
-
-      if (isCurrentlySelected) {
-        // Deselect if already active
+      if (currentMap[parentOptionId] === subOptionId) {
         delete currentMap[parentOptionId];
       } else {
-        // Enforce 1 choice per category (single select)
         currentMap[parentOptionId] = subOptionId;
       }
 
       const flatSubs = Object.values(currentMap);
       const subKey = `${questionId}_suboptions`;
 
-      // Automatically select parent if choosing a subOption
-      let updatedParents = parentList;
-      if (!isCurrentlySelected && !parentList.includes(parentOptionId)) {
-        updatedParents = [...parentList, parentOptionId];
-      }
-
       return {
         ...prev,
-        [questionId]: updatedParents,
+        [questionId]: updatedList,
         [subMapKey]: currentMap,
         [subKey]: flatSubs,
       };
     });
   };
 
-  // Finish quiz and generate scope
-  const handleCompleteQuiz = () => {
-    if (!selectedProjectType) return;
+  // Validation for Current Step
+  const isCurrentStepValid = (): boolean => {
+    if (!currentQuestion) return false;
+    const val = answers[currentQuestion.id];
 
-    let finishLevel: FinishLevel = 'standard';
-    const finishKey = `${selectedProjectType}_finish`;
-    if (answers[finishKey]) {
-      const f = answers[finishKey];
-      if (f === 'luxury') finishLevel = 'luxury';
-      else if (f === 'premium') finishLevel = 'premium';
-      else if (f === 'budget' || f === 'simple') finishLevel = 'budget';
+    if (currentQuestion.type === 'single_choice' || currentQuestion.type === 'dimension_input') {
+      return Boolean(val);
     }
-
-    const inputData: ComprehensivePlannerInput = {
-      projectType: selectedProjectType,
-      customerGoals: answers.detected_goals || ['High quality renovation', 'Modern design'],
-      customDescription: answers[`${selectedProjectType}_notes`] || answers.custom_notes || '',
-      propertyType: answers.property_style || 'terraced',
-      propertyAge: answers.property_age || 'pre_1900',
-      postcode: answers.postcode || 'W4 1PR',
-      selectedAreas: [
-        {
-          id: `area-${selectedProjectType}`,
-          name: PROJECT_TYPE_OPTIONS.find((p) => p.id === selectedProjectType)?.label || 'Project Area',
-          sizeCategory: 'medium',
-          lengthMeters: customLength,
-          widthMeters: customWidth,
-        },
-      ],
-      finishLevel,
-      projectStatus: answers.project_stage || 'starting_to_plan',
-      timeline: answers.timeline || '1_3_months',
-      budgetRange: '50k_100k',
-    };
-
-    const generatedScope = generateRoomByRoomScope(inputData, answers);
-    const generatedRecs = generateContextualRecommendations(inputData);
-
-    setScopeItems(generatedScope);
-    setRecommendations(generatedRecs);
-    setIsQuizComplete(true);
-
-    try {
-      updateActiveProjectProfile({
-        projectTypes: [selectedProjectType as any],
-        propertyType: answers.property_style || 'terraced',
-        propertyEra: answers.property_age || 'victorian',
-        location: { postcode: answers.postcode || 'W4 1PR' },
-        customerDescription: answers[`${selectedProjectType}_notes`] || answers.custom_notes || '',
-        customerGoals: answers.detected_goals || ['High quality renovation', 'Modern design'],
-        timelineTarget: answers.timeline === 'asap' ? 'immediate' : '1_to_3_months',
-        specificationTier: finishLevel === 'luxury' ? 'premium' : finishLevel === 'premium' ? 'recommended' : 'essential',
-      });
-      trackEvent('project_created', {
-        projectType: selectedProjectType,
-        propertyType: answers.property_style,
-        postcode: answers.postcode,
-      });
-    } catch (e) {
-      console.warn('Could not sync profile on quiz completion:', e);
+    if (currentQuestion.type === 'multiple_choice') {
+      return Array.isArray(val) && val.length > 0;
     }
+    if (currentQuestion.type === 'property_and_postcode') {
+      return Boolean(answers.postcode && answers.property_style);
+    }
+    if (currentQuestion.type === 'timeline_and_stage') {
+      return Boolean(answers.timeline && answers.project_stage);
+    }
+    return true;
   };
 
   // Navigation handlers
@@ -364,67 +314,117 @@ export const TypeformWizard: React.FC = () => {
     }
   };
 
-  // Validation
-  const isCurrentStepValid = (): boolean => {
-    if (!currentQuestion) return false;
-    const answer = answers[currentQuestion.id];
+  // Final Synthesis & Scope Generation
+  const handleCompleteQuiz = () => {
+    if (!selectedProjectType) return;
 
-    switch (currentQuestion.type) {
-      case 'single_choice':
-        return Boolean(answer);
-      case 'multiple_choice':
-        return Array.isArray(answer) && answer.length > 0;
-      case 'dimension_input':
-        return Boolean(answer);
-      case 'free_text':
-        return true;
-      case 'property_and_postcode':
-        return Boolean(answers.postcode && answers.postcode.trim().length >= 3);
-      case 'timeline_and_stage':
-        return Boolean(answers.timeline && answers.project_stage);
-      default:
-        return true;
+    let finishTier: FinishLevel = 'premium';
+    const finishAns = answers.specification_tier || answers.finish_level;
+    if (finishAns === 'luxury' || finishAns === 'master') finishTier = 'luxury';
+    if (finishAns === 'essential' || finishAns === 'standard') finishTier = 'standard';
+
+    let lengthMeters = 5.0;
+    let widthMeters = 4.0;
+    const dimAns = answers.extension_size || answers.room_size || answers.dimension_size;
+
+    if (dimAns === 'small') {
+      lengthMeters = 4.0;
+      widthMeters = 3.0;
+    } else if (dimAns === 'medium') {
+      lengthMeters = 5.0;
+      widthMeters = 4.0;
+    } else if (dimAns === 'large') {
+      lengthMeters = 6.5;
+      widthMeters = 4.5;
+    } else if (dimAns === 'exact') {
+      lengthMeters = customLength;
+      widthMeters = customWidth;
+    }
+
+    const glazingList = (answers.glazing_features_suboptions || answers.glazing_features || []) as string[];
+    const structuralList = (answers.structural_works_suboptions || answers.structural_works || []) as string[];
+    const interiorList = (answers.interior_finishes_suboptions || answers.interior_finishes || []) as string[];
+    const heatingElectricsList = (answers.heating_electrics_suboptions || answers.heating_electrics || []) as string[];
+    const externalList = (answers.external_cladding_suboptions || answers.external_cladding || []) as string[];
+
+    const plannerInput: ComprehensivePlannerInput = {
+      projectType: selectedProjectType,
+      customerGoals: (answers.detected_goals as string[]) || ['High quality finish', 'Optimal space layout'],
+      postcode: answers.postcode || 'W4 1PR',
+      propertyType: answers.property_style || 'terraced',
+      propertyAge: answers.property_age || 'pre_1900',
+      finishLevel: finishTier,
+      timeline: answers.timeline || '1_3_months',
+      projectStatus: answers.project_stage || 'starting_to_plan',
+      budgetRange: 'guide_indicative',
+      selectedAreas: [
+        {
+          id: `room_${Date.now()}`,
+          name: PROJECT_TYPE_OPTIONS.find((p) => p.id === selectedProjectType)?.label || 'Main Project Area',
+          sizeCategory: dimAns === 'small' ? 'small' : dimAns === 'large' ? 'large' : 'medium',
+          lengthMeters,
+          widthMeters,
+        },
+      ],
+      structuralFeatures: structuralList,
+      glazingChoices: glazingList,
+      interiorSpecialties: interiorList,
+      heatingElectrics: heatingElectricsList,
+      externalFinishes: externalList,
+    };
+
+    const generatedScope = generateRoomByRoomScope(plannerInput, answers);
+    const generatedRecs = generateContextualRecommendations(plannerInput);
+
+    setScopeItems(generatedScope);
+    setRecommendations(generatedRecs);
+    setIsQuizComplete(true);
+
+    try {
+      updateActiveProjectProfile({
+        projectTypes: [selectedProjectType as any],
+        propertyType: plannerInput.propertyType as any,
+        propertyEra: plannerInput.propertyAge as any,
+        location: { postcode: plannerInput.postcode },
+      });
+      trackEvent('planner_quiz_completed', {
+        project_type: selectedProjectType,
+        finish_level: finishTier,
+        scope_items_count: generatedScope.length,
+      });
+    } catch (e) {
+      // safe fallback
     }
   };
 
   // =========================================================================
-  // FINAL SCREEN: ESTIMATE & QUOTE CONFIGURATOR
+  // VIEW: QUOTE CONFIGURATOR / RESULT SCREEN
   // =========================================================================
   if (isQuizComplete && selectedProjectType) {
-    let finishLevel: FinishLevel = 'standard';
-    const finishKey = `${selectedProjectType}_finish`;
-    if (answers[finishKey]) {
-      const f = answers[finishKey];
-      if (f === 'luxury') finishLevel = 'luxury';
-      else if (f === 'premium') finishLevel = 'premium';
-      else if (f === 'budget' || f === 'simple') finishLevel = 'budget';
-    }
-
-    const inputData: ComprehensivePlannerInput = {
+    const plannerInput: ComprehensivePlannerInput = {
       projectType: selectedProjectType,
-      customerGoals: answers.detected_goals || ['High quality renovation', 'Modern design'],
-      customDescription: answers[`${selectedProjectType}_notes`] || answers.custom_notes || '',
+      customerGoals: (answers.detected_goals as string[]) || ['High quality finish', 'Optimal space layout'],
+      postcode: answers.postcode || 'W4 1PR',
       propertyType: answers.property_style || 'terraced',
       propertyAge: answers.property_age || 'pre_1900',
-      postcode: answers.postcode || 'W4 1PR',
+      finishLevel: (answers.specification_tier === 'luxury' ? 'luxury' : answers.specification_tier === 'essential' ? 'standard' : 'premium') as FinishLevel,
+      timeline: answers.timeline || '1_3_months',
+      projectStatus: answers.project_stage || 'starting_to_plan',
+      budgetRange: 'guide_indicative',
       selectedAreas: [
         {
-          id: `area-${selectedProjectType}`,
-          name: PROJECT_TYPE_OPTIONS.find((p) => p.id === selectedProjectType)?.label || 'Project Area',
+          id: 'area_1',
+          name: PROJECT_TYPE_OPTIONS.find((p) => p.id === selectedProjectType)?.label || 'Main Project Area',
           sizeCategory: 'medium',
           lengthMeters: customLength,
           widthMeters: customWidth,
         },
       ],
-      finishLevel,
-      projectStatus: answers.project_stage || 'starting_to_plan',
-      timeline: answers.timeline || '1_3_months',
-      budgetRange: '50k_100k',
     };
 
     return (
       <QuoteConfigurator
-        initialInput={inputData}
+        initialInput={plannerInput}
         initialScopeItems={scopeItems}
         initialRecommendations={recommendations}
         answers={answers}
@@ -434,30 +434,30 @@ export const TypeformWizard: React.FC = () => {
   }
 
   // =========================================================================
-  // SCREEN 0: SELECT PROJECT TYPE (Clean, wide, liquid glass layout)
+  // VIEW: STEP 0 — PROJECT TYPE SELECTOR & NATURAL PROMPT
   // =========================================================================
   if (!selectedProjectType) {
     return (
-      <div className="w-full text-white text-left">
+      <div className="w-full text-white text-left space-y-8">
         {/* Header */}
-        <div className="text-left mb-8 space-y-2">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white font-heading drop-shadow-sm">
+        <div className="text-left space-y-2">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white font-heading">
             What are you building or changing?
           </h1>
-          <p className="text-sm sm:text-base text-white/90 leading-relaxed font-normal max-w-2xl drop-shadow-xs">
+          <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-2xl">
             Select your project type below to get a tailored estimate with questions specific to your home.
           </p>
         </div>
 
         <div className="w-full space-y-8">
-          {/* Natural Language Prompt (Light Clear Liquid Glass Card) */}
-          <div className="rounded-2xl border border-white/35 bg-white/[0.12] backdrop-blur-xl p-5 sm:p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_8px_24px_rgba(0,0,0,0.2)] space-y-3">
+          {/* Natural Language Prompt Card */}
+          <div className="rounded-2xl border-2 border-slate-700 bg-slate-800 p-5 sm:p-6 shadow-xl space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-white flex items-center gap-2">
+              <label className="text-sm font-bold text-white flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#FFAA4F]" />
                 <span>Not sure? Describe what you&apos;re thinking</span>
               </label>
-              <span className="text-xs text-white/80 font-medium hidden sm:inline">
+              <span className="text-xs text-slate-300 font-medium hidden sm:inline">
                 Instant AI match
               </span>
             </div>
@@ -467,11 +467,11 @@ export const TypeformWizard: React.FC = () => {
               placeholder="e.g. I want to renovate my family bathroom, install a walk-in rainfall shower, underfloor heating and new wall tiles..."
               value={naturalText}
               onChange={(e) => setNaturalText(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-white/30 bg-white/[0.12] text-sm text-white placeholder:text-white/60 focus:outline-hidden focus:ring-2 focus:ring-[#FFAA4F] focus:border-white/60 focus:bg-white/[0.2] transition-all leading-relaxed backdrop-blur-md"
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-900 text-sm text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#FFAA4F] focus:border-[#FFAA4F] transition-all leading-relaxed shadow-inner"
             />
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
-              <p className="text-xs text-white/80">
+              <p className="text-xs text-slate-400">
                 Type your description to auto-select your project category.
               </p>
               {naturalText.trim().length > 3 && (
@@ -481,7 +481,7 @@ export const TypeformWizard: React.FC = () => {
                   disabled={isInterpretingText}
                   variant="primary"
                   size="sm"
-                  className="bg-[#FFAA4F] text-neutral-950 hover:bg-[#F59E3F] text-xs font-bold px-4 py-2 shrink-0 self-end sm:self-auto border border-[#E69335] shadow-md"
+                  className="bg-[#FFAA4F] text-slate-950 hover:bg-[#F59E3F] text-xs font-bold px-4 py-2 shrink-0 self-end sm:self-auto border border-[#E69335] shadow-md"
                   rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
                 >
                   {isInterpretingText ? 'Detecting...' : 'Start Tailored Quiz'}
@@ -493,14 +493,14 @@ export const TypeformWizard: React.FC = () => {
           {/* Subtle Divider */}
           <div className="relative text-center my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/25" />
+              <div className="w-full border-t border-slate-750" />
             </div>
-            <div className="relative inline-block bg-white/[0.2] backdrop-blur-md px-4 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-white border border-white/35 shadow-xs">
+            <div className="relative inline-block bg-slate-800 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-slate-300 border border-slate-700 shadow-xs">
               Or choose your project type
             </div>
           </div>
 
-          {/* Core Project Cards (Clear White Liquid Glass Grid) */}
+          {/* Core Project Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {PROJECT_TYPE_OPTIONS.map((item) => (
               <button
@@ -510,17 +510,17 @@ export const TypeformWizard: React.FC = () => {
                   setSelectedProjectType(item.id as ProjectType);
                   setActiveQuestionIndex(0);
                 }}
-                className="p-5 rounded-2xl border border-white/30 bg-white/[0.12] hover:bg-white/[0.22] hover:border-white/60 backdrop-blur-xl transition-all text-left flex items-start justify-between gap-4 group cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_8px_20px_rgba(0,0,0,0.2)]"
+                className="p-5 rounded-2xl border-2 border-slate-700 bg-slate-800 hover:bg-slate-750 hover:border-slate-500 transition-all text-left flex items-start justify-between gap-4 group cursor-pointer shadow-lg"
               >
                 <div className="space-y-1">
-                  <div className="font-bold text-white text-base font-heading group-hover:text-[#FFAA4F] transition-colors drop-shadow-xs">
+                  <div className="font-bold text-white text-base font-heading group-hover:text-[#FFAA4F] transition-colors">
                     {item.label}
                   </div>
-                  <div className="text-xs text-white/80 leading-relaxed font-normal">
+                  <div className="text-xs text-slate-300 leading-relaxed font-normal">
                     {item.desc}
                   </div>
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/70 group-hover:text-[#FFAA4F] group-hover:translate-x-1 transition-all shrink-0 mt-1" />
+                <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-[#FFAA4F] group-hover:translate-x-1 transition-all shrink-0 mt-1" />
               </button>
             ))}
           </div>
@@ -537,24 +537,24 @@ export const TypeformWizard: React.FC = () => {
   const activeTypeInfo = PROJECT_TYPE_OPTIONS.find((p) => p.id === selectedProjectType);
 
   return (
-    <div className="w-full text-white text-left">
+    <div className="w-full text-white text-left space-y-6">
       {/* Transferred AI Assistant Banner */}
       {transferredAssistantProject && (
-        <div className="mb-6 p-4 rounded-2xl bg-[#FFAA4F]/20 border border-[#FFAA4F]/40 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_8px_20px_rgba(0,0,0,0.2)] text-left backdrop-blur-xl">
+        <div className="p-4 rounded-2xl bg-amber-950/70 border-2 border-amber-500/60 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg text-left">
           <div className="space-y-0.5">
-            <div className="text-xs font-bold text-[#FFAA4F] flex items-center gap-1.5 drop-shadow-xs">
+            <div className="text-xs font-bold text-[#FFAA4F] flex items-center gap-1.5">
               <Sparkles className="h-4 w-4 text-[#FFAA4F] shrink-0" />
               <span>Pre-filled from AI Assistant: {transferredAssistantProject.projectTypeDisplay}</span>
             </div>
-            <p className="text-[11px] text-white/90 font-normal line-clamp-1">
-              "{transferredAssistantProject.originalDescription}"
+            <p className="text-xs text-slate-200 font-normal line-clamp-1">
+              &quot;{transferredAssistantProject.originalDescription}&quot;
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleCompleteQuiz}
-            className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-[#FFAA4F] hover:bg-[#F59E3F] text-neutral-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer border border-[#E69335] shrink-0"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-colors cursor-pointer border border-[#E69335] shrink-0"
           >
             <span>View Full Estimate Now</span>
             <ArrowRight className="h-3.5 w-3.5" />
@@ -563,17 +563,17 @@ export const TypeformWizard: React.FC = () => {
       )}
 
       {/* Progress & Category Banner */}
-      <div className="mb-6 space-y-2.5">
-        <div className="flex items-center justify-between text-xs font-medium text-white/90 drop-shadow-xs">
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-white">{activeTypeInfo?.label}</span>
+            <span className="font-bold text-white">{activeTypeInfo?.label}</span>
             <span>•</span>
             <span>Question {activeQuestionIndex + 1} of {totalQuestions}</span>
           </div>
-          <span className="font-semibold text-[#FFAA4F]">{currentProgress}%</span>
+          <span className="font-bold text-[#FFAA4F]">{currentProgress}%</span>
         </div>
 
-        <div className="w-full bg-white/25 h-1.5 rounded-full overflow-hidden">
+        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
           <div
             className="bg-[#FFAA4F] h-full transition-all duration-300 rounded-full"
             style={{ width: `${currentProgress}%` }}
@@ -581,20 +581,20 @@ export const TypeformWizard: React.FC = () => {
         </div>
       </div>
 
-      {/* Dynamic Question Container (Lighter Clear Liquid Glass) */}
-      <div className="w-full bg-white/[0.12] backdrop-blur-2xl rounded-2xl border border-white/35 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_15px_35px_rgba(0,0,0,0.25)] p-6 sm:p-8 text-left">
+      {/* Dynamic Question Container */}
+      <div className="w-full bg-slate-800/90 rounded-2xl border-2 border-slate-700 shadow-xl p-6 sm:p-8 text-left">
         {currentQuestion && (
           <div className="space-y-6">
             {/* Question Header */}
             <div className="space-y-1">
-              <span className="text-[11px] font-semibold text-[#FFAA4F] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#FFAA4F] uppercase tracking-wider block">
                 Step {activeQuestionIndex + 1}
               </span>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-heading drop-shadow-xs">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-heading">
                 {currentQuestion.title}
               </h2>
               {currentQuestion.subtitle && (
-                <p className="text-xs sm:text-sm text-white/85 pt-0.5">
+                <p className="text-xs sm:text-sm text-slate-300 pt-0.5 font-normal leading-relaxed">
                   {currentQuestion.subtitle}
                 </p>
               )}
@@ -602,7 +602,7 @@ export const TypeformWizard: React.FC = () => {
 
             {/* 1. SINGLE CHOICE QUESTION */}
             {currentQuestion.type === 'single_choice' && currentQuestion.options && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                 {currentQuestion.options.map((opt) => {
                   const isSelected = answers[currentQuestion.id] === opt.id;
                   return (
@@ -611,31 +611,31 @@ export const TypeformWizard: React.FC = () => {
                       key={opt.id}
                       onClick={() => handleSingleSelect(currentQuestion.id, opt.id)}
                       className={clsx(
-                        'p-4 rounded-xl border text-left transition-all duration-150 flex items-start justify-between gap-3 cursor-pointer backdrop-blur-sm',
+                        'p-5 rounded-2xl border-2 text-left transition-all duration-150 flex items-start justify-between gap-3 cursor-pointer shadow-md',
                         isSelected
-                          ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 text-white ring-1 ring-[#FFAA4F]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                          : 'border-white/25 bg-white/[0.10] text-white hover:border-white/50 hover:bg-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]'
+                          ? 'border-[#FFAA4F] bg-amber-950/40 text-white ring-2 ring-[#FFAA4F]'
+                          : 'border-slate-700 bg-slate-900/90 text-white hover:border-slate-500 hover:bg-slate-900'
                       )}
                     >
-                      <div className="space-y-0.5">
-                        <div className="font-bold text-white text-sm font-heading drop-shadow-xs">
+                      <div className="space-y-1">
+                        <div className="font-bold text-white text-sm sm:text-base font-heading">
                           {opt.label}
                         </div>
                         {opt.desc && (
-                          <div className="text-xs text-white/80 leading-snug font-normal">
+                          <div className="text-xs text-slate-300 leading-relaxed font-normal">
                             {opt.desc}
                           </div>
                         )}
                       </div>
                       <div
                         className={clsx(
-                          'h-4.5 w-4.5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-colors',
+                          'h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors',
                           isSelected
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F] text-neutral-950'
-                            : 'border-white/40 bg-white/10'
+                            ? 'border-[#FFAA4F] bg-[#FFAA4F] text-slate-950'
+                            : 'border-slate-500 bg-slate-800'
                         )}
                       >
-                        {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-neutral-950" />}
+                        {isSelected && <div className="h-2 w-2 rounded-full bg-slate-950" />}
                       </div>
                     </button>
                   );
@@ -645,8 +645,8 @@ export const TypeformWizard: React.FC = () => {
 
             {/* 2. MULTIPLE CHOICE QUESTION (With Clean Sub-Options) */}
             {currentQuestion.type === 'multiple_choice' && currentQuestion.options && (
-              <div className="space-y-3 pt-1">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-3.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {currentQuestion.options.map((opt) => {
                     const selectedList = (answers[currentQuestion.id] as string[]) || [];
                     const isSelected = selectedList.includes(opt.id);
@@ -660,45 +660,45 @@ export const TypeformWizard: React.FC = () => {
                         key={opt.id}
                         onClick={() => handleMultiSelect(currentQuestion.id, opt.id)}
                         className={clsx(
-                          'p-4 rounded-xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer space-y-3 backdrop-blur-sm',
+                          'p-5 rounded-2xl border-2 text-left transition-all duration-150 flex flex-col justify-between cursor-pointer space-y-3 shadow-md',
                           isSelected
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 ring-1 ring-[#FFAA4F]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                            : 'border-white/25 bg-white/[0.10] hover:border-white/50 hover:bg-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]'
+                            ? 'border-[#FFAA4F] bg-amber-950/40 ring-2 ring-[#FFAA4F]'
+                            : 'border-slate-700 bg-slate-900/90 hover:border-slate-500 hover:bg-slate-900'
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <div className="space-y-0.5 flex-1">
-                            <div className="font-bold text-white text-sm font-heading drop-shadow-xs">
+                          <div className="space-y-1 flex-1">
+                            <div className="font-bold text-white text-sm sm:text-base font-heading">
                               {opt.label}
                             </div>
                             {opt.desc && (
-                              <div className="text-xs text-white/80 leading-relaxed font-normal">
+                              <div className="text-xs text-slate-300 leading-relaxed font-normal">
                                 {opt.desc}
                               </div>
                             )}
                           </div>
                           <div
                             className={clsx(
-                              'h-4.5 w-4.5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-colors',
+                              'h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors',
                               isSelected
-                                ? 'bg-[#FFAA4F] border-[#FFAA4F] text-neutral-950 font-bold'
-                                : 'border-white/40 bg-white/10'
+                                ? 'bg-[#FFAA4F] border-[#FFAA4F] text-slate-950 font-bold'
+                                : 'border-slate-500 bg-slate-800'
                             )}
                           >
-                            {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                            {isSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
                           </div>
                         </div>
 
-                        {/* Sub-Options Tray (Single Option Selection per Feature) */}
+                        {/* Sub-Options Tray */}
                         {optSubs.length > 0 && (
                           <div
                             onClick={(e) => e.stopPropagation()}
-                            className="pt-2.5 border-t border-white/20 space-y-1.5"
+                            className="pt-3 border-t border-slate-700/80 space-y-2"
                           >
-                            <div className="flex items-center justify-between text-[11px] font-medium text-white/90">
+                            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
                               <span>Choose 1 option:</span>
                               {selectedSubCount > 0 && (
-                                <span className="text-neutral-950 font-bold bg-[#FFAA4F] px-2 py-0.5 rounded-full text-[10px]">
+                                <span className="text-slate-950 font-bold bg-[#FFAA4F] px-2 py-0.5 rounded-full text-[10px]">
                                   1 selected
                                 </span>
                               )}
@@ -713,16 +713,16 @@ export const TypeformWizard: React.FC = () => {
                                     key={sub.id}
                                     onClick={() => handleSubOptionSelect(currentQuestion.id, opt.id, sub.id)}
                                     className={clsx(
-                                      'px-2.5 py-1 rounded-lg text-xs transition-all text-left flex items-center gap-1.5 cursor-pointer border',
+                                      'px-3 py-1.5 rounded-xl text-xs transition-all text-left flex items-center gap-1.5 cursor-pointer border',
                                       isSubActive
-                                        ? 'bg-[#FFAA4F] text-neutral-950 border-[#E69335] font-bold shadow-sm'
-                                        : 'bg-white/[0.14] text-white border-white/25 hover:bg-white/[0.24]'
+                                        ? 'bg-[#FFAA4F] text-slate-950 border-[#E69335] font-bold shadow-sm'
+                                        : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-750 hover:text-white'
                                     )}
                                   >
                                     {isSubActive ? (
-                                      <Check className="h-3 w-3 stroke-[3] text-neutral-950 shrink-0" />
+                                      <Check className="h-3 w-3 stroke-[3] text-slate-950 shrink-0" />
                                     ) : (
-                                      <span className="text-white/60 text-xs">•</span>
+                                      <span className="text-slate-500 text-xs">•</span>
                                     )}
                                     <span>{sub.label}</span>
                                   </button>
@@ -741,7 +741,7 @@ export const TypeformWizard: React.FC = () => {
             {/* 3. DIMENSION / SIZE INPUT */}
             {currentQuestion.type === 'dimension_input' && currentQuestion.options && (
               <div className="space-y-4 pt-1">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                   {currentQuestion.options.map((opt) => {
                     const isSelected = answers[currentQuestion.id] === opt.id;
                     return (
@@ -750,14 +750,14 @@ export const TypeformWizard: React.FC = () => {
                         key={opt.id}
                         onClick={() => handleSingleSelect(currentQuestion.id, opt.id)}
                         className={clsx(
-                          'p-4 rounded-xl border text-left transition-all cursor-pointer space-y-0.5 backdrop-blur-sm',
+                          'p-5 rounded-2xl border-2 text-left transition-all cursor-pointer space-y-1 shadow-md',
                           isSelected
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 ring-1 ring-[#FFAA4F]/60 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                            : 'border-white/25 bg-white/[0.10] hover:border-white/50 hover:bg-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]'
+                            ? 'border-[#FFAA4F] bg-amber-950/40 ring-2 ring-[#FFAA4F] text-white'
+                            : 'border-slate-700 bg-slate-900/90 text-white hover:border-slate-500 hover:bg-slate-900'
                         )}
                       >
-                        <div className="font-bold text-white text-sm font-heading drop-shadow-xs">{opt.label}</div>
-                        {opt.desc && <div className="text-xs text-white/80 leading-snug font-normal">{opt.desc}</div>}
+                        <div className="font-bold text-white text-sm sm:text-base font-heading">{opt.label}</div>
+                        {opt.desc && <div className="text-xs text-slate-300 leading-relaxed font-normal">{opt.desc}</div>}
                       </button>
                     );
                   })}
@@ -765,17 +765,17 @@ export const TypeformWizard: React.FC = () => {
 
                 {/* Exact measurements */}
                 {answers[currentQuestion.id] === 'exact' && (
-                  <div className="p-4 rounded-xl bg-white/[0.14] border border-white/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+                  <div className="p-5 rounded-2xl bg-slate-900 border-2 border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2 shadow-inner">
                     <div className="flex items-center gap-2">
                       <Ruler className="h-4 w-4 text-[#FFAA4F]" />
-                      <span className="text-xs sm:text-sm font-semibold text-white">
+                      <span className="text-xs sm:text-sm font-bold text-white">
                         Room Dimensions:
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-white/90 font-medium">Length:</span>
+                        <span className="text-xs text-slate-300 font-medium">Length:</span>
                         <input
                           type="number"
                           step="0.5"
@@ -786,15 +786,15 @@ export const TypeformWizard: React.FC = () => {
                             const val = parseFloat(e.target.value);
                             setCustomLength(isNaN(val) || val <= 0 ? 1 : Math.min(50, Math.max(0.5, val)));
                           }}
-                          className="w-16 px-2 py-1.5 rounded-lg border border-white/35 text-xs font-semibold text-center bg-white/25 text-white"
+                          className="w-16 px-2.5 py-1.5 rounded-lg border-2 border-slate-700 text-xs font-bold text-center bg-slate-800 text-white focus:border-[#FFAA4F]"
                         />
-                        <span className="text-xs text-white/90">m</span>
+                        <span className="text-xs text-slate-300">m</span>
                       </div>
 
-                      <span className="text-white/60">×</span>
+                      <span className="text-slate-500">×</span>
 
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-white/90 font-medium">Width:</span>
+                        <span className="text-xs text-slate-300 font-medium">Width:</span>
                         <input
                           type="number"
                           step="0.5"
@@ -805,12 +805,12 @@ export const TypeformWizard: React.FC = () => {
                             const val = parseFloat(e.target.value);
                             setCustomWidth(isNaN(val) || val <= 0 ? 1 : Math.min(50, Math.max(0.5, val)));
                           }}
-                          className="w-16 px-2 py-1.5 rounded-lg border border-white/35 text-xs font-semibold text-center bg-white/25 text-white"
+                          className="w-16 px-2.5 py-1.5 rounded-lg border-2 border-slate-700 text-xs font-bold text-center bg-slate-800 text-white focus:border-[#FFAA4F]"
                         />
-                        <span className="text-xs text-white/90">m</span>
+                        <span className="text-xs text-slate-300">m</span>
                       </div>
 
-                      <span className="text-xs font-bold text-white bg-white/25 px-2.5 py-1.5 rounded-lg border border-white/35">
+                      <span className="text-xs font-bold text-slate-950 bg-[#FFAA4F] px-3 py-1.5 rounded-lg border border-[#E69335] shadow-sm">
                         {(customLength * customWidth).toFixed(1)} m²
                       </span>
                     </div>
@@ -827,9 +827,9 @@ export const TypeformWizard: React.FC = () => {
                   placeholder={currentQuestion.placeholder}
                   value={answers[currentQuestion.id] || ''}
                   onChange={(e) => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-white/30 bg-white/[0.12] text-sm text-white placeholder:text-white/60 focus:outline-hidden focus:ring-2 focus:ring-[#FFAA4F] focus:border-white/60 leading-relaxed backdrop-blur-md"
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-slate-700 bg-slate-900 text-sm text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#FFAA4F] focus:border-[#FFAA4F] leading-relaxed shadow-inner"
                 />
-                <p className="text-xs text-white/80">
+                <p className="text-xs text-slate-400">
                   Optional: Provide any specific details or preferences for your project.
                 </p>
               </div>
@@ -840,7 +840,7 @@ export const TypeformWizard: React.FC = () => {
               <div className="space-y-6 pt-1">
                 {/* Property Style */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/90 block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
                     1. Property Style
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -850,10 +850,10 @@ export const TypeformWizard: React.FC = () => {
                         key={p.id}
                         onClick={() => setAnswers((prev) => ({ ...prev, property_style: p.id }))}
                         className={clsx(
-                          'p-3 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer backdrop-blur-sm',
+                          'p-3.5 rounded-xl border-2 text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-sm',
                           answers.property_style === p.id
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 text-white font-semibold ring-1 ring-[#FFAA4F]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                            : 'border-white/25 bg-white/[0.10] text-white hover:bg-white/[0.20] hover:border-white/40'
+                            ? 'border-[#FFAA4F] bg-amber-950/40 text-white ring-2 ring-[#FFAA4F]'
+                            : 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-850 hover:border-slate-500'
                         )}
                       >
                         <span>{p.label}</span>
@@ -865,7 +865,7 @@ export const TypeformWizard: React.FC = () => {
 
                 {/* Property Era */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/90 block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
                     2. Approximate Property Era
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -875,10 +875,10 @@ export const TypeformWizard: React.FC = () => {
                         key={age.id}
                         onClick={() => setAnswers((prev) => ({ ...prev, property_age: age.id }))}
                         className={clsx(
-                          'p-3 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer backdrop-blur-sm',
+                          'p-3.5 rounded-xl border-2 text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-sm',
                           answers.property_age === age.id
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 text-white font-semibold ring-1 ring-[#FFAA4F]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                            : 'border-white/25 bg-white/[0.10] text-white hover:bg-white/[0.20] hover:border-white/40'
+                            ? 'border-[#FFAA4F] bg-amber-950/40 text-white ring-2 ring-[#FFAA4F]'
+                            : 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-850 hover:border-slate-500'
                         )}
                       >
                         <span>{age.label}</span>
@@ -890,7 +890,7 @@ export const TypeformWizard: React.FC = () => {
 
                 {/* Postcode */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/90 block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
                     3. Project Postcode (London Borough Calibration)
                   </label>
                   <div className="flex items-center gap-2 max-w-xs">
@@ -900,7 +900,7 @@ export const TypeformWizard: React.FC = () => {
                       placeholder="e.g. W4 1PR, SW13 9AA, W5 2UP"
                       value={answers.postcode || ''}
                       onChange={(e) => setAnswers((prev) => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                      className="w-full px-3.5 py-2 rounded-xl border border-white/35 bg-white/[0.14] text-sm font-semibold text-white placeholder:text-white/60 focus:ring-2 focus:ring-[#FFAA4F] focus:outline-hidden"
+                      className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-700 bg-slate-900 text-sm font-bold text-white placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFAA4F] focus:border-[#FFAA4F] focus:outline-hidden"
                     />
                   </div>
                 </div>
@@ -912,7 +912,7 @@ export const TypeformWizard: React.FC = () => {
               <div className="space-y-6 pt-1">
                 {/* Start Timeline */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/90 block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
                     1. Ideal Construction Start Timeline
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -922,10 +922,10 @@ export const TypeformWizard: React.FC = () => {
                         key={opt.id}
                         onClick={() => setAnswers((prev) => ({ ...prev, timeline: opt.id }))}
                         className={clsx(
-                          'p-3 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer backdrop-blur-sm',
+                          'p-3.5 rounded-xl border-2 text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-sm',
                           answers.timeline === opt.id
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 text-white font-semibold ring-1 ring-[#FFAA4F]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                            : 'border-white/25 bg-white/[0.10] text-white hover:bg-white/[0.20] hover:border-white/40'
+                            ? 'border-[#FFAA4F] bg-amber-950/40 text-white ring-2 ring-[#FFAA4F]'
+                            : 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-850 hover:border-slate-500'
                         )}
                       >
                         <span>{opt.label}</span>
@@ -937,8 +937,8 @@ export const TypeformWizard: React.FC = () => {
 
                 {/* Planning / Design Stage */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-white/90 block">
-                    2. Current Planning & Architectural Stage
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+                    2. Current Planning &amp; Architectural Stage
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {STAGE_OPTIONS.map((stage) => (
@@ -947,10 +947,10 @@ export const TypeformWizard: React.FC = () => {
                         key={stage.id}
                         onClick={() => setAnswers((prev) => ({ ...prev, project_stage: stage.id }))}
                         className={clsx(
-                          'p-3.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer backdrop-blur-sm',
+                          'p-4 rounded-xl border-2 text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-sm',
                           answers.project_stage === stage.id
-                            ? 'border-[#FFAA4F] bg-[#FFAA4F]/25 text-white font-semibold ring-1 ring-[#FFAA4F]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(255,170,79,0.25)]'
-                            : 'border-white/25 bg-white/[0.10] text-white hover:bg-white/[0.20] hover:border-white/40'
+                            ? 'border-[#FFAA4F] bg-amber-950/40 text-white ring-2 ring-[#FFAA4F]'
+                            : 'border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-850 hover:border-slate-500'
                         )}
                       >
                         <span>{stage.label}</span>
@@ -963,11 +963,11 @@ export const TypeformWizard: React.FC = () => {
             )}
 
             {/* Navigation Actions */}
-            <div className="pt-6 border-t border-white/20 flex items-center justify-between gap-4">
+            <div className="pt-6 border-t border-slate-700 flex items-center justify-between gap-4">
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-4 py-2.5 rounded-xl border border-white/30 bg-white/[0.10] text-xs font-semibold text-white hover:bg-white/[0.20] transition-colors flex items-center gap-1.5 cursor-pointer backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]"
+                className="px-5 py-3 rounded-xl border-2 border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 hover:bg-slate-750 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-md"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 <span>Back</span>
@@ -978,7 +978,7 @@ export const TypeformWizard: React.FC = () => {
                 onClick={handleNext}
                 disabled={!isCurrentStepValid()}
                 variant="primary"
-                className="bg-[#FFAA4F] hover:bg-[#F59E3F] text-neutral-950 text-xs font-bold px-6 py-2.5 shadow-md disabled:opacity-50 border border-[#E69335]"
+                className="bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 text-xs font-extrabold px-8 py-3.5 shadow-md disabled:opacity-40 border border-[#E69335]"
                 rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
               >
                 {activeQuestionIndex === totalQuestions - 1 ? 'Generate Detailed Estimate' : 'Continue'}

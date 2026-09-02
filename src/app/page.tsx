@@ -338,8 +338,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="w-full bg-white/[0.12] backdrop-blur-3xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.6),0_20px_50px_rgba(0,0,0,0.35)] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/25 before:via-white/[0.04] before:to-transparent before:pointer-events-none">
-            <Accordion items={homepageFaqs} variant="liquid" />
+          <div className="w-full bg-slate-900 p-6 sm:p-10 rounded-3xl border border-slate-700/80 shadow-2xl">
+            <Accordion items={homepageFaqs} variant="dark" />
           </div>
 
           <div className="mt-8 text-left text-xs sm:text-sm text-neutral-300 font-medium">
