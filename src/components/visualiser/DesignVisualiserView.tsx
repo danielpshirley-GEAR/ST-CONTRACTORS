@@ -50,6 +50,7 @@ import {
   FileCheck2,
   HelpCircle,
   PoundSterling,
+  Paintbrush,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -92,6 +93,10 @@ const PROPERTY_ERA_RULES: Record<PropertyEra, { label: string; rules: string[] }
 };
 
 const SAMPLE_PROMPTS = [
+  {
+    label: 'Decorate Kitchen',
+    text: 'decorate kitchen',
+  },
   {
     label: '6m Rear Extension with Crittall & RSJ',
     text: 'I want to build a 6m rear kitchen extension with industrial black steel Crittall doors, knock down the dividing wall with an RSJ beam, wet underfloor heating, oak herringbone flooring, and a quartz kitchen island.',
@@ -173,9 +178,17 @@ export const DesignVisualiserView: React.FC = () => {
       const project: ExtractedProject = data.project;
       setAiAnalysis(project);
 
-      // Dynamically synchronise Visualiser Concept & Settings based on AI interpretation
+      // Dynamically synchronise Visualiser Concept & Perspective
       const lower = query.toLowerCase();
-      if (lower.includes('crittall') || lower.includes('industrial') || lower.includes('black steel')) {
+      const isDecorating = lower.includes('decorate') || lower.includes('paint');
+
+      if (isDecorating || lower.includes('kitchen') && !lower.includes('extension') && !lower.includes('side return')) {
+        // Switch perspective to Interior view
+        setActivePerspective('interior');
+        setSelectedConcept(VISUALISER_CONCEPTS.find((c) => c.id === 'concept-industrial-crittall') || VISUALISER_CONCEPTS[1]);
+        setSelectedGlazing('crittall_steel_doors');
+        setSelectedFlooring('herringbone_engineered_oak');
+      } else if (lower.includes('crittall') || lower.includes('industrial') || lower.includes('black steel')) {
         setSelectedConcept(VISUALISER_CONCEPTS.find((c) => c.id === 'concept-industrial-crittall') || VISUALISER_CONCEPTS[1]);
         setSelectedGlazing('crittall_steel_doors');
         setSelectedFlooring('herringbone_engineered_oak');
@@ -200,6 +213,8 @@ export const DesignVisualiserView: React.FC = () => {
         setFloorAreaM2(36);
       } else if (lower.includes('side return') || lower.includes('garage')) {
         setFloorAreaM2(20);
+      } else if (isDecorating) {
+        setFloorAreaM2(15);
       }
 
       trackEvent('visualiser_ai_interpreted', {
@@ -223,11 +238,16 @@ export const DesignVisualiserView: React.FC = () => {
   const estimatedMinCost = aiAnalysis?.costEstimate?.low ?? Math.round(floorAreaM2 * effectiveCostPerM2 * 0.92);
   const estimatedMaxCost = aiAnalysis?.costEstimate?.high ?? Math.round(floorAreaM2 * effectiveCostPerM2 * 1.15);
 
+  const isCosmeticTask = aiAnalysis?.projectTypeDisplay.toLowerCase().includes('decorating') ||
+    aiAnalysis?.projectTypeDisplay.toLowerCase().includes('painting') ||
+    aiPrompt.toLowerCase().includes('decorate') ||
+    aiPrompt.toLowerCase().includes('paint');
+
   // Calculated Bill of Quantities (BOQ) metrics
-  const estimatedSteelKg = Math.round(floorAreaM2 * 28 + 350);
-  const estimatedExcavationM3 = Number((floorAreaM2 * 0.85).toFixed(1));
-  const estimatedConcreteM3 = Number((floorAreaM2 * 0.38).toFixed(1));
-  const estimatedGlassSpanM = Number((Math.sqrt(floorAreaM2) * 1.2).toFixed(1));
+  const estimatedSteelKg = isCosmeticTask ? 0 : Math.round(floorAreaM2 * 28 + 350);
+  const estimatedExcavationM3 = isCosmeticTask ? 0 : Number((floorAreaM2 * 0.85).toFixed(1));
+  const estimatedConcreteM3 = isCosmeticTask ? 0 : Number((floorAreaM2 * 0.38).toFixed(1));
+  const estimatedGlassSpanM = isCosmeticTask ? 0 : Number((Math.sqrt(floorAreaM2) * 1.2).toFixed(1));
   const estimatedWeeksMin = aiAnalysis?.estimatedTimelineWeeks?.min ?? Math.max(8, Math.round(floorAreaM2 * 0.28 + 4));
   const estimatedWeeksMax = aiAnalysis?.estimatedTimelineWeeks?.max ?? (estimatedWeeksMin + 3);
 
@@ -262,7 +282,7 @@ export const DesignVisualiserView: React.FC = () => {
     const newRoom = {
       id: `visualiser_${selectedConcept.id}_${Date.now()}`,
       roomType: (selectedConcept.category === 'garden_studio' ? 'other' : selectedConcept.category) as any,
-      customName: `${selectedConcept.name} (${floorAreaM2}m²)`,
+      customName: `${aiAnalysis?.projectTypeDisplay || selectedConcept.name} (${floorAreaM2}m²)`,
       lengthMeters: Number(Math.sqrt(floorAreaM2 * 1.3).toFixed(1)),
       widthMeters: Number((floorAreaM2 / Math.sqrt(floorAreaM2 * 1.3)).toFixed(1)),
       specificationTier: 'premium' as const,
@@ -272,12 +292,10 @@ export const DesignVisualiserView: React.FC = () => {
         high: estimatedMaxCost,
       },
       includedWorks: [
-        `Architectural Concept: ${selectedConcept.name}`,
+        `Scope: ${aiAnalysis?.projectTypeDisplay || selectedConcept.name}`,
         `Glazing: ${GLAZING_PRICE_MODIFIERS[selectedGlazing]?.label || selectedGlazing}`,
         `Flooring: ${FLOORING_PRICE_MODIFIERS[selectedFlooring]?.label || selectedFlooring}`,
-        `Estimated Structural Steel: ~${estimatedSteelKg} kg RSJ frame`,
-        `Estimated Groundworks: ${estimatedExcavationM3} m³ excavation + ${estimatedConcreteM3} m³ concrete`,
-        `Property Era Context: ${PROPERTY_ERA_RULES[propertyEra].label}`,
+        isCosmeticTask ? `Surface Prep & Masking Included` : `Estimated Structural Steel: ~${estimatedSteelKg} kg RSJ frame`,
       ],
     };
 
@@ -340,7 +358,7 @@ export const DesignVisualiserView: React.FC = () => {
             selectedAreas: [
               {
                 id: selectedConcept.id,
-                name: selectedConcept.name,
+                name: aiAnalysis?.projectTypeDisplay || selectedConcept.name,
                 sizeCategory: 'medium',
                 lengthMeters: Math.sqrt(floorAreaM2),
                 widthMeters: Math.sqrt(floorAreaM2),
@@ -352,7 +370,7 @@ export const DesignVisualiserView: React.FC = () => {
             lastName: consultationForm.name.split(' ').slice(1).join(' ') || 'Client',
             phone: consultationForm.phone,
             email: consultationForm.email,
-            notes: `Visualiser Config: ${selectedConcept.name} (${floorAreaM2}m²), Glazing: ${selectedGlazing}, Flooring: ${selectedFlooring}. ${consultationForm.notes}`,
+            notes: `Visualiser Config: ${aiAnalysis?.projectTypeDisplay || selectedConcept.name} (${floorAreaM2}m²), Glazing: ${selectedGlazing}, Flooring: ${selectedFlooring}. ${consultationForm.notes}`,
             consultationType: 'site_visit',
           },
           source: 'Architectural Feasibility Studio (/visualiser)',
@@ -384,7 +402,7 @@ export const DesignVisualiserView: React.FC = () => {
               Design Your Project, Calculate Structural Scope &amp; Instant Costs
             </h1>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal max-w-4xl">
-              Type what you are building below in plain English, or configure an architectural style manually. Our engine interprets your scope, calculates 2026 London build prices, presents custom options, details structural steel &amp; BOQ quantities, and highlights critical statutory considerations.
+              Type what you are building below in plain English, or configure an architectural style manually. Our engine interprets your exact scope, calculates realistic 2026 London build prices, presents custom options, details trade quantities, and highlights critical statutory considerations.
             </p>
           </div>
 
@@ -400,7 +418,7 @@ export const DesignVisualiserView: React.FC = () => {
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                Type any simple or complicated project message. We interpret the architectural scope, configure the 3D studio, calculate 2026 prices, provide custom specifications, and detail the necessary trades.
+                Type any simple query (e.g. <em>&quot;decorate kitchen&quot;</em>) or complicated specification (e.g. <em>&quot;6m rear extension with Crittall doors &amp; RSJ knockthrough&quot;</em>). We interpret the real scope, calculate accurate 2026 prices, provide custom specifications, and detail the necessary trade breakdown.
               </p>
             </div>
 
@@ -437,7 +455,7 @@ export const DesignVisualiserView: React.FC = () => {
                   rows={3}
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
-                  placeholder="e.g. I want to build a 6m rear kitchen extension with Crittall steel doors, knock down the dividing wall with an RSJ beam, wet underfloor heating, oak herringbone flooring, and a quartz kitchen island..."
+                  placeholder="e.g. decorate kitchen, or 6m rear kitchen extension with Crittall steel doors, taking down wall to living room..."
                   className="w-full p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/70 text-slate-900 text-sm placeholder:text-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#FFAA4F] focus:border-[#FFAA4F] transition-all resize-y shadow-inner"
                   disabled={isAiLoading}
                 />
@@ -456,7 +474,7 @@ export const DesignVisualiserView: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
                 <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
                   <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                  <span>Instant structural &amp; pricing interpretation • London 2026 Rates</span>
+                  <span>Accurate trade-level scope interpretation • London 2026 Rates</span>
                 </div>
 
                 <Button
@@ -523,15 +541,15 @@ export const DesignVisualiserView: React.FC = () => {
 
                     <div className="text-left sm:text-right space-y-1">
                       <Badge variant="brand" size="sm" className="bg-emerald-100 text-emerald-800 border-emerald-300 font-bold text-xs">
-                        Benchmark: {aiAnalysis.costEstimate?.benchmarkPerM2 || '£2,400 – £3,400 / m²'}
+                        Benchmark: {aiAnalysis.costEstimate?.benchmarkPerM2 || '£18 – £35 / m²'}
                       </Badge>
                       <div className="text-xs text-slate-500 font-medium">
-                        Estimated Timeline: {aiAnalysis.estimatedTimelineWeeks.min}–{aiAnalysis.estimatedTimelineWeeks.max} Weeks
+                        Estimated Timeline: {aiAnalysis.estimatedTimelineWeeks.min}–{aiAnalysis.estimatedTimelineWeeks.max} {aiAnalysis.estimatedTimelineWeeks.max <= 2 ? 'Weeks' : 'Weeks'}
                       </div>
                     </div>
                   </div>
                   <p className="text-xs text-slate-600 border-t border-amber-200/60 pt-2 font-normal">
-                    {aiAnalysis.costEstimate?.notes || 'Includes structural steel RSJ, foundations, architectural glazing, first/second fix MEP, and turnkey plastering.'}
+                    {aiAnalysis.costEstimate?.notes || 'Includes surface preparation, trade labour, trade-grade paints/materials, and clean handover.'}
                   </p>
                 </div>
 
@@ -630,7 +648,7 @@ export const DesignVisualiserView: React.FC = () => {
                   <div className="space-y-4 pt-2">
                     <h4 className="text-lg font-extrabold font-heading text-slate-900 flex items-center gap-2">
                       <FileCheck2 className="h-5 w-5 text-emerald-600" />
-                      <span>Key Things to Consider &amp; Statutory Approvals</span>
+                      <span>Key Things to Consider &amp; Practical Advice</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {aiAnalysis.thingsToConsider.map((item, cIdx) => (
@@ -760,32 +778,36 @@ export const DesignVisualiserView: React.FC = () => {
                 <div className="absolute bottom-0 inset-x-0 p-6 z-10 text-white space-y-2">
                   <div className="flex items-center gap-2">
                     <Badge variant="brand" className="bg-[#FFAA4F] text-slate-950 text-xs font-bold">
-                      {selectedConcept.style === 'contemporary_glass' ? 'Contemporary Glass' : selectedConcept.style === 'industrial_crittall' ? 'Industrial Crittall' : 'Heritage Spec'}
+                      {isCosmeticTask ? 'Surface Decorating' : selectedConcept.style === 'contemporary_glass' ? 'Contemporary Glass' : selectedConcept.style === 'industrial_crittall' ? 'Industrial Crittall' : 'Heritage Spec'}
                     </Badge>
                     <span className="text-xs text-slate-300 font-medium">
-                      Est. Timeline: {estimatedWeeksMin}–{estimatedWeeksMax} Weeks
+                      Est. Timeline: {isCosmeticTask ? '3–5 Days' : `${estimatedWeeksMin}–${estimatedWeeksMax} Weeks`}
                     </span>
                   </div>
 
                   <h2 className="text-xl sm:text-2xl font-bold font-heading leading-tight">
-                    {selectedConcept.name}
+                    {aiAnalysis?.projectTypeDisplay || selectedConcept.name}
                   </h2>
                   <p className="text-xs text-slate-200 line-clamp-2 max-w-xl font-normal">
-                    {selectedConcept.description}
+                    {aiAnalysis?.generalDescription || selectedConcept.description}
                   </p>
 
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/20 text-[11px]">
                     <div>
                       <span className="text-slate-400 block font-normal">Base Rate</span>
-                      <strong className="text-white font-mono">~£{effectiveCostPerM2.toLocaleString()} / m²</strong>
+                      <strong className="text-white font-mono">
+                        {isCosmeticTask ? '£18–£35 / m²' : `~£${effectiveCostPerM2.toLocaleString()} / m²`}
+                      </strong>
                     </div>
                     <div>
                       <span className="text-slate-400 block font-normal">Planning Status</span>
-                      <strong className="text-emerald-400">Permitted Development likely</strong>
+                      <strong className="text-emerald-400">{isCosmeticTask ? 'No Consent Needed' : 'Permitted Development likely'}</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block font-normal">Party Wall</span>
-                      <strong className="text-amber-300">Notices Required (3m rule)</strong>
+                      <span className="text-slate-400 block font-normal">{isCosmeticTask ? 'Surface Prep' : 'Party Wall'}</span>
+                      <strong className={isCosmeticTask ? 'text-emerald-300' : 'text-amber-300'}>
+                        {isCosmeticTask ? 'Degrease & Sand' : 'Notices Required (3m)'}
+                      </strong>
                     </div>
                   </div>
                 </div>
@@ -795,36 +817,61 @@ export const DesignVisualiserView: React.FC = () => {
               <Card className="p-6 bg-white border-slate-200/90 shadow-sm rounded-3xl space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <Hammer className="h-4 w-4 text-[#D97706]" />
+                    {isCosmeticTask ? <Paintbrush className="h-4 w-4 text-[#D97706]" /> : <Hammer className="h-4 w-4 text-[#D97706]" />}
                     <h3 className="font-extrabold text-sm text-slate-900 font-heading">
-                      Calculated Bill of Quantities &amp; Trade Scope ({floorAreaM2} m²)
+                      {isCosmeticTask ? `Calculated Decorating Materials & Trade Scope` : `Calculated Bill of Quantities & Trade Scope (${floorAreaM2} m²)`}
                     </h3>
                   </div>
-                  <span className="text-[11px] font-mono text-slate-400">BS 8110 / Eurocode 3 Spec</span>
+                  <span className="text-[11px] font-mono text-slate-400">{isCosmeticTask ? 'BS 6150 Painting Spec' : 'BS 8110 / Eurocode 3'}</span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Structural Steel</span>
-                    <div className="text-base font-extrabold text-slate-900 font-mono">~{estimatedSteelKg} kg</div>
-                    <span className="text-[10px] text-slate-500 block">Universal Columns &amp; Goalposts</span>
+                {isCosmeticTask ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Surface Area</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">~65 m²</div>
+                      <span className="text-[10px] text-slate-500 block">Ceiling, walls &amp; woodwork</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Paint Volume</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">~15 Litres</div>
+                      <span className="text-[10px] text-slate-500 block">Class 1 scrub-rated emulsion</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Trade Labor</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">24–32 Hours</div>
+                      <span className="text-[10px] text-slate-500 block">Qualified trade decorators</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Protection &amp; Prep</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">100% Covered</div>
+                      <span className="text-[10px] text-slate-500 block">Correx &amp; dust sheeting</span>
+                    </div>
                   </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Soil Excavation</span>
-                    <div className="text-base font-extrabold text-slate-900 font-mono">{estimatedExcavationM3} m³</div>
-                    <span className="text-[10px] text-slate-500 block">London clay trench disposal</span>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Structural Steel</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">~{estimatedSteelKg} kg</div>
+                      <span className="text-[10px] text-slate-500 block">Universal Columns &amp; Goalposts</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Soil Excavation</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">{estimatedExcavationM3} m³</div>
+                      <span className="text-[10px] text-slate-500 block">London clay trench disposal</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Ready-Mix Concrete</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">{estimatedConcreteM3} m³</div>
+                      <span className="text-[10px] text-slate-500 block">C25/30 foundation pour</span>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Glazing Span</span>
+                      <div className="text-base font-extrabold text-slate-900 font-mono">{estimatedGlassSpanM} m linear</div>
+                      <span className="text-[10px] text-slate-500 block">Low-E Solar 1.1 W/m²K</span>
+                    </div>
                   </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Ready-Mix Concrete</span>
-                    <div className="text-base font-extrabold text-slate-900 font-mono">{estimatedConcreteM3} m³</div>
-                    <span className="text-[10px] text-slate-500 block">C25/30 foundation pour</span>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Glazing Span</span>
-                    <div className="text-base font-extrabold text-slate-900 font-mono">{estimatedGlassSpanM} m linear</div>
-                    <span className="text-[10px] text-slate-500 block">Low-E Solar 1.1 W/m²K</span>
-                  </div>
-                </div>
+                )}
               </Card>
 
               {/* Property Era Rules Check */}
@@ -833,7 +880,7 @@ export const DesignVisualiserView: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4 text-emerald-600" />
                     <h3 className="font-extrabold text-sm text-slate-900 font-heading">
-                      London Property Era Feasibility Check
+                      London Property Feasibility &amp; Era Check
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
@@ -871,7 +918,7 @@ export const DesignVisualiserView: React.FC = () => {
                     Customise Specification
                   </h3>
                   <p className="text-xs text-slate-500 mt-1">
-                    Fine-tune floor area, architectural glazing, and subfloor finishes.
+                    Fine-tune room area, architectural glazing, and subfloor finishes.
                   </p>
                 </div>
 
@@ -880,7 +927,7 @@ export const DesignVisualiserView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <label htmlFor="floor-area-slider" className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
                       <Ruler className="h-3.5 w-3.5 text-[#D97706]" />
-                      <span>Planned Floor Area</span>
+                      <span>Planned Room / Build Area</span>
                     </label>
                     <span className="text-xs font-extrabold font-mono bg-amber-50 text-[#D97706] px-2.5 py-1 rounded-lg border border-amber-200">
                       {floorAreaM2} m² ({Math.round(floorAreaM2 * 10.764)} sq ft)
@@ -889,7 +936,7 @@ export const DesignVisualiserView: React.FC = () => {
                   <input
                     id="floor-area-slider"
                     type="range"
-                    min="15"
+                    min="10"
                     max="65"
                     step="1"
                     value={floorAreaM2}
@@ -898,7 +945,7 @@ export const DesignVisualiserView: React.FC = () => {
                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#FFAA4F]"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                    <span>15 m² (Side Return)</span>
+                    <span>10 m² (Kitchen / Room)</span>
                     <span>35 m² (Rear Extension)</span>
                     <span>65 m² (Wrap-around)</span>
                   </div>
@@ -907,7 +954,7 @@ export const DesignVisualiserView: React.FC = () => {
                 {/* Glazing Specification Options */}
                 <div className="space-y-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
-                    Architectural Glazing Specification
+                    Architectural Glazing &amp; Windows
                   </span>
                   <div className="space-y-1.5">
                     {Object.entries(GLAZING_PRICE_MODIFIERS).map(([key, opt]) => (
@@ -962,7 +1009,7 @@ export const DesignVisualiserView: React.FC = () => {
                 <div className="p-5 rounded-2xl bg-slate-950 text-white space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Live Indicative Build Range
+                      Live Indicative Project Range
                     </span>
                     <Badge variant="brand" className="bg-emerald-500 text-slate-950 text-[10px] font-extrabold">
                       2026 London Verified
@@ -974,7 +1021,9 @@ export const DesignVisualiserView: React.FC = () => {
                   </div>
 
                   <p className="text-[11px] text-slate-400 border-t border-slate-800 pt-2 leading-relaxed">
-                    Includes ~{estimatedSteelKg}kg RSJ steelwork, architectural glazing, first/second fix MEP, finishes, project management, and 10% contingency.
+                    {isCosmeticTask
+                      ? 'Includes full surface prep, sugar soap wash, crack repair, 2 coats washable scrub-rated emulsion, satinwood woodwork, and clean handover.'
+                      : `Includes ~${estimatedSteelKg}kg RSJ steelwork, architectural glazing, first/second fix MEP, finishes, project management, and 10% contingency.`}
                   </p>
 
                   <div className="pt-2 space-y-2">
@@ -1027,12 +1076,12 @@ export const DesignVisualiserView: React.FC = () => {
                     Book Site Feasibility Consultation
                   </h3>
                   <p className="text-xs text-slate-600">
-                    A Senior Quantity Surveyor &amp; Structural Builder will inspect your property, verify load paths, and provide a fixed-price quotation.
+                    A Senior Quantity Surveyor &amp; Principal Builder will inspect your property, verify specifications, and provide a fixed-price quotation.
                   </p>
                 </div>
 
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
-                  <div className="font-bold text-slate-900">{selectedConcept.name} ({floorAreaM2} m²)</div>
+                  <div className="font-bold text-slate-900">{aiAnalysis?.projectTypeDisplay || selectedConcept.name} ({floorAreaM2} m²)</div>
                   <div className="text-slate-500">Estimated Guide: £{estimatedMinCost.toLocaleString()} – £{estimatedMaxCost.toLocaleString()}</div>
                 </div>
 
@@ -1103,7 +1152,7 @@ export const DesignVisualiserView: React.FC = () => {
                   Feasibility Request Confirmed
                 </h3>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                  Our Senior Estimating Director will review your specifications ({selectedConcept.name}, ~{floorAreaM2}m²) and call you within 2 business hours.
+                  Our Senior Estimating Director will review your specifications ({aiAnalysis?.projectTypeDisplay || selectedConcept.name}, ~{floorAreaM2}m²) and call you within 2 business hours.
                 </p>
                 <Button
                   onClick={() => {
