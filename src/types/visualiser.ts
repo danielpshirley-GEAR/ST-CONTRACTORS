@@ -1,6 +1,4 @@
-/**
- * Phase 8: AI Visualisation & Design Explorer Engine Types
- */
+export * from './visualiser-scope';
 
 export type ArchitecturalStyle =
   | 'contemporary_glass'
