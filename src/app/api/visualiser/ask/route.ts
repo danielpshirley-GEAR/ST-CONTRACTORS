@@ -1,5 +1,11 @@
+/**
+ * POST /api/visualiser/ask
+ * Context-grounded technical Q&A route with construction safety guardrails.
+ * Complies with Phase 7C Specification (Items 9, 10, 11).
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { askProjectAssistantWithAI } from '@/lib/ai/visualiser-ai';
+import { askVisualiserAI } from '@/lib/ai/visualiser-ai';
 import { ProjectState } from '@/types/visualiser-scope';
 
 export async function POST(req: NextRequest) {
@@ -15,15 +21,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Project context is required.' }, { status: 400 });
     }
 
-    // Call context-grounded AI Assistant with safety guardrails (Item 12, 13, 14)
-    const answer = await askProjectAssistantWithAI(
-      projectState as ProjectState,
-      question
-    );
+    // Call context-grounded AI Assistant with safety guardrails
+    const result = await askVisualiserAI({
+      question,
+      projectState: projectState as ProjectState,
+    });
 
     return NextResponse.json({
       success: true,
-      answer,
+      answer: result.answer,
+      relevantStages: result.relevantStages,
+      safetyNotes: result.safetyNotes,
+      suggestedAction: result.suggestedAction,
     });
   } catch (error) {
     console.error('Error answering project question:', error);

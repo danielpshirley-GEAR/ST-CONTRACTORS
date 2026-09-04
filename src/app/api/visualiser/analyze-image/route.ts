@@ -4,14 +4,13 @@ import { analyzeUploadedAsset } from '@/lib/ai/visualiser-ai';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { url, filename, id } = body;
+    const { url, filename } = body;
 
     if (!url) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
     }
 
     const asset = await analyzeUploadedAsset({
-      id: id || `img-${Date.now()}`,
       url,
       filename: filename || 'uploaded-image.jpg',
     });

@@ -14,18 +14,27 @@ import {
   MapPin,
   Edit2,
   PlusCircle,
+  Sparkles,
 } from 'lucide-react';
 
 interface ProjectBriefCardProps {
   state: ProjectState;
   onEditDimensions: () => void;
   onAddPropertyInfo?: () => void;
+  onUseExampleDimensions?: () => void;
 }
 
-export function ProjectBriefCard({ state, onEditDimensions, onAddPropertyInfo }: ProjectBriefCardProps) {
+export function ProjectBriefCard({
+  state,
+  onEditDimensions,
+  onAddPropertyInfo,
+  onUseExampleDimensions,
+}: ProjectBriefCardProps) {
   const primarySpace = state.spaces[0];
   const isTypeUnknown = !state.property.type.value || state.property.type.value === 'unknown' || state.property.type.value === 'not_provided';
   const isEraUnknown = !state.property.era.value || state.property.era.value === 'unknown' || state.property.era.value === 'not_provided';
+  const hasDimensions = primarySpace?.lengthM?.value !== undefined && primarySpace?.widthM?.value !== undefined;
+  const isExampleModel = primarySpace?.lengthM?.status === 'assumed';
 
   return (
     <div id="section-brief" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
@@ -106,15 +115,25 @@ export function ProjectBriefCard({ state, onEditDimensions, onAddPropertyInfo }:
                 <StatusTag status={state.property.location.status} />
               </span>
             </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-slate-500">Conservation / Listed:</span>
+              <span className="font-bold text-slate-900">
+                {state.property.isConservationArea.value === 'unknown' ? (
+                  <span className="text-slate-400 font-normal italic">Unknown / Not checked</span>
+                ) : (
+                  state.property.isConservationArea.value ? 'Yes' : 'No'
+                )}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Primary Space & Dimensions */}
+        {/* Space Dimensions */}
         <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-heading">
               <Ruler className="h-4 w-4 text-[#FFAA4F]" />
-              <span>Target Space &amp; Dimensions</span>
+              <span>Room Dimensions</span>
             </h3>
             <button
               type="button"
@@ -126,63 +145,81 @@ export function ProjectBriefCard({ state, onEditDimensions, onAddPropertyInfo }:
             </button>
           </div>
 
-          {primarySpace && (
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
-                <span className="text-slate-500">Room Name:</span>
-                <span className="font-bold text-slate-900">{primarySpace.name}</span>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
-                <span className="text-slate-500">Room Footprint:</span>
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  {primarySpace.lengthM.value}m × {primarySpace.widthM.value}m ({primarySpace.areaM2.value} m²)
-                  <StatusTag status={primarySpace.lengthM.status} />
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
-                <span className="text-slate-500">Ceiling Height:</span>
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  {primarySpace.heightM.value}m
-                  <StatusTag status={primarySpace.heightM.status} />
-                </span>
-              </div>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
+              <span className="text-slate-500">Space Name:</span>
+              <span className="font-bold text-slate-900">{primarySpace.name}</span>
             </div>
-          )}
+            <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
+              <span className="text-slate-500">Dimensions:</span>
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                {hasDimensions ? (
+                  <span>
+                    {primarySpace.lengthM.value}m × {primarySpace.widthM.value}m
+                    {primarySpace.heightM.value && ` × ${primarySpace.heightM.value}m`}
+                  </span>
+                ) : (
+                  <span className="text-slate-400 font-normal italic">Not yet provided</span>
+                )}
+                {hasDimensions && <StatusTag status={primarySpace.lengthM.status} />}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
+              <span className="text-slate-500">Floor Area:</span>
+              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                {primarySpace.areaM2.value ? (
+                  <span>~{primarySpace.areaM2.value} m²</span>
+                ) : (
+                  <span className="text-slate-400 font-normal italic">Area not yet calculated</span>
+                )}
+              </span>
+            </div>
+
+            {/* Example Dimensions Action (Item 12, 13) */}
+            {!hasDimensions && onUseExampleDimensions && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={onUseExampleDimensions}
+                  className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl text-amber-900 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Use Typical Dimensions (Example Model 5m × 4m)</span>
+                </button>
+              </div>
+            )}
+
+            {isExampleModel && (
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-800 font-semibold flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>EXAMPLE MODEL — Indicative 5m × 4m dimensions. Not confirmed on site.</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function StatusTag({ status }: { status: string }) {
+function StatusTag({ status }: { status?: string }) {
   if (status === 'confirmed') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
-        <CheckCircle2 className="h-2.5 w-2.5" />
-        <span>Confirmed</span>
-      </span>
-    );
-  }
-  if (status === 'derived') {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-md">
-        <CheckCircle2 className="h-2.5 w-2.5" />
-        <span>Calculated</span>
+      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+        <CheckCircle2 className="w-2.5 h-2.5" /> Confirmed
       </span>
     );
   }
   if (status === 'assumed') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-md">
-        <AlertCircle className="h-2.5 w-2.5" />
-        <span>Assumed</span>
+      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+        <AlertCircle className="w-2.5 h-2.5" /> Assumed
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded-md">
-      <HelpCircle className="h-2.5 w-2.5" />
-      <span>Unknown</span>
+    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+      <HelpCircle className="w-2.5 h-2.5" /> Unknown
     </span>
   );
 }

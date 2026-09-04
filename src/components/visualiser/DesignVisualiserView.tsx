@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ProjectState, FinishTier } from '@/types/visualiser-scope';
+import { ProjectState, FinishTier, StructuralEngineerSpec, VisualConceptHistoryItem } from '@/types/visualiser-scope';
 import { createInitialProjectState, applyProjectChange, restoreProjectVersion } from '@/lib/visualiser/project-state-engine';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
@@ -86,7 +86,7 @@ export function DesignVisualiserView() {
         dimensions: { length: parsedLength, width: parsedWidth },
       });
       setProjectState(initial);
-      if (initial.spaces[0]) {
+      if (initial.spaces[0] && initial.spaces[0].lengthM.value && initial.spaces[0].widthM.value) {
         setEditLength(String(initial.spaces[0].lengthM.value));
         setEditWidth(String(initial.spaces[0].widthM.value));
       }
@@ -113,7 +113,7 @@ export function DesignVisualiserView() {
       const json = await res.json();
       if (json.success && json.projectState) {
         setProjectState(json.projectState);
-        if (json.projectState.spaces[0]) {
+        if (json.projectState.spaces[0] && json.projectState.spaces[0].lengthM.value && json.projectState.spaces[0].widthM.value) {
           setEditLength(String(json.projectState.spaces[0].lengthM.value));
           setEditWidth(String(json.projectState.spaces[0].widthM.value));
         }
@@ -145,7 +145,7 @@ export function DesignVisualiserView() {
       if (json.success && json.projectState) {
         setProjectState(json.projectState);
       } else {
-        const local = applyProjectChange(projectState, [
+        const local = applyProjectChange(projectState, changePrompt, [
           {
             operationType: 'GENERAL_MODIFICATION',
             description: changePrompt,
@@ -154,7 +154,7 @@ export function DesignVisualiserView() {
         setProjectState(local);
       }
     } catch (err) {
-      const local = applyProjectChange(projectState, [
+      const local = applyProjectChange(projectState, changePrompt, [
         {
           operationType: 'GENERAL_MODIFICATION',
           description: changePrompt,
@@ -166,7 +166,7 @@ export function DesignVisualiserView() {
     }
   };
 
-  // Handle True Immutable Version Restore (Item 17)
+  // Handle True Immutable Version Restore (Item 8)
   const handleRestoreVersion = async (versionNum: number) => {
     if (!projectState) return;
     setIsApplyingChange(true);
@@ -191,7 +191,7 @@ export function DesignVisualiserView() {
     }
   };
 
-  // Handle Undo (Previous Version)
+  // Handle Undo
   const handleUndo = () => {
     if (!projectState || projectState.versions.length <= 1) return;
     const currentVerIndex = projectState.versions.length - 1;
@@ -199,6 +199,19 @@ export function DesignVisualiserView() {
     if (targetVer) {
       handleRestoreVersion(targetVer.versionNumber);
     }
+  };
+
+  // Handle Example Dimensions (Item 12, 13)
+  const handleUseExampleDimensions = () => {
+    handleApplyChange('Use typical 5.0m length by 4.0m width dimensions temporarily as an example model');
+  };
+
+  // Handle Structural Engineer Spec Save (Item 22)
+  const handleSaveEngineerSpec = (spec: StructuralEngineerSpec) => {
+    if (!projectState) return;
+    const updated = JSON.parse(JSON.stringify(projectState)) as ProjectState;
+    updated.structuralEngineerSpec = spec;
+    handleApplyChange(`Verified structural engineer specification: ${spec.sectionDesignation} (${spec.massPerMetre}kg/m) across ${spec.memberLength}m opening`);
   };
 
   // Handle Contextual AI Chat Question
@@ -497,6 +510,7 @@ export function DesignVisualiserView() {
                   state={projectState}
                   onEditDimensions={() => setShowEditDimsModal(true)}
                   onAddPropertyInfo={() => setShowPropertyModal(true)}
+                  onUseExampleDimensions={handleUseExampleDimensions}
                 />
 
                 {/* 2. Visual Concept Card */}
@@ -536,6 +550,8 @@ export function DesignVisualiserView() {
                 <QuantitiesBreakdown
                   quantities={projectState.calculatedQuantities}
                   onEditDimensions={() => setShowEditDimsModal(true)}
+                  onSaveEngineerSpec={handleSaveEngineerSpec}
+                  currentEngineerSpec={projectState.structuralEngineerSpec}
                 />
 
                 {/* 9. Feasibility & Constraints Analysis */}
@@ -598,165 +614,153 @@ export function DesignVisualiserView() {
         </div>
       )}
 
-      {/* Builder-Ready Brief Modal */}
-      {projectState && (
-        <BuilderReadyBriefModal
-          isOpen={showBriefModal}
-          onClose={() => setShowBriefModal(false)}
-          state={projectState}
-        />
-      )}
-
       {/* Edit Dimensions Modal */}
       {showEditDimsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 shadow-2xl space-y-5 text-slate-900">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveDimensions}
+            className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold font-heading flex items-center gap-2">
-                <Ruler className="h-4 w-4 text-[#FFAA4F]" />
-                <span>Adjust Room Dimensions</span>
+              <h3 className="text-base font-extrabold text-slate-900 font-heading">
+                Update Space Dimensions
               </h3>
               <button
                 type="button"
                 onClick={() => setShowEditDimsModal(false)}
-                className="text-slate-400 hover:text-slate-700"
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold"
               >
-                <X className="h-4 w-4" />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveDimensions} className="space-y-4 text-xs">
-              <div className="space-y-1.5">
-                <label htmlFor="dim-length" className="font-bold text-slate-700 block">
-                  Length / Depth (Metres):
-                </label>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Length (metres)</label>
                 <input
-                  id="dim-length"
                   type="number"
                   step="0.1"
-                  min="1.0"
-                  max="30.0"
                   value={editLength}
                   onChange={(e) => setEditLength(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 p-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-900 font-semibold text-sm"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="dim-width" className="font-bold text-slate-700 block">
-                  Width (Metres):
-                </label>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Width (metres)</label>
                 <input
-                  id="dim-width"
                   type="number"
                   step="0.1"
-                  min="1.0"
-                  max="30.0"
                   value={editWidth}
                   onChange={(e) => setEditWidth(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 p-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-900 font-semibold text-sm"
                   required
                 />
               </div>
+            </div>
 
-              <div className="pt-2 flex gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowEditDimsModal(false)}
-                  variant="outline"
-                  size="sm"
-                  className="w-1/2"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  className="w-1/2 bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold"
-                >
-                  Update Quantities
-                </Button>
-              </div>
-            </form>
-          </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEditDimsModal(false)}
+                className="flex-1 text-xs font-bold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold"
+              >
+                Save Dimensions
+              </Button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Add/Edit Property Info Modal */}
+      {/* Property Details Modal */}
       {showPropertyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 shadow-2xl space-y-5 text-slate-900">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSavePropertyInfo}
+            className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-slate-200 space-y-4"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold font-heading flex items-center gap-2">
-                <Home className="h-4 w-4 text-[#FFAA4F]" />
-                <span>Property Details</span>
+              <h3 className="text-base font-extrabold text-slate-900 font-heading">
+                Specify Property Characteristics
               </h3>
               <button
                 type="button"
                 onClick={() => setShowPropertyModal(false)}
-                className="text-slate-400 hover:text-slate-700"
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold"
               >
-                <X className="h-4 w-4" />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSavePropertyInfo} className="space-y-4 text-xs">
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">Property Type:</label>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Property Type</label>
                 <select
                   value={selectedPropertyType}
                   onChange={(e) => setSelectedPropertyType(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 p-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-900 font-semibold text-sm"
                 >
                   <option value="terraced">Terraced House</option>
                   <option value="semi_detached">Semi-Detached House</option>
                   <option value="detached">Detached House</option>
-                  <option value="flat">Flat / Apartment</option>
+                  <option value="flat">Apartment / Flat</option>
                   <option value="maisonette">Maisonette</option>
                   <option value="bungalow">Bungalow</option>
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">Architectural Era:</label>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Architectural Era</label>
                 <select
                   value={selectedPropertyEra}
                   onChange={(e) => setSelectedPropertyEra(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 p-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-900 font-semibold text-sm"
                 >
                   <option value="victorian">Victorian (1837–1901)</option>
                   <option value="edwardian">Edwardian (1901–1914)</option>
                   <option value="georgian">Georgian (1714–1837)</option>
-                  <option value="1930s">1930s Suburbia</option>
-                  <option value="post_war">Post-War (1945–1980)</option>
-                  <option value="modern">Modern Contemporary (Post-1980)</option>
+                  <option value="1930s">1930s / Inter-War</option>
+                  <option value="post_war">Post-War (1950–1980)</option>
+                  <option value="modern">Modern (1980+)</option>
                 </select>
               </div>
+            </div>
 
-              <div className="pt-2 flex gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowPropertyModal(false)}
-                  variant="outline"
-                  size="sm"
-                  className="w-1/2"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  className="w-1/2 bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold"
-                >
-                  Save Property
-                </Button>
-              </div>
-            </form>
-          </div>
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowPropertyModal(false)}
+                className="flex-1 text-xs font-bold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold"
+              >
+                Save Property Info
+              </Button>
+            </div>
+          </form>
         </div>
+      )}
+
+      {/* Builder Ready Brief Modal */}
+      {showBriefModal && projectState && (
+        <BuilderReadyBriefModal
+          state={projectState}
+          isOpen={showBriefModal}
+          onClose={() => setShowBriefModal(false)}
+        />
       )}
     </div>
   );

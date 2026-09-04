@@ -1,7 +1,7 @@
 /**
  * Scope & Deterministic Quantity Calculation Engine
  * Pure mathematical formulas with material-specific waste factors and strict engineering safeguards.
- * Complies with GEMINI.md Section 7 and Phase 7B Specification (Items 18, 19, 20, 21, 22, 23, 24).
+ * Complies with GEMINI.md Section 7 and Phase 7C Specification (Items 12, 18, 19, 20, 21, 22).
  */
 
 import {
@@ -9,16 +9,22 @@ import {
   ProjectSpace,
   ProjectCategoryType,
   QuantityConfidence,
+  StructuralEngineerSpec,
 } from '@/types/visualiser-scope';
 
 export interface CalculationContext {
-  flooringMaterial?: string; // 'herringbone_engineered_oak' | 'microcement_seamless' | 'large_porcelain_tiles' | 'straight_plank'
+  flooringMaterial?: string; // e.g. 'herringbone_engineered_oak' | 'microcement_seamless' | 'large_porcelain_tiles' | 'straight_plank'
   tilingType?: string;
   confirmedDoorOpeningsM?: number;
   confirmedWindowAreaM2?: number;
   hasStructuralAlteration?: boolean;
   structuralOpeningSpanM?: number;
-  structuralEngineerSpecified?: boolean;
+  structuralEngineerSpec?: StructuralEngineerSpec;
+  bathroomLayout?: {
+    showerEnclosureWidthM?: number;
+    hasBathtub?: boolean;
+    tilingHeight?: 'full_height' | 'half_height' | 'splashback_only';
+  };
 }
 
 export function calculateProjectQuantities(
@@ -30,94 +36,109 @@ export function calculateProjectQuantities(
   const items: CalculatedQuantityItem[] = [];
 
   const primarySpace = spaces.find((s) => s.isPrimary) || spaces[0];
+  
+  // Dimensions Check (Item 12: Zero Silent Room Dimension Defaults)
+  const length = primarySpace?.lengthM?.value;
+  const width = primarySpace?.widthM?.value;
+  const height = primarySpace?.heightM?.value;
+
   const hasConfirmedDimensions = Boolean(
-    primarySpace &&
-    primarySpace.lengthM?.status === 'confirmed' &&
-    primarySpace.widthM?.status === 'confirmed' &&
-    primarySpace.lengthM.value > 0 &&
-    primarySpace.widthM.value > 0
+    length !== undefined &&
+    width !== undefined &&
+    primarySpace?.lengthM?.status === 'confirmed' &&
+    primarySpace?.widthM?.status === 'confirmed' &&
+    length > 0 &&
+    width > 0
   );
 
-  const hasAssumedDimensions = Boolean(
-    primarySpace &&
-    primarySpace.lengthM &&
-    primarySpace.widthM &&
-    primarySpace.lengthM.value > 0 &&
-    primarySpace.widthM.value > 0
-  );
-
-  const length = hasAssumedDimensions ? primarySpace.lengthM.value : 0;
-  const width = hasAssumedDimensions ? primarySpace.widthM.value : 0;
-  const height = primarySpace?.heightM?.value && primarySpace.heightM.value > 0 ? primarySpace.heightM.value : 2.4;
-  const floorArea = hasAssumedDimensions ? Math.round(length * width * 10) / 10 : 0;
+  const hasDimensions = Boolean(length !== undefined && width !== undefined && length > 0 && width > 0);
+  const floorArea = hasDimensions && length && width ? Math.round(length * width * 10) / 10 : undefined;
+  const effectiveHeight = height && height > 0 ? height : 2.4;
 
   const isKitchen = projectTypes.includes('kitchen-renovation');
   const isBathroom = projectTypes.includes('bathroom-renovation');
   const isExtension = projectTypes.includes('extension');
-  const isLoft = projectTypes.includes('loft-conversion');
   const isDriveway = projectTypes.includes('driveway');
   const isLandscaping = projectTypes.includes('landscaping');
   const isJoineryOnly = projectTypes.length === 1 && projectTypes.includes('joinery');
-  const isDecoratingOnly = projectTypes.includes('bedroom') || projectTypes.includes('decorating');
+  const isDoorOnly = projectTypes.length === 1 && projectTypes.includes('door-replacement');
 
-  // Base confidence for pure dimensions
   const dimensionConfidence: QuantityConfidence = hasConfirmedDimensions
     ? 'CALCULATED_FROM_CONFIRMED_INPUT'
-    : hasAssumedDimensions
+    : hasDimensions
     ? 'ESTIMATED_FROM_ASSUMPTION'
     : 'INSUFFICIENT_INFORMATION';
 
   // --------------------------------------------------------------------------
-  // 1. FLOORING / PAVING QUANTITY (Material-Specific Waste Factor - Item 21)
+  // 1. FLOORING / PAVING QUANTITY (Item 18: Material-Specific Waste Factor)
   // --------------------------------------------------------------------------
-  if (!isJoineryOnly && projectTypes[0] !== 'door-replacement') {
-    if (floorArea > 0) {
-      const flooringMaterial = context?.flooringMaterial || 'herringbone_engineered_oak';
-      let wastePercent = 10;
-      let materialLabel = 'Finished Flooring & Subfloor Underlay';
+  if (!isJoineryOnly && !isDoorOnly) {
+    if (floorArea !== undefined && length && width) {
+      const flooringMaterial = context?.flooringMaterial;
+      
+      if (!flooringMaterial || flooringMaterial === 'not_decided') {
+        // Material not decided: Calculate Net Floor Area only (Item 18)
+        items.push({
+          id: 'qty-flooring-net',
+          item: isDriveway ? 'Driveway Net Surface Area' : 'Finished Flooring (Net Area — Material Undecided)',
+          category: 'Finishes',
+          netQuantity: floorArea,
+          wastePercent: 0,
+          totalWithWaste: floorArea,
+          unit: 'm² net',
+          confidence: dimensionConfidence,
+          basis: `${primarySpace.name} (${length}m × ${width}m)`,
+          formulaExplanation: `${length}m length × ${width}m width = ${floorArea}m² net floor area. Ordering allowance requires material/layout selection (e.g. 15% for herringbone parquet vs 10% for straight plank).`,
+          materialCategory: isDriveway ? 'blocks' : 'flooring',
+        });
+      } else {
+        // Material is chosen: apply specific waste factor
+        let wastePercent = 10;
+        let materialLabel = 'Finished Flooring & Subfloor Underlay';
 
-      if (isDriveway) {
-        wastePercent = 8;
-        materialLabel = 'Driveway Sub-Base & Permeable Block Paving';
-      } else if (flooringMaterial.includes('herringbone') || flooringMaterial.includes('parquet')) {
-        wastePercent = 15; // Herringbone cutting waste 12-15%
-        materialLabel = 'Herringbone Engineered Oak Parquet (with Layout Offcuts)';
-      } else if (flooringMaterial.includes('chevron')) {
-        wastePercent = 15;
-        materialLabel = 'Chevron Architectural Parquet';
-      } else if (flooringMaterial.includes('microcement')) {
-        wastePercent = 5;
-        materialLabel = 'Seamless Architectural Microcement System';
-      } else if (flooringMaterial.includes('porcelain') || flooringMaterial.includes('tile')) {
-        wastePercent = 12;
-        materialLabel = 'Large-Format Porcelain Floor Tiles';
-      } else if (flooringMaterial.includes('stone')) {
-        wastePercent = 15;
-        materialLabel = 'Natural Stone Floor Paving';
+        if (isDriveway) {
+          wastePercent = 8;
+          materialLabel = 'Driveway Sub-Base & Permeable Block Paving';
+        } else if (flooringMaterial.includes('herringbone') || flooringMaterial.includes('parquet')) {
+          wastePercent = 15;
+          materialLabel = 'Herringbone Engineered Oak Parquet (with Layout Offcuts)';
+        } else if (flooringMaterial.includes('chevron')) {
+          wastePercent = 15;
+          materialLabel = 'Chevron Architectural Parquet';
+        } else if (flooringMaterial.includes('microcement')) {
+          wastePercent = 5;
+          materialLabel = 'Seamless Architectural Microcement System';
+        } else if (flooringMaterial.includes('porcelain') || flooringMaterial.includes('tile')) {
+          wastePercent = 12;
+          materialLabel = 'Large-Format Porcelain Floor Tiles';
+        } else if (flooringMaterial.includes('stone')) {
+          wastePercent = 15;
+          materialLabel = 'Natural Stone Floor Paving';
+        }
+
+        const totalFlooringWithWaste = Math.round(floorArea * (1 + wastePercent / 100) * 10) / 10;
+
+        items.push({
+          id: 'qty-flooring',
+          item: materialLabel,
+          category: 'Finishes',
+          netQuantity: floorArea,
+          wastePercent,
+          totalWithWaste: Math.ceil(totalFlooringWithWaste),
+          unit: 'm²',
+          confidence: dimensionConfidence,
+          basis: `${primarySpace.name} (${length}m × ${width}m)`,
+          formulaExplanation: `${length}m length × ${width}m width = ${floorArea}m² net area + ${wastePercent}% material-specific cutting allowance = ${totalFlooringWithWaste}m² (Suggested order quantity: ${Math.ceil(totalFlooringWithWaste)}m²)`,
+          materialCategory: isDriveway ? 'blocks' : 'flooring',
+        });
       }
-
-      const totalFlooringWithWaste = Math.round(floorArea * (1 + wastePercent / 100) * 10) / 10;
-
-      items.push({
-        id: 'qty-flooring',
-        item: materialLabel,
-        category: 'Finishes',
-        netQuantity: floorArea,
-        wastePercent,
-        totalWithWaste: Math.ceil(totalFlooringWithWaste),
-        unit: 'm²',
-        confidence: dimensionConfidence,
-        basis: `${primarySpace.name} (${length}m × ${width}m)`,
-        formulaExplanation: `${length}m length × ${width}m width = ${floorArea}m² net area + ${wastePercent}% material-specific cutting allowance = ${totalFlooringWithWaste}m² (Suggested order quantity: ${Math.ceil(totalFlooringWithWaste)}m²)`,
-        materialCategory: isDriveway ? 'blocks' : 'flooring',
-      });
     } else {
       items.push({
         id: 'qty-flooring-insufficient',
         item: 'Finished Flooring / Paving',
         category: 'Finishes',
         netQuantity: 0,
-        wastePercent: 10,
+        wastePercent: 0,
         totalWithWaste: 0,
         unit: 'm²',
         confidence: 'INSUFFICIENT_INFORMATION',
@@ -129,144 +150,185 @@ export function calculateProjectQuantities(
   }
 
   // --------------------------------------------------------------------------
-  // 2. WALL LININGS & DECORATING (Openings Safeguards - Item 22)
+  // 2. WALL LININGS & DECORATING (Item 19: Gross Wall Area with Openings Note)
   // --------------------------------------------------------------------------
-  if (floorArea > 0 && !isDriveway && !isLandscaping && !isJoineryOnly && projectTypes[0] !== 'door-replacement') {
+  if (floorArea !== undefined && length && width && !isDriveway && !isLandscaping && !isJoineryOnly && !isDoorOnly) {
     const perimeter = Math.round(2 * (length + width) * 10) / 10;
-    const grossWallArea = Math.round(perimeter * height * 10) / 10;
+    const grossWallArea = Math.round(perimeter * effectiveHeight * 10) / 10;
 
-    // Check if openings were confirmed by user
     const hasConfirmedOpenings = context?.confirmedDoorOpeningsM !== undefined || context?.confirmedWindowAreaM2 !== undefined;
-    const openingDeductionM2 = hasConfirmedOpenings
-      ? (context?.confirmedWindowAreaM2 || 0) + ((context?.confirmedDoorOpeningsM || 0) * height)
-      : isExtension
-      ? 7.0 // Assumed rear bifold + pass door
-      : isBathroom
-      ? 2.0 // Standard pass door
-      : 4.0; // Standard window & door
+    
+    if (hasConfirmedOpenings) {
+      const openingDeductionM2 = (context?.confirmedWindowAreaM2 || 0) + ((context?.confirmedDoorOpeningsM || 0) * effectiveHeight);
+      const netWallArea = Math.max(0, Math.round((grossWallArea - openingDeductionM2) * 10) / 10);
+      const plasterboardSheets = Math.ceil((netWallArea * 1.1) / 2.88);
 
-    const netWallArea = Math.max(0, Math.round((grossWallArea - openingDeductionM2) * 10) / 10);
-    const plasterboardSheets = Math.ceil((netWallArea * 1.1) / 2.88); // 2.4m x 1.2m board
-
-    if (!isBathroom) {
+      if (!isBathroom) {
+        items.push({
+          id: 'qty-plasterboard',
+          item: 'Plasterboard Wall Linings (2.4m × 1.2m Sheets)',
+          category: 'Drylining',
+          netQuantity: netWallArea,
+          wastePercent: 10,
+          totalWithWaste: plasterboardSheets,
+          unit: 'sheets (2.88m²/sheet)',
+          confidence: hasConfirmedDimensions ? 'CALCULATED_FROM_CONFIRMED_INPUT' : 'ESTIMATED_FROM_ASSUMPTION',
+          basis: `${grossWallArea}m² gross perimeter minus confirmed ${openingDeductionM2}m² openings`,
+          formulaExplanation: `${perimeter}m perimeter × ${effectiveHeight}m height = ${grossWallArea}m² gross minus ${openingDeductionM2}m² openings = ${netWallArea}m² net + 10% cutting waste = ${(netWallArea * 1.1).toFixed(1)}m² ÷ 2.88m²/sheet = ${plasterboardSheets} sheets`,
+          materialCategory: 'plasterboard',
+        });
+      }
+    } else {
+      // Opening measurements not supplied: Report Gross Wall Area (Item 19)
       items.push({
-        id: 'qty-plasterboard',
-        item: 'Plasterboard Wall Linings (2.4m × 1.2m Sheets)',
+        id: 'qty-wall-gross',
+        item: 'Gross Wall Area (Linings & Preparation)',
         category: 'Drylining',
-        netQuantity: netWallArea,
+        netQuantity: grossWallArea,
         wastePercent: 10,
-        totalWithWaste: plasterboardSheets,
-        unit: 'sheets (2.88m²/sheet)',
-        confidence: hasConfirmedOpenings && hasConfirmedDimensions ? 'CALCULATED_FROM_CONFIRMED_INPUT' : 'ESTIMATED_FROM_ASSUMPTION',
-        basis: `${grossWallArea}m² gross wall perimeter at ${height}m ceiling height minus ${openingDeductionM2}m² openings (${hasConfirmedOpenings ? 'confirmed' : 'assumed standard openings'})`,
-        formulaExplanation: `${perimeter}m perimeter × ${height}m height = ${grossWallArea}m² gross minus ${openingDeductionM2}m² openings = ${netWallArea}m² net + 10% cutting waste = ${(netWallArea * 1.1).toFixed(1)}m² ÷ 2.88m²/sheet = ${plasterboardSheets} sheets`,
+        totalWithWaste: grossWallArea,
+        unit: 'm² gross',
+        confidence: dimensionConfidence,
+        basis: `${perimeter}m perimeter at ${effectiveHeight}m ceiling height`,
+        formulaExplanation: `${perimeter}m perimeter × ${effectiveHeight}m height = ${grossWallArea}m² gross wall area. Opening measurements (windows/doors) not supplied; net wall area and exact board count cannot yet be accurately determined.`,
         materialCategory: 'plasterboard',
       });
     }
 
-    // Decorating Emulsion Paint (Walls + Ceiling)
-    const totalDecoratingArea = isBathroom ? grossWallArea * 0.3 + floorArea : netWallArea + floorArea;
-    const paintLitres = Math.ceil((totalDecoratingArea * 2) / 10); // 2 coats @ 10m²/Litre
+    // Trade Emulsion Paint
+    const paintArea = grossWallArea + floorArea;
+    const paintLitres = Math.ceil((paintArea * 2) / 10); // 2 coats @ 10m²/Litre
 
     items.push({
       id: 'qty-paint',
       item: 'Trade Emulsion Wall & Ceiling Paint (2 Full Coats)',
       category: 'Decorating',
-      netQuantity: Math.round(totalDecoratingArea * 10) / 10,
+      netQuantity: Math.round(paintArea * 10) / 10,
       wastePercent: 10,
       totalWithWaste: paintLitres,
-      unit: 'Litres (2 full coats)',
+      unit: 'Litres (2 coats)',
       confidence: dimensionConfidence,
-      basis: `${netWallArea}m² net walls + ${floorArea}m² ceiling (2 full coats)`,
-      formulaExplanation: `(${netWallArea}m² net walls + ${floorArea}m² ceiling) × 2 coats ÷ 10m²/L coverage = ${paintLitres} Litres trade emulsion`,
+      basis: `Estimated ${grossWallArea}m² walls + ${floorArea}m² ceiling (2 full coats)`,
+      formulaExplanation: `(${grossWallArea}m² walls + ${floorArea}m² ceiling) × 2 coats ÷ 10m²/L coverage = ${paintLitres} Litres trade emulsion`,
       materialCategory: 'paint',
     });
   }
 
   // --------------------------------------------------------------------------
-  // 3. BATHROOM SPECIFIC WATERPROOFING & TILING (Item 23)
+  // 3. BATHROOM SPECIFIC WATERPROOFING & TILING (Item 20: Explicit Shower/Bath Config)
   // --------------------------------------------------------------------------
-  if (isBathroom && floorArea > 0) {
-    const wetZoneWallArea = Math.round(2 * 1.8 * height * 10) / 10; // Shower enclosure walls
-    const tileArea = Math.round((wetZoneWallArea + floorArea) * 10) / 10;
-    const tileWaste = 12;
-    const totalTiles = Math.ceil(tileArea * (1 + tileWaste / 100));
+  if (isBathroom) {
+    if (context?.bathroomLayout?.showerEnclosureWidthM && floorArea !== undefined) {
+      const showerWidth = context.bathroomLayout.showerEnclosureWidthM;
+      const wetZoneWallArea = Math.round(2 * showerWidth * effectiveHeight * 10) / 10;
+      const tileArea = Math.round((wetZoneWallArea + floorArea) * 10) / 10;
+      const totalTiles = Math.ceil(tileArea * 1.12);
 
-    items.push({
-      id: 'qty-tanking',
-      item: 'Waterproof Tanking Membrane & Corner Seal Tape',
-      category: 'Waterproofing',
-      netQuantity: wetZoneWallArea + floorArea,
-      wastePercent: 10,
-      totalWithWaste: Math.ceil((wetZoneWallArea + floorArea) * 1.1),
-      unit: 'm²',
-      confidence: dimensionConfidence,
-      basis: `Shower wet zone (${wetZoneWallArea}m² walls) + bathroom subfloor (${floorArea}m²)`,
-      formulaExplanation: `${wetZoneWallArea}m² shower wet walls + ${floorArea}m² floor + 10% overlap joint tape = ${Math.ceil((wetZoneWallArea + floorArea) * 1.1)}m² waterproof membrane`,
-      materialCategory: 'tiles',
-    });
-
-    items.push({
-      id: 'qty-tiles',
-      item: 'Porcelain Wall & Floor Tiles (Wet Areas)',
-      category: 'Tiling',
-      netQuantity: tileArea,
-      wastePercent: tileWaste,
-      totalWithWaste: totalTiles,
-      unit: 'm²',
-      confidence: dimensionConfidence,
-      basis: `Shower wet walls (${wetZoneWallArea}m²) + Floor (${floorArea}m²)`,
-      formulaExplanation: `${tileArea}m² net tiled area + ${tileWaste}% cutting & pipe profile waste = ${totalTiles}m²`,
-      materialCategory: 'tiles',
-    });
-  }
-
-  // --------------------------------------------------------------------------
-  // 4. STRUCTURAL STEEL SAFEGUARDS (Item 19 - ENGINEERING REQUIRED)
-  // --------------------------------------------------------------------------
-  const hasStructural = hasStructuralKnockthrough || (context?.hasStructuralAlteration ?? false);
-
-  if (hasStructural) {
-    const spanM = width > 0 ? width : 4.0;
-    if (context?.structuralEngineerSpecified) {
-      // If engineer has specified exact section
       items.push({
-        id: 'qty-steel-specified',
-        item: 'Structural Steelwork (Engineer Specified Section)',
-        category: 'Structure',
-        netQuantity: spanM,
+        id: 'qty-tanking',
+        item: 'Waterproof Tanking Membrane & Corner Seal Tape',
+        category: 'Waterproofing',
+        netQuantity: wetZoneWallArea + floorArea,
         wastePercent: 10,
-        totalWithWaste: Math.round(spanM * 45 * 1.1),
-        unit: 'kg steel',
-        confidence: 'CALCULATED_FROM_CONFIRMED_INPUT',
-        basis: `Engineered steel beam across ${spanM}m opening`,
-        formulaExplanation: `${spanM}m span with confirmed structural calculation and padstones`,
-        materialCategory: 'steel',
+        totalWithWaste: Math.ceil((wetZoneWallArea + floorArea) * 1.1),
+        unit: 'm²',
+        confidence: dimensionConfidence,
+        basis: `Shower enclosure (${showerWidth}m wide × ${effectiveHeight}m high) + bathroom floor (${floorArea}m²)`,
+        formulaExplanation: `${wetZoneWallArea}m² shower walls + ${floorArea}m² floor + 10% overlap joint tape = ${Math.ceil((wetZoneWallArea + floorArea) * 1.1)}m² tanking membrane`,
+        materialCategory: 'tiles',
+      });
+
+      items.push({
+        id: 'qty-tiles',
+        item: 'Porcelain Wall & Floor Tiles (Wet Areas)',
+        category: 'Tiling',
+        netQuantity: tileArea,
+        wastePercent: 12,
+        totalWithWaste: totalTiles,
+        unit: 'm²',
+        confidence: dimensionConfidence,
+        basis: `Shower wet walls (${wetZoneWallArea}m²) + Floor (${floorArea}m²)`,
+        formulaExplanation: `${tileArea}m² net tiled area + 12% cutting waste = ${totalTiles}m²`,
+        materialCategory: 'tiles',
       });
     } else {
-      // Strictly ENGINEERING REQUIRED per specification
       items.push({
-        id: 'qty-steel-engineering-required',
-        item: 'Universal Steel Beam (RSJ) Structural Knockthrough Frame',
-        category: 'Structure',
-        netQuantity: spanM,
+        id: 'qty-bathroom-insufficient',
+        item: 'Bathroom Waterproof Tanking & Wet Zone Tiling',
+        category: 'Waterproofing',
+        netQuantity: 0,
         wastePercent: 0,
         totalWithWaste: 0,
-        unit: 'Structural Design Required',
-        confidence: 'ENGINEERING_REQUIRED',
-        basis: `Proposed opening span: ~${spanM}m`,
-        formulaExplanation: 'Beam section size, steel tonnage (kg/m), padstone bearing depth, and deflection checks cannot be guessed. A chartered structural engineer must perform Building Regulations Part A calculations before exact steel quantities can be specified.',
-        materialCategory: 'steel',
-        engineeringNote: 'Beam size: Not determined • Steel quantity: Not determined • Required: Structural engineer design and Building Control approval.',
+        unit: 'm²',
+        confidence: 'INSUFFICIENT_INFORMATION',
+        basis: 'Shower / Bath enclosure configuration not supplied',
+        formulaExplanation: 'Wet area square meterage depends on shower configuration, bath enclosure dimensions, and whether tiling is full-height or half-height. Supply shower/bath dimensions to calculate waterproof membrane and tile quantities.',
+        materialCategory: 'tiles',
       });
     }
   }
 
   // --------------------------------------------------------------------------
-  // 5. FOUNDATION CONCRETE SAFEGUARDS (Item 20 - PRELIMINARY RANGE / ENGINEERING REQUIRED)
+  // 4. STRUCTURAL STEELWORK (Items 21, 22: Strictly No Fixed 45kg/m Calculation)
   // --------------------------------------------------------------------------
-  if (isExtension && floorArea > 0) {
-    const trenchPerimeter = Math.round(((2 * length) + width) * 10) / 10;
+  const hasStructural = hasStructuralKnockthrough || (context?.hasStructuralAlteration ?? false);
+
+  if (hasStructural) {
+    const engineerSpec = context?.structuralEngineerSpec;
+    const spanM = width && width > 0 ? width : 4.0;
+
+    // Check if verified structural engineer parameters are present (Item 22)
+    const hasVerifiedEngineerData = Boolean(
+      engineerSpec &&
+      engineerSpec.sectionDesignation &&
+      engineerSpec.massPerMetre &&
+      engineerSpec.massPerMetre > 0 &&
+      engineerSpec.memberLength &&
+      engineerSpec.memberLength > 0
+    );
+
+    if (hasVerifiedEngineerData && engineerSpec?.massPerMetre && engineerSpec?.memberLength) {
+      const memberCount = engineerSpec.memberCount || 1;
+      const totalSteelKg = Math.round(engineerSpec.memberLength * engineerSpec.massPerMetre * memberCount);
+
+      items.push({
+        id: 'qty-steel-verified',
+        item: `Structural Steelwork (${engineerSpec.sectionDesignation})`,
+        category: 'Structure',
+        netQuantity: totalSteelKg,
+        wastePercent: 0,
+        totalWithWaste: totalSteelKg,
+        unit: 'kg steel',
+        confidence: 'CALCULATED_FROM_CONFIRMED_INPUT',
+        basis: `Engineer specified: ${engineerSpec.sectionDesignation} (${engineerSpec.massPerMetre}kg/m) × ${engineerSpec.memberLength}m × ${memberCount} member(s)`,
+        formulaExplanation: `${engineerSpec.memberLength}m length × ${engineerSpec.massPerMetre}kg/m × ${memberCount} beam = ${totalSteelKg}kg steel. Padstones: ${engineerSpec.padstones || 2} specified (${engineerSpec.bearingSpecification || 'C30 concrete padstones'}).`,
+        materialCategory: 'steel',
+        engineeringNote: `Structural calculation status: Verified against engineer spec ${engineerSpec.engineerReference || 'submitted calculation'}.`,
+      });
+    } else {
+      // Strictly ENGINEERING REQUIRED (Items 21, 22)
+      items.push({
+        id: 'qty-steel-engineering-required',
+        item: 'Universal Steel Beam (RSJ) Knockthrough Frame',
+        category: 'Structure',
+        netQuantity: 0,
+        wastePercent: 0,
+        totalWithWaste: 0,
+        unit: 'Structural Design Required',
+        confidence: 'ENGINEERING_REQUIRED',
+        basis: `Proposed opening span: ~${spanM}m (Requires Chartered Engineer Design)`,
+        formulaExplanation: 'Universal beam (UB/UC) section designation, mass per metre (kg/m), padstone bearing dimensions, and deflection limits cannot be guessed. A chartered structural engineer must perform Building Regulations Part A calculations before exact steel tonnage can be determined.',
+        materialCategory: 'steel',
+        engineeringNote: 'Beam size: Not determined • Steel mass: Not determined • Requirement: Structural engineer calculation & Building Control approval.',
+      });
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 5. FOUNDATION CONCRETE SAFEGUARDS (Item 20: Site/Ground Condition Dependent)
+  // --------------------------------------------------------------------------
+  if (isExtension) {
+    const trenchPerimeter = length && width ? Math.round(((2 * length) + width) * 10) / 10 : 16.0;
     items.push({
       id: 'qty-foundation-engineering-required',
       item: 'Ready-Mix C25/30 Foundation Trench Concrete',
@@ -284,9 +346,9 @@ export function calculateProjectQuantities(
   }
 
   // --------------------------------------------------------------------------
-  // 6. GLAZED APERTURES (Extensions & Kitchens)
+  // 6. GLAZED APERTURES
   // --------------------------------------------------------------------------
-  if ((isExtension || isKitchen) && width > 0 && !isJoineryOnly) {
+  if ((isExtension || isKitchen) && width && width > 0 && !isJoineryOnly && !isDoorOnly) {
     const apertureWidth = Math.min(width, 4.5);
     items.push({
       id: 'qty-glazing',

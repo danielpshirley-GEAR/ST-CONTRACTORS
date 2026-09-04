@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
     if (images && Array.isArray(images) && images.length > 0) {
       for (const img of images) {
         const analysis = await analyzeUploadedAsset({
-          id: img.id || `img-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
           url: img.url,
           filename: img.filename || 'uploaded-photo.jpg',
         });
@@ -42,7 +41,6 @@ export async function POST(req: NextRequest) {
     // 2. Structured LLM Brief Interpretation
     const aiExtraction = await interpretHomeownerBriefWithAI({
       briefText: briefText || '',
-      images,
       dimensions,
       propertyType,
       propertyEra,

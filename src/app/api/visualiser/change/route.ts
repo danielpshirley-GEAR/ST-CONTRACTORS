@@ -1,5 +1,12 @@
+/**
+ * POST /api/visualiser/change
+ * Parses conversational change requests into atomic operations and updates ProjectState.
+ * Complies with Phase 7C Specification (Items 7, 8, 9, 10).
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { interpretProjectChangeWithAI } from '@/lib/ai/visualiser-ai';
+import { parseProjectChangeWithAI } from '@/lib/ai/visualiser-ai';
+import { generateVisualConcept } from '@/lib/ai/visual-generator';
 import { applyProjectChange, restoreProjectVersion } from '@/lib/visualiser/project-state-engine';
 import { ProjectState } from '@/types/visualiser-scope';
 
@@ -15,7 +22,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Handle true immutable version restoration (Item 17)
+    // Handle true immutable version restoration (Item 8)
     if (restoreVersionNumber !== undefined) {
       const restored = restoreProjectVersion(projectState as ProjectState, Number(restoreVersionNumber));
       return NextResponse.json({
@@ -31,21 +38,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Parse natural language change into structured operations via LLM (Item 15)
-    const operations = await interpretProjectChangeWithAI(
-      projectState as ProjectState,
-      changePrompt
+    // 1. Parse natural language change into structured operations via LLM (Item 9, 10)
+    const changeResponse = await parseProjectChangeWithAI(
+      changePrompt,
+      projectState as ProjectState
     );
 
-    // 2. Apply controlled atomic mutations and dependency recalculation
+    // 2. Generate new visual if modification affects visual appearance (Item 7)
+    let generatedVisual: any = undefined;
+    if (changeResponse.requiresVisualRegeneration || changePrompt.toLowerCase().includes('cabinet') || changePrompt.toLowerCase().includes('floor') || changePrompt.toLowerCase().includes('navy') || changePrompt.toLowerCase().includes('oak')) {
+      const visualOutput = await generateVisualConcept({
+        state: projectState as ProjectState,
+        modificationInstruction: changePrompt,
+      });
+      generatedVisual = {
+        imageUrl: visualOutput.imageUrl,
+        generationId: visualOutput.generationId,
+        generationVersion: visualOutput.generationVersion,
+        provider: visualOutput.provider,
+        prompt: visualOutput.prompt,
+        conceptType: visualOutput.conceptType,
+        historyItem: visualOutput.visualHistoryItem,
+      };
+    }
+
+    // 3. Apply controlled atomic mutations and dependency recalculation
     const updatedState = applyProjectChange(
       projectState as ProjectState,
-      operations
+      changePrompt,
+      changeResponse.operations,
+      generatedVisual
     );
 
     return NextResponse.json({
       success: true,
       projectState: updatedState,
+      summaryOfChange: changeResponse.summaryOfChange,
+      affectedModules: changeResponse.affectedModules,
     });
   } catch (error) {
     console.error('Error applying visualiser project change:', error);

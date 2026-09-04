@@ -1,6 +1,6 @@
 /**
  * Master Project State & Scope Architecture for the AI Project Design & Scope Builder
- * Conforms to BUILD_SPEC.md and Phase 7B Specification.
+ * Conforms to BUILD_SPEC.md and Phase 7C Specification.
  */
 
 export type ProvenanceStatus = 'confirmed' | 'derived' | 'assumed' | 'unknown';
@@ -62,20 +62,20 @@ export type PropertyBuildingType =
 export interface ProjectPropertyInfo {
   type: ProvenancedValue<PropertyBuildingType>;
   era: ProvenancedValue<PropertyEra>;
-  storeys: ProvenancedValue<number>;
+  storeys: ProvenancedValue<number | undefined>;
   location: ProvenancedValue<string>;
-  isConservationArea: ProvenancedValue<boolean>;
-  isListedBuilding: ProvenancedValue<boolean>;
+  isConservationArea: ProvenancedValue<boolean | 'unknown'>;
+  isListedBuilding: ProvenancedValue<boolean | 'unknown'>;
   existingCondition: ProvenancedValue<string>;
 }
 
 export interface ProjectSpace {
   id: string;
   name: string;
-  lengthM: ProvenancedValue<number>;
-  widthM: ProvenancedValue<number>;
-  heightM: ProvenancedValue<number>;
-  areaM2: ProvenancedValue<number>;
+  lengthM: ProvenancedValue<number | undefined>;
+  widthM: ProvenancedValue<number | undefined>;
+  heightM: ProvenancedValue<number | undefined>;
+  areaM2: ProvenancedValue<number | undefined>;
   existingCondition?: string;
   desiredChanges: string[];
   fixtures: string[];
@@ -93,6 +93,10 @@ export type UploadedAssetCategory =
   | 'product_reference'
   | 'exterior'
   | 'site_condition'
+  | 'defect_issue'
+  | 'boundary_context'
+  | 'product_cutsheet'
+  | 'other'
   | 'unknown';
 
 export interface UploadedAsset {
@@ -116,10 +120,10 @@ export interface UploadedAsset {
   existingConditions?: string[];
   possibleConstraints?: string[];
   textVisibleInDrawing?: string[];
-  dimensionsVisibleInDrawing?: { label: string; value: string; confidence: 'high' | 'medium' }[];
+  dimensionsVisibleInDrawing?: { label?: string; value?: string; confidence?: 'high' | 'medium' }[];
   uncertainties?: string[];
   extractedDetails?: {
-    visibleFeatures: string[];
+    visibleFeatures?: string[];
     layoutObservations?: string;
     styleReferences?: string[];
   };
@@ -189,8 +193,8 @@ export interface CalculatedQuantityItem {
   totalWithWaste: number;
   unit: string;
   confidence: QuantityConfidence;
-  basis: string; // e.g. "Based on confirmed dimensions: 6.0m × 4.0m"
-  formulaExplanation: string; // e.g. "6.0m × 4.0m = 24.0m² net floor area + 15% herringbone waste = 27.6m²"
+  basis: string;
+  formulaExplanation: string;
   materialCategory:
     | 'flooring'
     | 'tiles'
@@ -204,6 +208,19 @@ export interface CalculatedQuantityItem {
     | 'glazing'
     | 'general';
   engineeringNote?: string;
+}
+
+export interface StructuralEngineerSpec {
+  sectionDesignation?: string; // e.g. "203 x 133 x 30 UB"
+  massPerMetre?: number; // e.g. 30 (kg/m)
+  memberLength?: number; // e.g. 4.5 (m)
+  memberCount?: number; // e.g. 1
+  bearingSpecification?: string; // e.g. "150mm concrete padstone C30"
+  padstones?: number;
+  posts?: string;
+  connectionNotes?: string;
+  engineerReference?: string;
+  calculationStatus: 'unspecified' | 'partial' | 'fully_specified';
 }
 
 export type FeasibilityLevel =
@@ -310,6 +327,18 @@ export type EstimateQuality =
   | 'DETAILED_PRE_SURVEY'
   | 'SURVEY_VALIDATED';
 
+export interface BudgetProvenance {
+  source: string;
+  region: string;
+  projectType: string;
+  dateUpdated: string;
+  vatTreatment: 'inclusive_20_percent' | 'exclusive' | 'zero_rated_new_build';
+  inclusions: string[];
+  exclusions: string[];
+  confidence: 'benchmark_only' | 'scope_aligned' | 'survey_validated';
+  areaAdjusted: boolean;
+}
+
 export interface BudgetAlignment {
   estimateQuality: EstimateQuality;
   indicativeCostRange: {
@@ -322,6 +351,7 @@ export interface BudgetAlignment {
   whereToSpendMore: string[];
   whereToSave: string[];
   unknownCostRisks: string[];
+  provenance?: BudgetProvenance;
 }
 
 export interface ProjectVersion {
@@ -334,19 +364,42 @@ export interface ProjectVersion {
   stateSnapshot?: ProjectState;
 }
 
-export interface VisualConceptState {
-  currentConceptImage: string;
+export interface VisualConceptHistoryItem {
+  id: string;
+  version: number;
+  imageUrl: string;
+  sourceImageUrl?: string;
+  prompt: string;
+  modifications: string[];
+  provider: string;
+  model?: string;
+  timestamp: string;
   conceptType: 'conceptual_interpretation' | 'image_to_image_transformation';
-  architecturalStyle: string;
-  glazingType: string;
-  flooringType: string;
+}
+
+export interface VisualConceptState {
+  sourceImage?: string; // original homeowner uploaded image
+  generatedConceptImage?: string; // AI generated visual
+  currentConceptImage: string; // for display compatibility
+  generationProvider?: string;
+  generationId?: string;
+  generationPrompt?: string;
+  generationTimestamp?: string;
+  generationVersion?: number;
+  conceptType: 'conceptual_interpretation' | 'image_to_image_transformation';
+  architecturalStyle?: string;
+  glazingType?: string;
+  flooringType?: string;
   cabinetryColor?: string;
   worktopType?: string;
   lightingType?: string;
   visualPrompt: string;
   disclaimer: string;
   refinementsHistory: string[];
+  visualHistory?: VisualConceptHistoryItem[];
   layoutPlanSvg?: string;
+  status?: 'idle' | 'generating' | 'completed' | 'failed';
+  errorMessage?: string;
 }
 
 export interface ProjectState {
@@ -360,19 +413,20 @@ export interface ProjectState {
   spaces: ProjectSpace[];
   uploadedAssets: UploadedAsset[];
   visualConcept: VisualConceptState;
-  finishSelections: Record<string, FinishTier>; // Element/Trade to Tier
+  finishSelections: Record<string, FinishTier>;
   finishTiers: FinishTierDefinition[];
   scopeOfWorks: ScopeOfWorkItem[];
   phases: ConstructionPhase[];
   thingsToConsider: ThingToConsiderItem[];
   specificationTree: SpecificationNode[];
   calculatedQuantities: CalculatedQuantityItem[];
+  structuralEngineerSpec?: StructuralEngineerSpec;
   feasibility: FeasibilityItem[];
   assumptions: SystemAssumption[];
   missingInformation: MissingInfoItem[];
   complexity: ProjectComplexity;
   budgetAlignment: BudgetAlignment;
-  completenessScore: number; // 0 - 100
+  completenessScore: number;
   versions: ProjectVersion[];
   chatHistory: {
     role: 'user' | 'assistant';

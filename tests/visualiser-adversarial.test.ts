@@ -180,10 +180,10 @@ async function runTests() {
   );
 
   // Modify dimension: 5x4m -> 6x4m
-  const modifiedState = applyProjectChange(nonStructuralInitial, [
+  const modifiedState = applyProjectChange(nonStructuralInitial, 'Made room 6m long', [
     {
       operationType: 'UPDATE_DIMENSION',
-      targetSpace: 'primary',
+      targetSpace: 'space-1',
       dimensionField: 'length',
       dimensionValue: 6.0,
       description: 'Made room 6m long',
