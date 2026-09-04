@@ -1,10 +1,15 @@
 /**
  * Master Project State & Scope Architecture for the AI Project Design & Scope Builder
- * Conforms to BUILD_SPEC.md and Master Rebuild Specification.
+ * Conforms to BUILD_SPEC.md and Phase 7B Specification.
  */
 
-export type ProvenanceStatus = 'confirmed' | 'assumed' | 'unknown';
-export type ProvenanceSource = 'user_statement' | 'system_assumption' | 'derived_calculation' | 'document_image';
+export type ProvenanceStatus = 'confirmed' | 'derived' | 'assumed' | 'unknown';
+export type ProvenanceSource =
+  | 'user_statement'
+  | 'system_assumption'
+  | 'derived_calculation'
+  | 'document_image'
+  | 'architectural_drawing';
 
 export interface ProvenancedValue<T> {
   value: T;
@@ -15,6 +20,7 @@ export interface ProvenancedValue<T> {
 }
 
 export type ProjectCategoryType =
+  | 'unknown'
   | 'kitchen-renovation'
   | 'extension'
   | 'loft-conversion'
@@ -25,10 +31,33 @@ export type ProjectCategoryType =
   | 'garden-room'
   | 'driveway'
   | 'landscaping'
+  | 'bedroom'
+  | 'decorating'
+  | 'joinery'
+  | 'door-replacement'
+  | 'cinema-room'
+  | 'living-room'
   | 'other';
 
-export type PropertyEra = 'victorian' | 'edwardian' | 'georgian' | '1930s' | 'post_war' | 'modern' | 'unknown';
-export type PropertyBuildingType = 'terraced' | 'semi_detached' | 'detached' | 'flat' | 'maisonette' | 'bungalow' | 'unknown';
+export type PropertyEra =
+  | 'victorian'
+  | 'edwardian'
+  | 'georgian'
+  | '1930s'
+  | 'post_war'
+  | 'modern'
+  | 'unknown'
+  | 'not_provided';
+
+export type PropertyBuildingType =
+  | 'terraced'
+  | 'semi_detached'
+  | 'detached'
+  | 'flat'
+  | 'maisonette'
+  | 'bungalow'
+  | 'unknown'
+  | 'not_provided';
 
 export interface ProjectPropertyInfo {
   type: ProvenancedValue<PropertyBuildingType>;
@@ -59,7 +88,11 @@ export type UploadedAssetCategory =
   | 'inspiration'
   | 'floor_plan'
   | 'drawing'
+  | 'sketch'
   | 'material_reference'
+  | 'product_reference'
+  | 'exterior'
+  | 'site_condition'
   | 'unknown';
 
 export interface UploadedAsset {
@@ -67,7 +100,24 @@ export interface UploadedAsset {
   url: string;
   filename: string;
   classifiedCategory: UploadedAssetCategory;
+  classificationConfidence: number; // 0 - 100
   userOverriddenCategory?: UploadedAssetCategory;
+  visibleSpaces?: string[];
+  visibleDoors?: string[];
+  visibleWindows?: string[];
+  visibleOpenings?: string[];
+  visibleFixtures?: string[];
+  visibleMaterials?: string[];
+  visibleFlooring?: string;
+  visibleWallFinishes?: string;
+  architecturalFeatures?: string[];
+  approximateLayout?: string;
+  likelyPropertyCharacteristics?: string[];
+  existingConditions?: string[];
+  possibleConstraints?: string[];
+  textVisibleInDrawing?: string[];
+  dimensionsVisibleInDrawing?: { label: string; value: string; confidence: 'high' | 'medium' }[];
+  uncertainties?: string[];
   extractedDetails?: {
     visibleFeatures: string[];
     layoutObservations?: string;
@@ -87,6 +137,8 @@ export interface FinishTierDefinition {
   indicativeMultiplier: number;
 }
 
+export type ScopeItemStatus = 'CONFIRMED_IN_SCOPE' | 'PROVISIONAL' | 'NOT_CURRENTLY_INCLUDED';
+
 export interface ScopeOfWorkItem {
   id: string;
   trade: string;
@@ -94,8 +146,10 @@ export interface ScopeOfWorkItem {
   title: string;
   description: string;
   included: boolean;
+  status: ScopeItemStatus;
   isStructural: boolean;
   finishTier: FinishTier;
+  reason?: string;
   estimatedHours?: number;
   materialsSpecified?: string[];
   requiresInspection?: boolean;
@@ -120,7 +174,11 @@ export interface SpecificationNode {
   userNotes?: string;
 }
 
-export type QuantityConfidence = 'calculated' | 'estimated' | 'unknown';
+export type QuantityConfidence =
+  | 'CALCULATED_FROM_CONFIRMED_INPUT'
+  | 'ESTIMATED_FROM_ASSUMPTION'
+  | 'ENGINEERING_REQUIRED'
+  | 'INSUFFICIENT_INFORMATION';
 
 export interface CalculatedQuantityItem {
   id: string;
@@ -131,9 +189,21 @@ export interface CalculatedQuantityItem {
   totalWithWaste: number;
   unit: string;
   confidence: QuantityConfidence;
-  basis: string; // e.g. "Based on 5.0m x 3.5m room"
-  formulaExplanation: string; // e.g. "5.0m × 3.5m = 17.5m² + 10% cutting waste = 19.3m² (Order 20m²)"
-  materialCategory: 'flooring' | 'tiles' | 'paint' | 'skirting' | 'plasterboard' | 'bricks' | 'blocks' | 'concrete' | 'steel' | 'glazing';
+  basis: string; // e.g. "Based on confirmed dimensions: 6.0m × 4.0m"
+  formulaExplanation: string; // e.g. "6.0m × 4.0m = 24.0m² net floor area + 15% herringbone waste = 27.6m²"
+  materialCategory:
+    | 'flooring'
+    | 'tiles'
+    | 'paint'
+    | 'skirting'
+    | 'plasterboard'
+    | 'bricks'
+    | 'blocks'
+    | 'concrete'
+    | 'steel'
+    | 'glazing'
+    | 'general';
+  engineeringNote?: string;
 }
 
 export type FeasibilityLevel =
@@ -142,16 +212,33 @@ export type FeasibilityLevel =
   | 'POTENTIAL_CONSTRAINT'
   | 'PROFESSIONAL_ASSESSMENT_REQUIRED';
 
+export type FeasibilityTier = 'statutory' | 'building_regs' | 'structural' | 'site_logistics';
+
 export interface FeasibilityItem {
   id: string;
-  category: 'Structure' | 'Planning' | 'Building_Regulations' | 'Utilities' | 'Drainage' | 'Access' | 'Party_Wall' | 'Fire_Safety' | 'Ventilation' | 'Waterproofing';
+  tier: FeasibilityTier;
+  category:
+    | 'Structure'
+    | 'Planning'
+    | 'Building_Regulations'
+    | 'Utilities'
+    | 'Drainage'
+    | 'Access'
+    | 'Party_Wall'
+    | 'Fire_Safety'
+    | 'Ventilation'
+    | 'Waterproofing';
   title: string;
   level: FeasibilityLevel;
   assessment: string;
-  evidenceUsed: string;
-  whatIsUnknown: string;
-  whyItMatters: string;
-  recommendedNextStep: string;
+  why: string;
+  source: string;
+  whatWeKnow: string[];
+  whatWeDontKnow: string[];
+  nextCheck: string;
+  evidenceUsed?: string;
+  whyItMatters?: string;
+  recommendedNextStep?: string;
 }
 
 export interface ConstructionPhase {
@@ -176,26 +263,38 @@ export interface ThingToConsiderItem {
   whyItMatters: string;
   whatShouldBeChecked: string;
   effectOnProject: string;
+  applicableProjectTypes?: ProjectCategoryType[];
 }
 
 export interface SystemAssumption {
   id: string;
   key: string;
   label: string;
-  assumedValue: string;
-  reasonForAssumption: string;
+  value: string | number;
+  reason: string;
+  source: string;
+  confidence: 'high' | 'medium' | 'low';
+  affectedCalculations: string[];
+  userEditable: boolean;
   status: 'active' | 'confirmed_by_user' | 'overridden' | 'removed';
 }
 
 export interface MissingInfoItem {
   id: string;
-  impact: 'HIGH' | 'MEDIUM' | 'LOW';
   field: string;
   question: string;
-  whyWeAsk: string;
   category: string;
+  scopeImpact: number; // 1 - 5
+  costImpact: number; // 1 - 5
+  feasibilityImpact: number; // 1 - 5
+  visualImpact: number; // 1 - 5
+  quantityImpact: number; // 1 - 5
+  userEffort: number; // 1 - 5 (1 = easy, 5 = hard)
+  priorityScore: number; // weighted sum
+  applicabilityCondition?: string;
   options?: string[];
   resolved: boolean;
+  whyWeAsk?: string;
 }
 
 export interface ProjectComplexity {
@@ -205,7 +304,14 @@ export interface ProjectComplexity {
   summary: string;
 }
 
+export type EstimateQuality =
+  | 'EARLY_BENCHMARK'
+  | 'DEVELOPING_ESTIMATE'
+  | 'DETAILED_PRE_SURVEY'
+  | 'SURVEY_VALIDATED';
+
 export interface BudgetAlignment {
+  estimateQuality: EstimateQuality;
   indicativeCostRange: {
     min: number;
     max: number;
@@ -225,17 +331,22 @@ export interface ProjectVersion {
   briefSnapshot: string;
   dimensionsSnapshot: Record<string, any>;
   finishesSnapshot: Record<string, any>;
+  stateSnapshot?: ProjectState;
 }
 
 export interface VisualConceptState {
   currentConceptImage: string;
+  conceptType: 'conceptual_interpretation' | 'image_to_image_transformation';
   architecturalStyle: string;
   glazingType: string;
   flooringType: string;
+  cabinetryColor?: string;
   worktopType?: string;
+  lightingType?: string;
   visualPrompt: string;
   disclaimer: string;
   refinementsHistory: string[];
+  layoutPlanSvg?: string;
 }
 
 export interface ProjectState {

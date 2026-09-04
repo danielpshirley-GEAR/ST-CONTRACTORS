@@ -12,10 +12,11 @@ import {
   CheckCircle2,
   FileCheck2,
 } from 'lucide-react';
+import Link from 'next/link';
 
 interface ConversionBannerProps {
   state: ProjectState;
-  onOpenBriefModal: () => void;
+  onOpenBriefModal?: () => void;
 }
 
 export function ConversionBanner({ state, onOpenBriefModal }: ConversionBannerProps) {
@@ -29,7 +30,7 @@ export function ConversionBanner({ state, onOpenBriefModal }: ConversionBannerPr
   });
 
   return (
-    <section className="py-14 sm:py-18 bg-slate-900 text-white rounded-3xl relative overflow-hidden shadow-2xl">
+    <section className="py-14 sm:py-18 bg-slate-900 text-white rounded-3xl relative overflow-hidden shadow-2xl border border-slate-800">
       <div className="absolute inset-0 architectural-grid opacity-10 pointer-events-none" />
       <div className="relative z-10 max-w-2xl mx-auto text-center space-y-6 px-4">
         <Badge variant="brand" className="bg-[#FFAA4F] text-slate-950 font-extrabold text-xs px-3 py-1">
@@ -37,46 +38,47 @@ export function ConversionBanner({ state, onOpenBriefModal }: ConversionBannerPr
         </Badge>
 
         <h2 className="text-2xl sm:text-4xl font-extrabold font-heading text-white leading-tight">
-          Want us to turn this into a real project?
+          Want our team to review your project?
         </h2>
 
         <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-          Send your project plan to ST Contractors and our team will review the scope, identify anything that needs on-site confirmation, and provide a fixed-price proposal.
+          Book a free 30-minute technical project consultation with ST Contractors. We will review your brief, assess structural viability, and provide a comprehensive fixed Schedule of Works.
         </p>
 
-        {/* Action Buttons */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-          <Button
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
             href={`/contact?${queryParams.toString()}`}
-            variant="primary"
-            size="lg"
-            className="w-full sm:w-auto text-sm font-extrabold bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 border border-[#E69335] shadow-lg justify-center"
-            rightIcon={<ArrowRight className="h-4 w-4" />}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-extrabold text-sm border border-[#E69335] shadow-lg flex items-center justify-center gap-2 transition-all"
           >
-            Get My Project Reviewed
-          </Button>
+            <span>Book Free Project Consultation</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
 
-          <Button
-            type="button"
-            onClick={onOpenBriefModal}
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto text-white bg-slate-800 hover:bg-slate-700 border-slate-700 text-sm font-bold justify-center"
-            leftIcon={<FileCheck2 className="h-4 w-4" />}
-          >
-            View Builder-Ready Brief
-          </Button>
+          {onOpenBriefModal && (
+            <button
+              type="button"
+              onClick={onOpenBriefModal}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 transition-all flex items-center justify-center gap-2"
+            >
+              <FileCheck2 className="h-4 w-4 text-[#FFAA4F]" />
+              <span>Export Builder Brief</span>
+            </button>
+          )}
         </div>
 
-        <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span>Fixed-Price Milestone Contracts</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4 text-[#FFAA4F]" />
-            <span>10-Year Insurance-Backed Warranty</span>
-          </span>
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-400 pt-3">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <span>Direct Principal Contractor</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <span>FMB &amp; TrustMark Certified</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <span>Comprehensive £5M Insurance</span>
+          </div>
         </div>
       </div>
     </section>

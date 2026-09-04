@@ -14,6 +14,7 @@ import {
   RotateCw,
   Layers,
   Check,
+  Wand2,
 } from 'lucide-react';
 
 interface VisualConceptCardProps {
@@ -29,9 +30,19 @@ export const ARCHITECTURAL_STYLES = [
   { id: 'scandinavian_minimal', label: 'Scandinavian Minimal & Light Oak' },
 ];
 
+export const QUICK_MODIFIERS = [
+  'Add two frameless rooflights overhead',
+  'Make the central kitchen island larger',
+  'Change cabinetry color to dark forest green',
+  'Change cabinetry color to navy blue',
+  'Specify herringbone engineered oak parquet',
+  'Specify seamless architectural microcement',
+];
+
 export function VisualConceptCard({ state, onRefineVisual, isRefining }: VisualConceptCardProps) {
   const [refineInput, setRefineInput] = useState('');
   const visual = state.visualConcept;
+  const isImageToImage = visual.conceptType === 'image_to_image_transformation';
 
   const handleRefineSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,15 +56,24 @@ export function VisualConceptCard({ state, onRefineVisual, isRefining }: VisualC
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FFAA4F] block">
-            Section 2 • Architectural Concept
+            Section 2 • Architectural Concept &amp; Visualiser
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-heading mt-0.5">
             Visual Concept &amp; Design Direction
           </h2>
         </div>
-        <Badge variant="brand" className="bg-[#FFAA4F] text-slate-950 font-extrabold text-xs">
-          Concept Visualization
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge
+            variant={isImageToImage ? 'success' : 'brand'}
+            className={`text-xs font-extrabold ${
+              isImageToImage
+                ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                : 'bg-[#FFAA4F] text-slate-950 border-[#E69335]'
+            }`}
+          >
+            {isImageToImage ? 'Image-to-Image Transformation' : 'Conceptual Interpretation'}
+          </Badge>
+        </div>
       </div>
 
       {/* Main Visual Image Frame */}
@@ -75,6 +95,15 @@ export function VisualConceptCard({ state, onRefineVisual, isRefining }: VisualC
               {visual.architecturalStyle.replace(/_/g, ' ')}
             </span>
           </div>
+
+          {visual.cabinetryColor && (
+            <div className="p-3 rounded-xl bg-slate-900/90 backdrop-blur-md border border-white/20 text-white text-xs hidden sm:block">
+              <span className="text-[10px] text-slate-400 uppercase font-bold block">Cabinetry Finish</span>
+              <span className="font-bold text-amber-300 block mt-0.5">
+                {visual.cabinetryColor}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -84,6 +113,27 @@ export function VisualConceptCard({ state, onRefineVisual, isRefining }: VisualC
         <span className="leading-relaxed">
           <strong>Important Note: </strong>{visual.disclaimer}
         </span>
+      </div>
+
+      {/* Quick Modifier Chips */}
+      <div className="space-y-2 pt-2 border-t border-slate-100">
+        <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+          <Wand2 className="h-3.5 w-3.5 text-[#FFAA4F]" />
+          <span>Quick Design Adjustments:</span>
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {QUICK_MODIFIERS.map((mod, idx) => (
+            <button
+              key={idx}
+              type="button"
+              disabled={isRefining}
+              onClick={() => onRefineVisual(mod)}
+              className="text-xs font-medium px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-950 transition-all"
+            >
+              + {mod}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Style Selector Chips */}
@@ -96,6 +146,7 @@ export function VisualConceptCard({ state, onRefineVisual, isRefining }: VisualC
             <button
               key={style.id}
               type="button"
+              disabled={isRefining}
               onClick={() => onRefineVisual(`Switch design style to ${style.label}`)}
               className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-all ${
                 visual.architecturalStyle === style.id

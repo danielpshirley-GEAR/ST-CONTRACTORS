@@ -7,21 +7,16 @@ import { Badge } from '@/components/ui/Badge';
 import {
   FileText,
   Printer,
-  Download,
-  Share2,
   X,
   CheckCircle2,
-  Building,
-  Ruler,
-  PoundSterling,
 } from 'lucide-react';
-import { siteConfig } from '@/config/site';
+import { useRouter } from 'next/navigation';
 
 interface BuilderReadyBriefModalProps {
   state: ProjectState;
   isOpen: boolean;
   onClose: () => void;
-  onSendToSTContractors: () => void;
+  onSendToSTContractors?: () => void;
 }
 
 export function BuilderReadyBriefModal({
@@ -30,10 +25,19 @@ export function BuilderReadyBriefModal({
   onClose,
   onSendToSTContractors,
 }: BuilderReadyBriefModalProps) {
+  const router = useRouter();
   if (!isOpen) return null;
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleSend = () => {
+    if (onSendToSTContractors) {
+      onSendToSTContractors();
+    } else {
+      router.push(`/plan-my-project?source=visualiser&projectType=${state.projectTypes[0] || 'extension'}`);
+    }
   };
 
   const primarySpace = state.spaces[0];
@@ -106,7 +110,7 @@ export function BuilderReadyBriefModal({
                   <strong className="text-slate-900">{primarySpace.heightM.value}m</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Estimated Range</span>
+                  <span className="text-slate-400 block text-[10px]">Indicative Range</span>
                   <strong className="text-slate-900 text-[#FFAA4F]">{state.budgetAlignment.indicativeCostRange.formatted}</strong>
                 </div>
               </div>
@@ -164,7 +168,7 @@ export function BuilderReadyBriefModal({
 
           <Button
             type="button"
-            onClick={onSendToSTContractors}
+            onClick={handleSend}
             variant="primary"
             size="md"
             className="w-full sm:w-auto text-xs sm:text-sm font-extrabold bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 border border-[#E69335] shadow-md"

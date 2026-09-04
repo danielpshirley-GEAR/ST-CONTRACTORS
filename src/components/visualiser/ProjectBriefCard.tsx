@@ -13,22 +13,26 @@ import {
   Compass,
   MapPin,
   Edit2,
+  PlusCircle,
 } from 'lucide-react';
 
 interface ProjectBriefCardProps {
   state: ProjectState;
   onEditDimensions: () => void;
+  onAddPropertyInfo?: () => void;
 }
 
-export function ProjectBriefCard({ state, onEditDimensions }: ProjectBriefCardProps) {
+export function ProjectBriefCard({ state, onEditDimensions, onAddPropertyInfo }: ProjectBriefCardProps) {
   const primarySpace = state.spaces[0];
+  const isTypeUnknown = !state.property.type.value || state.property.type.value === 'unknown' || state.property.type.value === 'not_provided';
+  const isEraUnknown = !state.property.era.value || state.property.era.value === 'unknown' || state.property.era.value === 'not_provided';
 
   return (
     <div id="section-brief" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FFAA4F] block">
-            Section 1 • Project Brief
+            Section 1 • Project Brief &amp; Provenance
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-heading mt-0.5">
             Here&apos;s How We Understand Your Project
@@ -55,23 +59,43 @@ export function ProjectBriefCard({ state, onEditDimensions }: ProjectBriefCardPr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
         {/* Property Structure */}
         <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-heading">
-            <Home className="h-4 w-4 text-[#FFAA4F]" />
-            <span>Property Characteristics</span>
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-heading">
+              <Home className="h-4 w-4 text-[#FFAA4F]" />
+              <span>Property Characteristics</span>
+            </h3>
+            {onAddPropertyInfo && (isTypeUnknown || isEraUnknown) && (
+              <button
+                type="button"
+                onClick={onAddPropertyInfo}
+                className="text-[11px] font-bold text-[#FFAA4F] hover:text-amber-800 flex items-center gap-1"
+              >
+                <PlusCircle className="h-3 w-3" />
+                <span>Add Property Details</span>
+              </button>
+            )}
+          </div>
 
           <div className="space-y-2 text-xs">
             <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
               <span className="text-slate-500">Property Type:</span>
               <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                {state.property.type.value.replace(/_/g, ' ')}
+                {isTypeUnknown ? (
+                  <span className="text-slate-400 font-normal italic">Not yet provided</span>
+                ) : (
+                  state.property.type.value.replace(/_/g, ' ')
+                )}
                 <StatusTag status={state.property.type.status} />
               </span>
             </div>
             <div className="flex items-center justify-between py-1 border-b border-slate-200/60">
               <span className="text-slate-500">Architectural Era:</span>
               <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                {state.property.era.value}
+                {isEraUnknown ? (
+                  <span className="text-slate-400 font-normal italic">Not yet provided</span>
+                ) : (
+                  state.property.era.value
+                )}
                 <StatusTag status={state.property.era.status} />
               </span>
             </div>
@@ -136,6 +160,14 @@ function StatusTag({ status }: { status: string }) {
       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
         <CheckCircle2 className="h-2.5 w-2.5" />
         <span>Confirmed</span>
+      </span>
+    );
+  }
+  if (status === 'derived') {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-md">
+        <CheckCircle2 className="h-2.5 w-2.5" />
+        <span>Calculated</span>
       </span>
     );
   }

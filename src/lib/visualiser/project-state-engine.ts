@@ -1,7 +1,7 @@
 /**
  * Master Project State Coordinator Engine
  * Single source of truth for the AI Project Design & Scope Builder.
- * Complies with BUILD_SPEC.md & Master Visualiser Rebuild Specification.
+ * Complies with BUILD_SPEC.md and Phase 7B Specification.
  */
 
 import {
@@ -17,12 +17,18 @@ import {
   ProjectVersion,
   FinishTier,
   VisualConceptState,
+  ScopeOfWorkItem,
 } from '@/types/visualiser-scope';
 import { calculateProjectQuantities } from './scope-calculator';
 import { evaluateProjectFeasibility } from './feasibility-rules';
 import { generateConstructionPhases } from './phases-rules';
 import { generateThingsToConsider } from './considerations-rules';
 import { buildSpecificationTree, MASTER_FINISH_TIERS } from './specification-rules';
+import {
+  StructuredBriefExtraction,
+  StructuredChangeOperation,
+  extractBriefDeterministically,
+} from '@/lib/ai/visualiser-ai';
 
 export interface InitialProjectInput {
   briefText: string;
@@ -33,484 +39,555 @@ export interface InitialProjectInput {
   location?: string;
   budget?: number;
   desiredCompletion?: string;
+  aiExtraction?: StructuredBriefExtraction;
+  imageAnalyses?: UploadedAsset[];
 }
 
+/**
+ * Creates Initial Project State from validated Structured Extraction
+ * Strictly adheres to Zero-Assumption and Provenance-First architecture.
+ */
 export function createInitialProjectState(input: InitialProjectInput): ProjectState {
-  const brief = input.briefText || '';
-  const lower = brief.toLowerCase();
+  const extraction: StructuredBriefExtraction =
+    input.aiExtraction ||
+    extractBriefDeterministically({
+      briefText: input.briefText,
+      dimensions: input.dimensions,
+      propertyType: input.propertyType,
+      propertyEra: input.propertyEra,
+      location: input.location,
+      budget: input.budget,
+      desiredCompletion: input.desiredCompletion,
+    });
 
-  // 1. Detect Project Types (supports multiple)
-  const projectTypes: ProjectCategoryType[] = [];
-  if (lower.includes('bathroom') || lower.includes('ensuite') || lower.includes('shower') || lower.includes('wetroom')) {
-    projectTypes.push('bathroom-renovation');
-  }
-  if (lower.includes('kitchen') || lower.includes('diner') || lower.includes('cabinets') || lower.includes('island') || lower.includes('worktop')) {
-    projectTypes.push('kitchen-renovation');
-  }
-  if (lower.includes('extension') || lower.includes('extend') || lower.includes('rear extension') || lower.includes('side return') || lower.includes('wraparound')) {
-    projectTypes.push('extension');
-  }
-  if (lower.includes('loft') || lower.includes('attic') || lower.includes('dormer') || lower.includes('mansard')) {
-    projectTypes.push('loft-conversion');
-  }
-  if (lower.includes('garage')) {
-    projectTypes.push('garage-conversion');
-  }
-  if (lower.includes('garden room') || lower.includes('garden studio') || lower.includes('outbuilding')) {
-    projectTypes.push('garden-room');
-  }
-  if (lower.includes('driveway') || lower.includes('paving') || lower.includes('resin')) {
-    projectTypes.push('driveway');
-  }
-  if (lower.includes('landscaping') || lower.includes('patio') || lower.includes('decking')) {
-    projectTypes.push('landscaping');
-  }
-  if (lower.includes('full house') || lower.includes('full renovation') || lower.includes('whole house') || lower.includes('gut renovat')) {
-    projectTypes.push('full-renovation');
-  }
-  if (projectTypes.length === 0) {
-    projectTypes.push('kitchen-renovation'); // Default fallback
-  }
+  const projectTypes = extraction.projectTypes && extraction.projectTypes.length > 0
+    ? extraction.projectTypes
+    : (['unknown'] as ProjectCategoryType[]);
 
-  const hasStructuralKnockthrough =
-    lower.includes('knock') ||
-    lower.includes('remove wall') ||
-    lower.includes('open plan') ||
-    lower.includes('steel') ||
-    lower.includes('rsj') ||
-    lower.includes('beam');
+  const hasStructuralAlteration = extraction.hasStructuralAlteration ?? false;
 
-  // 2. Property Info
-  const detectedEra = (input.propertyEra as any) || (lower.includes('victorian') ? 'victorian' : lower.includes('edwardian') ? 'edwardian' : lower.includes('1930') ? '1930s' : 'victorian');
-  const detectedBuilding = (input.propertyType as any) || (lower.includes('terrace') ? 'terraced' : lower.includes('semi') ? 'semi_detached' : lower.includes('detached') ? 'detached' : lower.includes('flat') ? 'flat' : 'terraced');
+  // 1. Property Setup (Preserving 'not_provided' / 'unknown' - Item 3)
+  const propEra = extraction.property.era || 'not_provided';
+  const propType = extraction.property.type || 'not_provided';
 
   const property: ProjectPropertyInfo = {
     type: {
-      value: detectedBuilding,
+      value: propType,
       source: input.propertyType ? 'user_statement' : 'system_assumption',
-      status: input.propertyType ? 'confirmed' : 'assumed',
+      status: propType !== 'not_provided' && propType !== 'unknown' ? 'confirmed' : 'unknown',
     },
     era: {
-      value: detectedEra,
+      value: propEra,
       source: input.propertyEra ? 'user_statement' : 'system_assumption',
-      status: input.propertyEra ? 'confirmed' : 'assumed',
+      status: propEra !== 'not_provided' && propEra !== 'unknown' ? 'confirmed' : 'unknown',
     },
     storeys: {
-      value: lower.includes('flat') ? 1 : 2,
+      value: extraction.property.storeys || (propType === 'flat' ? 1 : 2),
       source: 'system_assumption',
       status: 'assumed',
     },
     location: {
-      value: input.location || 'London & South East',
+      value: extraction.property.location || input.location || 'London & South East',
       source: input.location ? 'user_statement' : 'system_assumption',
       status: input.location ? 'confirmed' : 'assumed',
     },
     isConservationArea: {
-      value: lower.includes('conservation'),
+      value: Boolean(extraction.property.isConservationArea),
       source: 'user_statement',
-      status: lower.includes('conservation') ? 'confirmed' : 'unknown',
+      status: extraction.property.isConservationArea !== undefined ? 'confirmed' : 'unknown',
     },
     isListedBuilding: {
-      value: lower.includes('listed'),
+      value: Boolean(extraction.property.isListedBuilding),
       source: 'user_statement',
-      status: lower.includes('listed') ? 'confirmed' : 'unknown',
+      status: extraction.property.isListedBuilding !== undefined ? 'confirmed' : 'unknown',
     },
     existingCondition: {
-      value: 'Unmodernised residential interior',
+      value: extraction.property.existingCondition || 'Existing residential space',
       source: 'system_assumption',
       status: 'assumed',
     },
   };
 
-  // 3. Primary Space & Dimensions
-  let length = input.dimensions?.length || 0;
-  let width = input.dimensions?.width || 0;
-  let height = input.dimensions?.height || 2.4;
+  // 2. Spaces Setup
+  const spaces: ProjectSpace[] = (extraction.spaces && extraction.spaces.length > 0)
+    ? extraction.spaces.map((s, idx) => {
+        const length = s.lengthM || (projectTypes.includes('driveway') ? 8.0 : projectTypes.includes('bathroom-renovation') ? 2.5 : 5.0);
+        const width = s.widthM || (projectTypes.includes('driveway') ? 5.0 : projectTypes.includes('bathroom-renovation') ? 2.0 : 4.0);
+        const height = s.heightM || 2.4;
+        const area = Math.round(length * width * 10) / 10;
 
-  // Extract dimensions from text if not supplied explicitly (e.g. "5m x 4m" or "5x4")
-  if (length === 0 || width === 0) {
-    const dimMatch = brief.match(/(\d+(\.\d+)?)\s*(?:m|metres|meters)?\s*(?:x|by|\*)\s*(\d+(\.\d+)?)\s*(?:m|metres|meters)?/i);
-    if (dimMatch) {
-      length = parseFloat(dimMatch[1]);
-      width = parseFloat(dimMatch[3]);
-    }
-  }
+        return {
+          id: `space-${idx + 1}`,
+          name: s.name || (idx === 0 ? 'Main Project Area' : `Secondary Space ${idx + 1}`),
+          lengthM: {
+            value: length,
+            source: s.lengthM ? 'user_statement' : 'system_assumption',
+            status: s.lengthM ? 'confirmed' : 'assumed',
+          },
+          widthM: {
+            value: width,
+            source: s.widthM ? 'user_statement' : 'system_assumption',
+            status: s.widthM ? 'confirmed' : 'assumed',
+          },
+          heightM: {
+            value: height,
+            source: s.heightM ? 'user_statement' : 'system_assumption',
+            status: s.heightM ? 'confirmed' : 'assumed',
+          },
+          areaM2: {
+            value: area,
+            source: s.lengthM && s.widthM ? 'derived_calculation' : 'system_assumption',
+            status: s.lengthM && s.widthM ? 'derived' : 'assumed',
+          },
+          desiredChanges: s.desiredChanges || [input.briefText],
+          fixtures: s.fixtures || [],
+          constraints: s.constraints || [],
+          isPrimary: idx === 0,
+        };
+      })
+    : [
+        {
+          id: 'space-1',
+          name: projectTypes[0] === 'driveway' ? 'Front Driveway & Entrance' : projectTypes[0] === 'bedroom' ? "Baby's Bedroom & Nursery" : 'Main Project Space',
+          lengthM: { value: 5.0, source: 'system_assumption', status: 'assumed' },
+          widthM: { value: 4.0, source: 'system_assumption', status: 'assumed' },
+          heightM: { value: 2.4, source: 'system_assumption', status: 'assumed' },
+          areaM2: { value: 20.0, source: 'system_assumption', status: 'assumed' },
+          desiredChanges: [input.briefText],
+          fixtures: [],
+          constraints: [],
+          isPrimary: true,
+        },
+      ];
 
-  const isConfirmedDims = length > 0 && width > 0;
-  // If still 0, provide default realistic starting assumption for visualization
-  if (length === 0) length = projectTypes.includes('extension') ? 5.0 : projectTypes.includes('bathroom-renovation') ? 2.8 : 4.5;
-  if (width === 0) width = projectTypes.includes('extension') ? 3.5 : projectTypes.includes('bathroom-renovation') ? 2.2 : 3.8;
-
-  const spaceName = projectTypes.includes('bathroom-renovation')
-    ? 'Family Bathroom Suite'
-    : projectTypes.includes('extension')
-    ? 'Rear Extension & Kitchen Living Space'
-    : projectTypes.includes('loft-conversion')
-    ? 'Master Bedroom Suite & En-Suite'
-    : 'Open-Plan Kitchen & Dining Space';
-
-  const spaces: ProjectSpace[] = [
-    {
-      id: 'space-primary',
-      name: spaceName,
-      lengthM: {
-        value: length,
-        source: isConfirmedDims ? 'user_statement' : 'system_assumption',
-        status: isConfirmedDims ? 'confirmed' : 'assumed',
-      },
-      widthM: {
-        value: width,
-        source: isConfirmedDims ? 'user_statement' : 'system_assumption',
-        status: isConfirmedDims ? 'confirmed' : 'assumed',
-      },
-      heightM: {
-        value: height,
-        source: 'system_assumption',
-        status: 'assumed',
-      },
-      areaM2: {
-        value: Math.round(length * width * 10) / 10,
-        source: 'derived_calculation',
-        status: isConfirmedDims ? 'confirmed' : 'assumed',
-      },
-      desiredChanges: [
-        'Open-plan layout reconfiguration',
-        'High-specification fixtures and bespoke cabinetry/tiling',
-        'Underfloor heating and architectural lighting circuits',
-      ],
-      fixtures: projectTypes.includes('kitchen-renovation')
-        ? ['Central Kitchen Island', 'Induction Cooktop with Downdraft', 'Quartz Worktops', 'Undermount Sink']
-        : ['Concealed Thermostatic Shower', 'Wall-Hung Vanity', 'Schlüter Tanking'],
-      constraints: ['Existing load-bearing walls', 'Subfloor joist load capacity'],
-      isPrimary: true,
-    },
-  ];
-
-  // 4. Uploaded Assets
-  const uploadedAssets: UploadedAsset[] = (input.images || []).map((img, idx) => ({
+  // 3. Uploaded Assets
+  const uploadedAssets: UploadedAsset[] = input.imageAnalyses || (input.images || []).map((img, idx) => ({
     id: `asset-${idx + 1}`,
     url: img.url,
-    filename: img.filename || `Photo ${idx + 1}`,
+    filename: img.filename,
     classifiedCategory: (img.category as any) || (idx === 0 ? 'existing_condition' : 'inspiration'),
-    extractedDetails: {
-      visibleFeatures: ['Rectangular room layout', 'Suspended timber flooring', 'Rear exterior wall opening'],
-    },
+    classificationConfidence: 80,
   }));
 
-  // 5. System Assumptions
-  const assumptions: SystemAssumption[] = [];
-  if (!isConfirmedDims) {
-    assumptions.push({
-      id: 'assump-dims',
-      key: 'room_dimensions',
-      label: 'Room Dimensions',
-      assumedValue: `Approximately ${length}m × ${width}m (${Math.round(length * width)}m²)`,
-      reasonForAssumption: 'No exact measurements supplied; standard residential room scale assumed for initial quantities and layout planning.',
-      status: 'active',
-    });
-  }
-  assumptions.push(
-    {
-      id: 'assump-ceiling',
-      key: 'ceiling_height',
-      label: 'Ceiling Height',
-      assumedValue: '2.4 metres finished height',
-      reasonForAssumption: 'Standard UK residential ceiling clearance assumed for wall plasterboard and paint quantities.',
-      status: 'active',
-    },
-    {
-      id: 'assump-property-era',
-      key: 'property_era',
-      label: 'Property Era & Construction',
-      assumedValue: property.era.value === 'victorian' ? 'Victorian solid brick (1837–1901)' : 'Modern cavity wall',
-      reasonForAssumption: 'Assumed based on London regional distribution; dictates Party Wall and subfloor joist requirements.',
-      status: 'active',
-    },
-    {
-      id: 'assump-services',
-      key: 'services_location',
-      label: 'Services & Drainage',
-      assumedValue: 'Existing foul drainage stack located within 5m of proposed wet zones',
-      reasonForAssumption: 'Assumed gravity fall can be achieved without requiring mechanical macerator pumps.',
-      status: 'active',
-    }
-  );
+  const hasExistingPhoto = uploadedAssets.some((a) => a.classifiedCategory === 'existing_condition');
 
-  // 6. Missing Information Ranking
-  const missingInformation: MissingInfoItem[] = [];
-  if (!isConfirmedDims) {
-    missingInformation.push({
-      id: 'miss-dims',
-      impact: 'HIGH',
-      field: 'room_dimensions',
-      question: 'What are the approximate length and width of your target space?',
-      whyWeAsk: 'Exact measurements allow our deterministic quantity engine to calculate accurate flooring, plasterboard, paint, and worktop square meterage.',
-      category: 'Dimensions',
-      resolved: false,
-    });
-  }
-  if (hasStructuralKnockthrough || projectTypes.includes('extension')) {
-    missingInformation.push({
-      id: 'miss-wall-type',
-      impact: 'HIGH',
-      field: 'structural_wall',
-      question: 'Do you know if the wall being altered is load-bearing (solid brick vs timber stud)?',
-      whyWeAsk: 'Load-bearing walls require structural steel RSJ beam sizing, concrete padstones, and Building Control engineering calculations.',
-      category: 'Structure',
-      options: ['Solid Brick (Load-Bearing)', 'Timber Stud Partition (Non-Load-Bearing)', 'Not Sure — Needs Site Survey'],
-      resolved: false,
-    });
-  }
-  missingInformation.push(
-    {
-      id: 'miss-island-function',
-      impact: 'MEDIUM',
-      field: 'island_features',
-      question: 'Would you like your kitchen island to include the sink, induction hob, breakfast seating, or pure prep space?',
-      whyWeAsk: 'Placing a sink or hob on an island requires channelling plumbing waste or 32A power into the subfloor before screeding.',
-      category: 'Layout',
-      options: ['Hob + Downdraft Extractor', 'Sink & Dishwasher', 'Breakfast Bar Seating Only', 'Pure Food Preparation Surface'],
-      resolved: false,
-    },
-    {
-      id: 'miss-living-continuity',
-      impact: 'LOW',
-      field: 'living_in_property',
-      question: 'Are you planning to remain living in the property during the construction works?',
-      whyWeAsk: 'Dictates site setup logistics, temporary dust partitions, and temporary kitchen/washing provision.',
-      category: 'Logistics',
-      options: ['Yes — Staying in Property', 'No — Vacating / Rented Nearby'],
-      resolved: false,
-    }
-  );
-
-  // 7. Visual Concept
-  const visualConcept: VisualConceptState = {
-    currentConceptImage: projectTypes.includes('bathroom-renovation')
-      ? '/images/services/bathroom-renovations.png'
-      : projectTypes.includes('loft-conversion')
-      ? '/images/services/loft-conversions.png'
-      : projectTypes.includes('garden-room')
-      ? '/images/services/garden-rooms.png'
-      : '/images/services/house-extensions.png',
-    architecturalStyle: 'contemporary_glass',
-    glazingType: 'slimline_aluminium_bifold',
-    flooringType: 'herringbone_engineered_oak',
-    worktopType: 'calacatta_quartz',
-    visualPrompt: `Architectural concept visualization for ${brief}. High-end residential finish with natural light and level-threshold garden views.`,
-    disclaimer: 'Concept visualisation — intended to explore layout, materials, and design direction. Structural feasibility, exact dimensions, and final specification require confirmation.',
-    refinementsHistory: [],
+  // 4. Finish Selections & Specification Tree
+  const globalTier: FinishTier = extraction.assumedFinishTier || 'enhanced';
+  const finishSelections: Record<string, FinishTier> = {
+    Cabinetry: globalTier,
+    Worktops: globalTier,
+    Flooring: globalTier,
+    Lighting: globalTier,
   };
 
-  // 8. Scope of Works
-  const scopeOfWorks = buildScopeOfWorks(projectTypes, hasStructuralKnockthrough);
+  const specTree = buildSpecificationTree(projectTypes, spaces, globalTier);
 
-  // 9. Calculated Quantities (Deterministic)
-  const calculatedQuantities = calculateProjectQuantities(spaces, projectTypes, hasStructuralKnockthrough);
+  // 5. Quantities Calculation
+  const quantities = calculateProjectQuantities(spaces, projectTypes, hasStructuralAlteration, {
+    flooringMaterial: extraction.flooringPreference || 'herringbone_engineered_oak',
+    hasStructuralAlteration,
+  });
 
-  // 10. Feasibility & Constraints
-  const feasibility = evaluateProjectFeasibility(projectTypes, hasStructuralKnockthrough, false, property, brief);
+  // 6. Feasibility & Constraints
+  const feasibility = evaluateProjectFeasibility(
+    projectTypes,
+    hasStructuralAlteration,
+    false,
+    property,
+    input.briefText
+  );
 
-  // 11. Construction Phases
-  const phases = generateConstructionPhases(projectTypes, hasStructuralKnockthrough);
+  // 7. Construction Phases & Considerations
+  const phases = generateConstructionPhases(projectTypes, hasStructuralAlteration);
+  const considerations = generateThingsToConsider(projectTypes, property, input.briefText, hasStructuralAlteration);
 
-  // 12. Things to Consider (Balanced 4, 6, or 8)
-  const thingsToConsider = generateThingsToConsider(projectTypes, property, brief, hasStructuralKnockthrough);
+  // 8. Scope of Works Generation
+  const scopeOfWorks = generateProjectSpecificScope(projectTypes, hasStructuralAlteration, globalTier, spaces[0]?.name || 'Space');
 
-  // 13. Specification Tree
-  const specificationTree = buildSpecificationTree(projectTypes, spaces, 'enhanced');
+  // 9. System Assumptions (with reasons & affected calculations - Item 4)
+  const assumptions: SystemAssumption[] = (extraction.assumptions || []).map((a, idx) => ({
+    id: `assump-${idx + 1}`,
+    key: a.key,
+    label: a.label,
+    value: a.value,
+    reason: a.reason,
+    source: 'system_assumption',
+    confidence: a.confidence,
+    affectedCalculations: a.affectedCalculations,
+    userEditable: true,
+    status: 'active',
+  }));
 
-  // 14. Complexity
-  const complexity = evaluateComplexity(projectTypes, hasStructuralKnockthrough, property.type.value === 'terraced');
+  // 10. Missing Information Items (with priority scoring - Item 29)
+  const missingInformation: MissingInfoItem[] = (extraction.missingInformation || []).map((m, idx) => {
+    const priorityScore = (m.scopeImpact * 3) + (m.costImpact * 3) + (m.feasibilityImpact * 3) + (m.quantityImpact * 2) - (m.userEffort * 1);
+    return {
+      id: `missing-${idx + 1}`,
+      field: m.field,
+      question: m.question,
+      category: m.category,
+      scopeImpact: m.scopeImpact,
+      costImpact: m.costImpact,
+      feasibilityImpact: m.feasibilityImpact,
+      visualImpact: m.visualImpact,
+      quantityImpact: m.quantityImpact,
+      userEffort: m.userEffort,
+      priorityScore,
+      applicabilityCondition: m.applicabilityCondition,
+      options: m.options,
+      resolved: false,
+    };
+  }).sort((a, b) => b.priorityScore - a.priorityScore);
 
-  // 15. Budget Alignment
-  const budgetAlignment = evaluateBudgetAlignment(projectTypes, length * width, 'enhanced');
+  // 11. Visual Concept Generation
+  const visualConcept = buildVisualConcept(
+    projectTypes,
+    globalTier,
+    spaces[0],
+    extraction,
+    hasExistingPhoto,
+    uploadedAssets
+  );
 
-  // 16. Completeness Score
-  const completenessScore = isConfirmedDims ? 78 : 55;
+  // 12. Project Complexity & Budget Alignment
+  const complexity = evaluateComplexity(projectTypes, hasStructuralAlteration, property.type.value === 'terraced');
+  const budgetAlignment = evaluateBudgetAlignment(projectTypes, spaces[0]?.areaM2.value || 20, globalTier, hasStructuralAlteration);
 
-  // 17. Initial Version
-  const versions: ProjectVersion[] = [
-    {
-      versionNumber: 1,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      description: 'Initial AI brief interpretation & scope baseline',
-      briefSnapshot: brief,
-      dimensionsSnapshot: { length, width, height },
-      finishesSnapshot: { tier: 'enhanced' },
-    },
-  ];
+  // 13. Weighted Completeness Score (Item 30)
+  const completenessScore = calculateCompletenessScore(extraction, input);
 
-  // Interpreted Intent Summary
-  let interpretedIntent = `Create a high-specification ${projectTypes.map((t) => t.replace(/-/g, ' ')).join(' & ')} `;
-  if (hasStructuralKnockthrough) interpretedIntent += 'with an open-plan structural knockthrough, ';
-  interpretedIntent += `optimising natural light, functional layout circulation, and seamless interior finishes.`;
+  const initialBrief = input.briefText || 'Transform existing space with modern architectural finishes';
+  const initialIntent = extraction.interpretedIntent || (projectTypes.includes('unknown') ? 'Homeowner looking to explore renovation design and costs' : `Architectural plan for ${projectTypes.map((t) => t.replace(/-/g, ' ')).join(' & ')}`);
 
-  return {
-    projectId: `prj-${Date.now()}`,
+  const state: ProjectState = {
+    projectId: `proj-${Date.now().toString(36)}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    originalBrief: brief,
-    interpretedIntent,
+    originalBrief: initialBrief,
+    interpretedIntent: initialIntent,
     projectTypes,
     property,
     spaces,
     uploadedAssets,
     visualConcept,
-    finishSelections: {
-      Cabinetry: 'enhanced',
-      Worktops: 'enhanced',
-      Flooring: 'enhanced',
-      Lighting: 'enhanced',
-      Glazing: 'enhanced',
-    },
+    finishSelections,
     finishTiers: MASTER_FINISH_TIERS,
     scopeOfWorks,
     phases,
-    thingsToConsider,
-    specificationTree,
-    calculatedQuantities,
+    thingsToConsider: considerations,
+    specificationTree: specTree,
+    calculatedQuantities: quantities,
     feasibility,
     assumptions,
     missingInformation,
     complexity,
     budgetAlignment,
     completenessScore,
-    versions,
-    chatHistory: [
-      {
-        role: 'assistant',
-        message: `Hello! I have interpreted your project brief and generated a preliminary architectural concept, deterministic quantities, and trade-by-trade scope of works. You can refine any dimension, ask questions, or customize finishes below.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ],
+    versions: [],
+    chatHistory: [],
   };
+
+  // Add Initial Version Snapshot (Immutable - Item 17)
+  state.versions.push({
+    versionNumber: 1,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    description: 'Initial Architectural Brief & Scope Baseline',
+    briefSnapshot: initialBrief,
+    dimensionsSnapshot: {
+      length: spaces[0]?.lengthM.value,
+      width: spaces[0]?.widthM.value,
+      area: spaces[0]?.areaM2.value,
+    },
+    finishesSnapshot: { ...finishSelections },
+    stateSnapshot: JSON.parse(JSON.stringify(state)),
+  });
+
+  return state;
 }
 
-function buildScopeOfWorks(projectTypes: ProjectCategoryType[], hasStructuralKnockthrough: boolean) {
-  const items: any[] = [];
+/**
+ * Generates Scope of Works with 3 Strict States (Item 31 & 32)
+ */
+function generateProjectSpecificScope(
+  projectTypes: ProjectCategoryType[],
+  hasStructural: boolean,
+  tier: FinishTier,
+  spaceName: string
+): ScopeOfWorkItem[] {
+  const items: ScopeOfWorkItem[] = [];
   let id = 1;
 
-  // 1. Preparation
+  const isDriveway = projectTypes.includes('driveway');
+  const isJoinery = projectTypes.includes('joinery');
+  const isBedroom = projectTypes.includes('bedroom') || projectTypes.includes('decorating');
+  const isExtension = projectTypes.includes('extension');
+  const isKitchen = projectTypes.includes('kitchen-renovation');
+  const isBathroom = projectTypes.includes('bathroom-renovation');
+
+  if (isDriveway) {
+    items.push({
+      id: `scope-${id++}`,
+      trade: 'Groundworks',
+      category: 'Demolition & Groundworks',
+      title: 'Driveway Subgrade Excavation & CAT Scanning',
+      description: 'Scan utility cables and excavate existing driveway surface down to 250mm depth with grab lorry spoil removal.',
+      included: true,
+      status: 'CONFIRMED_IN_SCOPE',
+      isStructural: false,
+      finishTier: 'standard',
+    });
+    items.push({
+      id: `scope-${id++}`,
+      trade: 'Paving Specialist',
+      category: 'Paving',
+      title: 'Permeable Sub-Base & Block Paving / Resin Surfacing',
+      description: 'Compacted MOT Type 3 stone layer, concrete haunched borders, and permeable block or resin-bound surface.',
+      included: true,
+      status: 'CONFIRMED_IN_SCOPE',
+      isStructural: false,
+      finishTier: tier,
+    });
+    items.push({
+      id: `scope-${id++}`,
+      trade: 'Drainage',
+      category: 'Drainage',
+      title: 'ACO Slot Channel Drainage to Soakaway Crates',
+      description: 'Install continuous slot drainage channels connected to an underground stormwater soakaway.',
+      included: true,
+      status: 'CONFIRMED_IN_SCOPE',
+      isStructural: false,
+      finishTier: 'standard',
+    });
+    return items;
+  }
+
+  if (isJoinery) {
+    items.push({
+      id: `scope-${id++}`,
+      trade: 'Bespoke Joinery',
+      category: 'Joinery',
+      title: 'Floor-to-Ceiling Made-to-Measure Fitted Wardrobes',
+      description: 'Precision CAD-drafted wardrobe carcasses, custom painted shaker doors, and Blum soft-close hardware.',
+      included: true,
+      status: 'CONFIRMED_IN_SCOPE',
+      isStructural: false,
+      finishTier: tier,
+    });
+    items.push({
+      id: `scope-${id++}`,
+      trade: 'Electrical (Part P)',
+      category: 'Electrics',
+      title: 'Integrated Internal Sensor LED Strip Lighting',
+      description: 'Low-voltage warm LED lighting channels recessed into wardrobe frame triggered on door opening.',
+      included: true,
+      status: 'CONFIRMED_IN_SCOPE',
+      isStructural: false,
+      finishTier: tier,
+    });
+    return items;
+  }
+
+  // 1. Preparation & Site Protection
   items.push({
     id: `scope-${id++}`,
-    trade: 'Site Setup & Protection',
+    trade: 'General Building',
     category: 'Preparation',
-    title: 'Site Protection & Service Isolation',
-    description: 'Erect sealed corex floor protection and zippered dust-barrier partitions isolating live construction zones from living spaces.',
+    title: 'Floor Protection, Corex Sheeting & Zipper Dust Screens',
+    description: 'Erect sealed polythene dust barriers to isolate work zones and install heavy-duty corex floor protection throughout access paths.',
     included: true,
+    status: 'CONFIRMED_IN_SCOPE',
     isStructural: false,
     finishTier: 'standard',
   });
 
-  // 2. Structural
-  if (projectTypes.includes('extension') || hasStructuralKnockthrough) {
+  // 2. Structural Steel (Only if actually in scope)
+  if (hasStructural) {
     items.push({
       id: `scope-${id++}`,
-      trade: 'Structural Engineering',
+      trade: 'Structural Engineering & Steel',
       category: 'Structure',
-      title: 'Structural Steel Goalpost & Padstone Installation',
-      description: 'Temporary Acrow propping, knocking through load-bearing brickwork, bedded concrete padstones, and installation of universal beam RSJs.',
+      title: 'Universal Beam / Column (RSJ) Frame & Concrete Padstones',
+      description: 'Temporary Acro propping, demolition of load-bearing masonry, casting high-density concrete padstones, and craning structural steel frame into place.',
       included: true,
+      status: 'CONFIRMED_IN_SCOPE',
       isStructural: true,
-      finishTier: 'enhanced',
-      requiresInspection: true,
+      finishTier: 'standard',
     });
   }
 
-  // 3. Groundworks
-  if (projectTypes.includes('extension')) {
+  // 3. Groundworks (Only for extensions)
+  if (isExtension) {
     items.push({
       id: `scope-${id++}`,
       trade: 'Groundworks',
       category: 'Substructure',
-      title: 'Excavation & C25/30 Concrete Trench Foundations',
-      description: '1.2m–1.8m perimeter trench excavation, Thames Water build-over protection, concrete foundation pour, and DPM insulated floor slab.',
+      title: 'Foundation Trench Excavation & Ready-Mix Concrete Pour',
+      description: 'Digging foundation trenches to solid ground, Building Control inspection, and C25/30 ready-mix concrete pour.',
       included: true,
+      status: 'CONFIRMED_IN_SCOPE',
       isStructural: true,
       finishTier: 'standard',
-      requiresInspection: true,
     });
-  }
-
-  // 4. Glazing
-  if (projectTypes.includes('extension') || projectTypes.includes('kitchen-renovation')) {
     items.push({
       id: `scope-${id++}`,
-      trade: 'Glazing Installation',
-      category: 'Envelope',
-      title: 'Thermally Broken Aluminium Sliding / Bifold Doors',
-      description: 'Low-E argon-filled solar control glass aperture with recessed drainage track for seamless indoor-outdoor patio threshold.',
+      trade: 'Drainage',
+      category: 'Drainage',
+      title: 'Thames Water CCTV Survey & Drainage Build-Over Alignment',
+      description: 'Pre-construction CCTV survey and installation of airtight double-sealed internal inspection covers.',
       included: true,
+      status: 'PROVISIONAL',
+      reason: 'Underground drainage condition must be verified on site.',
       isStructural: false,
-      finishTier: 'enhanced',
+      finishTier: 'standard',
     });
   }
 
-  // 5. MEP
-  items.push({
-    id: `scope-${id++}`,
-    trade: 'Electrical (NICEIC Part P)',
-    category: 'M&E',
-    title: 'First-Fix Rewiring & High-Load Appliance Circuits',
-    description: 'Dedicated 32A induction hob circuit, island floor channels, LED downlight rings, and consumer unit surge protection.',
-    included: true,
-    isStructural: false,
-    finishTier: 'enhanced',
-    requiresInspection: true,
-  });
-
-  items.push({
-    id: `scope-${id++}`,
-    trade: 'Plumbing & Heating',
-    category: 'M&E',
-    title: 'Manifold Underfloor Heating & Plumbing Feeds',
-    description: 'Wet underfloor heating pipe loops with programmable multi-zone thermostats and hot/cold water feeds.',
-    included: true,
-    isStructural: false,
-    finishTier: 'enhanced',
-  });
-
-  // 6. Joinery / Kitchen / Bathroom
-  if (projectTypes.includes('kitchen-renovation') || projectTypes.includes('extension')) {
+  // 4. Kitchen Cabinetry (Only if kitchen)
+  if (isKitchen) {
     items.push({
       id: `scope-${id++}`,
       trade: 'Kitchen Fitting',
-      category: 'Fit-Out',
-      title: 'Cabinetry Fitting, Island Assembly & Stone Worktops',
-      description: 'Precision laser leveling of cabinetry carcasses, soft-close drawers, appliance integration, and 20mm/30mm quartz stone installation.',
+      category: 'Cabinetry',
+      title: 'Bespoke Fitted Kitchen Units, Island & Quartz Worktops',
+      description: 'Installation of high-grade cabinetry, laser-templated 20mm/30mm quartz worktops, and undermounted sink.',
       included: true,
+      status: 'CONFIRMED_IN_SCOPE',
       isStructural: false,
-      finishTier: 'enhanced',
+      finishTier: tier,
     });
   }
 
-  if (projectTypes.includes('bathroom-renovation')) {
+  // 5. Bathroom (Only if bathroom)
+  if (isBathroom) {
     items.push({
       id: `scope-${id++}`,
-      trade: 'Tiling & Waterproofing',
+      trade: 'Plumbing & Waterproofing',
       category: 'Sanitaryware',
-      title: 'Full Schlüter Tanking & Italian Porcelain Tiling',
-      description: '100% waterproof membrane application, 45-degree mitred tile corners, Geberit concealed cistern, and rainfall shower brassware.',
+      title: 'Schlüter Waterproof Tanking, Concealed Valve & Sanitaryware',
+      description: '100% waterproof membrane application in wet zones, concealed thermostatic valves, and wall-hung pan installation.',
       included: true,
+      status: 'CONFIRMED_IN_SCOPE',
       isStructural: false,
-      finishTier: 'enhanced',
+      finishTier: tier,
     });
   }
 
-  // 7. Finishes
+  // 6. Finishes & Decorating
   items.push({
     id: `scope-${id++}`,
     trade: 'Decorating',
     category: 'Finishes',
-    title: 'Flawless Plaster Skimming & Designer Emulsion Painting',
+    title: 'Plaster Skimming & Washable Designer Emulsion Paint',
     description: 'Thistle Multi-Finish skim coat, mist coat primer, and 2 full coats of durable washable emulsion paint.',
     included: true,
+    status: 'CONFIRMED_IN_SCOPE',
     isStructural: false,
-    finishTier: 'enhanced',
+    finishTier: tier,
   });
 
   return items;
+}
+
+/**
+ * Visual Concept Builder with SVG Layout Plan Generation
+ */
+function buildVisualConcept(
+  projectTypes: ProjectCategoryType[],
+  tier: FinishTier,
+  space: ProjectSpace,
+  extraction: StructuredBriefExtraction,
+  hasExistingPhoto: boolean,
+  assets: UploadedAsset[]
+): VisualConceptState {
+  const isExtension = projectTypes.includes('extension');
+  const isKitchen = projectTypes.includes('kitchen-renovation');
+  const isBathroom = projectTypes.includes('bathroom-renovation');
+  const isDriveway = projectTypes.includes('driveway');
+  const isJoinery = projectTypes.includes('joinery');
+  const isBedroom = projectTypes.includes('bedroom') || projectTypes.includes('decorating');
+
+  let defaultImage = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80';
+  let architecturalStyle = 'Contemporary Architectural';
+
+  if (isDriveway) {
+    defaultImage = 'https://images.unsplash.com/photo-1590496793929-36417d3117de?auto=format&fit=crop&w=1600&q=80';
+    architecturalStyle = 'Permeable Resin-Bound Paving';
+  } else if (isJoinery) {
+    defaultImage = 'https://images.unsplash.com/photo-1558997519-83ea9252def8?auto=format&fit=crop&w=1600&q=80';
+    architecturalStyle = 'Bespoke Floor-to-Ceiling Joinery';
+  } else if (isBedroom) {
+    defaultImage = 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=1600&q=80';
+    architecturalStyle = 'Serene Scandinavian Nursery / Bedroom';
+  } else if (isBathroom) {
+    defaultImage = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1600&q=80';
+    architecturalStyle = 'Minimalist Luxury Porcelain Bathroom';
+  } else if (isExtension) {
+    defaultImage = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80';
+    architecturalStyle = 'Architectural Glass Rear Extension';
+  }
+
+  // Use uploaded existing photo if available
+  const existingAsset = assets.find((a) => a.classifiedCategory === 'existing_condition');
+  const currentConceptImage = existingAsset ? existingAsset.url : defaultImage;
+
+  const visualPrompt = `Ultra-clean architectural photograph of ${space?.name || 'space'}, finished in ${tier} specification with ${extraction.flooringPreference || 'herringbone engineered oak'} and natural ambient daylight.`;
+
+  return {
+    currentConceptImage,
+    conceptType: existingAsset ? 'image_to_image_transformation' : 'conceptual_interpretation',
+    architecturalStyle,
+    glazingType: isExtension ? 'Slimline Aluminium Bifolds / Sliding Glass' : 'Architectural Windows',
+    flooringType: extraction.flooringPreference || 'Herringbone European Oak Parquet',
+    cabinetryColor: extraction.cabinetryPreference || 'Handmade In-Frame Sage / Navy Shaker',
+    worktopType: '30mm Calacatta Quartz with Waterfall Edge',
+    lightingType: 'Plaster-in Flush LED Downlights & Island Pendants',
+    visualPrompt,
+    disclaimer: existingAsset
+      ? 'Transformation concept based on your uploaded property photograph and requested design finishes.'
+      : 'Conceptual architectural interpretation. Sizing and layouts represent indicative styling for preliminary planning.',
+    refinementsHistory: ['Initial design generated'],
+  };
+}
+
+/**
+ * Calculates Real Weighted Completeness Score (Item 30)
+ */
+function calculateCompletenessScore(extraction: StructuredBriefExtraction, input: InitialProjectInput): number {
+  let score = 0;
+
+  // 1. Project Intent (15%)
+  if (!extraction.projectTypes.includes('unknown')) score += 15;
+  else if (input.briefText && input.briefText.length > 5) score += 5;
+
+  // 2. Spaces (10%)
+  if (extraction.spaces && extraction.spaces.length > 0) score += 10;
+
+  // 3. Dimensions (15%)
+  const primarySpace = extraction.spaces?.[0];
+  if (primarySpace?.lengthM && primarySpace?.widthM) score += 15;
+  else if (input.dimensions?.length && input.dimensions?.width) score += 15;
+  else if (primarySpace?.areaM2) score += 8;
+
+  // 4. Property Information (10%)
+  if (input.propertyType && input.propertyType !== 'not_provided') score += 5;
+  if (input.propertyEra && input.propertyEra !== 'not_provided') score += 5;
+
+  // 5. Structural Information (15%)
+  if (extraction.hasStructuralAlteration !== undefined) score += 15;
+
+  // 6. Specification Selections (15%)
+  if (extraction.materialsRequested.length > 0 || extraction.fixturesRequested.length > 0) score += 15;
+  else score += 8;
+
+  // 7. Site Constraints & Drainage (10%)
+  if (input.imageAnalyses && input.imageAnalyses.length > 0) score += 10;
+  else if (input.images && input.images.length > 0) score += 6;
+
+  // 8. Budget & Timeline (10%)
+  if (input.budget) score += 5;
+  if (input.desiredCompletion) score += 5;
+
+  return Math.min(100, Math.max(15, score));
 }
 
 function evaluateComplexity(projectTypes: ProjectCategoryType[], hasStructural: boolean, isTerrace: boolean): ProjectComplexity {
@@ -534,7 +611,7 @@ function evaluateComplexity(projectTypes: ProjectCategoryType[], hasStructural: 
     score += 1;
   }
 
-  score = Math.min(10, Math.max(2, score));
+  score = Math.min(10, Math.max(2, Math.round(score)));
   let level: 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH' = 'MODERATE';
   if (score >= 8) level = 'VERY_HIGH';
   else if (score >= 6) level = 'HIGH';
@@ -549,12 +626,26 @@ function evaluateComplexity(projectTypes: ProjectCategoryType[], hasStructural: 
   };
 }
 
-function evaluateBudgetAlignment(projectTypes: ProjectCategoryType[], areaM2: number, tier: FinishTier): BudgetAlignment {
+function evaluateBudgetAlignment(
+  projectTypes: ProjectCategoryType[],
+  areaM2: number,
+  tier: FinishTier,
+  hasStructural: boolean
+): BudgetAlignment {
   const safeArea = areaM2 > 0 ? areaM2 : 20;
   let baseMin = 1800;
   let baseMax = 2800;
 
-  if (projectTypes.includes('extension')) {
+  if (projectTypes.includes('driveway')) {
+    baseMin = 120;
+    baseMax = 240;
+  } else if (projectTypes.includes('joinery')) {
+    baseMin = 600;
+    baseMax = 1200;
+  } else if (projectTypes.includes('bedroom') || projectTypes.includes('decorating')) {
+    baseMin = 400;
+    baseMax = 900;
+  } else if (projectTypes.includes('extension')) {
     baseMin = 2200;
     baseMax = 3200;
   } else if (projectTypes.includes('bathroom-renovation')) {
@@ -567,6 +658,7 @@ function evaluateBudgetAlignment(projectTypes: ProjectCategoryType[], areaM2: nu
   const maxCost = Math.round(safeArea * baseMax * multiplier);
 
   return {
+    estimateQuality: 'EARLY_BENCHMARK',
     indicativeCostRange: {
       min: minCost,
       max: maxCost,
@@ -574,9 +666,9 @@ function evaluateBudgetAlignment(projectTypes: ProjectCategoryType[], areaM2: nu
     },
     benchmarkPerM2: `£${Math.round(baseMin * multiplier).toLocaleString()} – £${Math.round(baseMax * multiplier).toLocaleString()} / m²`,
     elementsMostAffectingBudget: [
-      'Structural steel beam spans and concrete foundation depths',
+      hasStructural ? 'Structural steel beam spans and concrete padstone bearing depths' : 'Subfloor levelness and structural timber preparation',
       'Architectural glazing aperture width and slimline sliding mechanisms',
-      'Bespoke kitchen cabinetry joinery and 30mm quartz stone fabrication',
+      'Cabinetry joinery specification and stone fabrication details',
     ],
     whereToSpendMore: [
       'Quality structural engineering and subfloor joist sistering',
@@ -584,9 +676,9 @@ function evaluateBudgetAlignment(projectTypes: ProjectCategoryType[], areaM2: nu
       'Concealed thermostatic brassware with solid brass valve cartridges',
     ],
     whereToSave: [
-      'Standardizing kitchen carcass modules rather than 100% custom dimensions',
-      'Keeping primary foul drainage stacks close to their existing drops',
-      'Selecting high-grade 20mm quartz over imported exotic marble',
+      'Standardizing modular carcass dimensions rather than 100% custom non-standard depths',
+      'Keeping primary foul drainage stacks close to existing soil drops',
+      'Selecting durable 20mm quartz stone over imported exotic marble slabs',
     ],
     unknownCostRisks: [
       'Underground drainage obstructions or Thames Water build-over requirements',
@@ -597,95 +689,173 @@ function evaluateBudgetAlignment(projectTypes: ProjectCategoryType[], areaM2: nu
 }
 
 /**
- * Applies a conversational natural language change to an existing ProjectState
- * Recalculating downstream quantities, dimensions, scope, and budget without wiping user state.
+ * Applies Atomic State Mutations from Structured Operations
+ * Dependency Engine: Recalculates ONLY affected outputs without forcing structural alterations.
  */
-export function applyProjectChange(currentState: ProjectState, changePrompt: string): ProjectState {
-  const lower = changePrompt.toLowerCase();
+export function applyProjectChange(
+  currentState: ProjectState,
+  operations: StructuredChangeOperation[]
+): ProjectState {
+  // Deep clone immutable snapshot
   const next = JSON.parse(JSON.stringify(currentState)) as ProjectState;
   const primarySpace = next.spaces[0];
 
-  let changeDescription = changePrompt;
+  let hasDimensionChanged = false;
+  let hasFinishChanged = false;
+  let hasStructuralChanged = false;
+  const changeDescriptions: string[] = [];
 
-  // 1. Dimension Modifications (e.g. "make it 1m wider" or "make it 4m deep")
-  const widerMatch = lower.match(/(?:make (?:it|the room|the extension) )?(\d+(?:\.\d+)?)\s*m\s*wider/i);
-  if (widerMatch && primarySpace) {
-    const addW = parseFloat(widerMatch[1]);
-    primarySpace.widthM.value = Math.round((primarySpace.widthM.value + addW) * 10) / 10;
-    primarySpace.widthM.status = 'confirmed';
-    changeDescription = `Widened room by +${addW}m to ${primarySpace.widthM.value}m`;
-  }
+  for (const op of operations) {
+    changeDescriptions.push(op.description);
 
-  const deeperMatch = lower.match(/(?:make (?:it|the extension) )?(\d+(?:\.\d+)?)\s*m\s*(?:deep|deeper|longer|long)/i);
-  if (deeperMatch && primarySpace) {
-    const newL = parseFloat(deeperMatch[1]);
-    primarySpace.lengthM.value = newL;
-    primarySpace.lengthM.status = 'confirmed';
-    changeDescription = `Updated room length to ${newL}m`;
-  }
+    switch (op.operationType) {
+      case 'UPDATE_DIMENSION': {
+        if (primarySpace) {
+          if (op.dimensionField === 'width') {
+            if (op.dimensionValue !== undefined) primarySpace.widthM.value = op.dimensionValue;
+            else if (op.dimensionDelta !== undefined) primarySpace.widthM.value = Math.round((primarySpace.widthM.value + op.dimensionDelta) * 10) / 10;
+            primarySpace.widthM.status = 'confirmed';
+            hasDimensionChanged = true;
+          } else if (op.dimensionField === 'length') {
+            if (op.dimensionValue !== undefined) primarySpace.lengthM.value = op.dimensionValue;
+            else if (op.dimensionDelta !== undefined) primarySpace.lengthM.value = Math.round((primarySpace.lengthM.value + op.dimensionDelta) * 10) / 10;
+            primarySpace.lengthM.status = 'confirmed';
+            hasDimensionChanged = true;
+          } else if (op.dimensionField === 'height') {
+            if (op.dimensionValue !== undefined) primarySpace.heightM.value = op.dimensionValue;
+            primarySpace.heightM.status = 'confirmed';
+            hasDimensionChanged = true;
+          }
+          primarySpace.areaM2.value = Math.round(primarySpace.lengthM.value * primarySpace.widthM.value * 10) / 10;
+          primarySpace.areaM2.status = 'derived';
+        }
+        break;
+      }
 
-  // Recalculate area
-  if (primarySpace) {
-    primarySpace.areaM2.value = Math.round(primarySpace.lengthM.value * primarySpace.widthM.value * 10) / 10;
-    primarySpace.areaM2.status = 'confirmed';
-  }
+      case 'CHANGE_FINISH_TIER': {
+        if (op.finishTier) {
+          next.finishSelections.Cabinetry = op.finishTier;
+          next.finishSelections.Worktops = op.finishTier;
+          next.finishSelections.Flooring = op.finishTier;
+          next.specificationTree = buildSpecificationTree(next.projectTypes, next.spaces, op.finishTier);
+          hasFinishChanged = true;
+        }
+        break;
+      }
 
-  // 2. Finish Tier Modifications (e.g. "show bespoke option", "change to standard", "use herringbone")
-  if (lower.includes('bespoke') || lower.includes('luxury') || lower.includes('premium')) {
-    next.finishSelections.Cabinetry = 'bespoke';
-    next.finishSelections.Worktops = 'bespoke';
-    next.finishSelections.Flooring = 'bespoke';
-    next.specificationTree = buildSpecificationTree(next.projectTypes, next.spaces, 'bespoke');
-    changeDescription = 'Upgraded specification to Bespoke Luxury tier';
-  } else if (lower.includes('standard') || lower.includes('budget') || lower.includes('cheaper')) {
-    next.finishSelections.Cabinetry = 'standard';
-    next.finishSelections.Worktops = 'standard';
-    next.finishSelections.Flooring = 'standard';
-    next.specificationTree = buildSpecificationTree(next.projectTypes, next.spaces, 'standard');
-    changeDescription = 'Adjusted specification to Standard Value tier';
-  }
+      case 'CHANGE_CABINETRY': {
+        if (op.materialName) {
+          next.visualConcept.cabinetryColor = op.materialName;
+          next.visualConcept.visualPrompt += `, cabinetry painted in ${op.materialName}`;
+        }
+        break;
+      }
 
-  if (lower.includes('herringbone')) {
-    const floorNode = next.specificationTree.find((n) => n.id === 'spec-flooring');
-    if (floorNode) {
-      floorNode.selectedOption = 'Prime European Engineered Oak Herringbone Parquet';
-      floorNode.finishTier = 'enhanced';
-      next.visualConcept.flooringType = 'herringbone_engineered_oak';
+      case 'CHANGE_FLOORING': {
+        if (op.materialName) {
+          next.visualConcept.flooringType = op.materialName;
+          const floorNode = next.specificationTree.find((n) => n.id === 'spec-flooring');
+          if (floorNode) {
+            floorNode.selectedOption = op.materialName;
+          }
+          hasFinishChanged = true;
+        }
+        break;
+      }
+
+      case 'ADD_ROOFLIGHT': {
+        next.visualConcept.visualPrompt += ', featuring frameless flush architectural glass rooflights';
+        next.visualConcept.refinementsHistory.push('Added architectural rooflights to ceiling');
+        break;
+      }
+
+      case 'UPDATE_STRUCTURAL': {
+        if (op.hasStructuralChange !== undefined) {
+          hasStructuralChanged = true;
+        }
+        break;
+      }
+
+      default:
+        break;
     }
   }
 
-  if (lower.includes('microcement')) {
-    const floorNode = next.specificationTree.find((n) => n.id === 'spec-flooring');
-    if (floorNode) {
-      floorNode.selectedOption = 'Seamless Architectural Microcement';
-      floorNode.finishTier = 'bespoke';
-      next.visualConcept.flooringType = 'microcement_seamless';
-    }
+  // Derive structural state strictly from existing state unless explicitly updated (Item 16)
+  const isStructuralActive = hasStructuralChanged
+    ? Boolean(operations.find((o) => o.operationType === 'UPDATE_STRUCTURAL')?.hasStructuralChange)
+    : next.scopeOfWorks.some((s) => s.isStructural && s.included);
+
+  // Recalculate downstream quantities using exact current state
+  if (hasDimensionChanged || hasFinishChanged || hasStructuralChanged) {
+    next.calculatedQuantities = calculateProjectQuantities(
+      next.spaces,
+      next.projectTypes,
+      isStructuralActive,
+      {
+        flooringMaterial: next.visualConcept.flooringType,
+        hasStructuralAlteration: isStructuralActive,
+      }
+    );
+
+    next.budgetAlignment = evaluateBudgetAlignment(
+      next.projectTypes,
+      primarySpace ? primarySpace.areaM2.value : 20,
+      next.finishSelections.Cabinetry || 'enhanced',
+      isStructuralActive
+    );
   }
 
-  // 3. Recalculate Quantities, Feasibility, and Budget
-  next.calculatedQuantities = calculateProjectQuantities(next.spaces, next.projectTypes, true);
-  next.budgetAlignment = evaluateBudgetAlignment(
-    next.projectTypes,
-    primarySpace ? primarySpace.areaM2.value : 20,
-    next.finishSelections.Cabinetry || 'enhanced'
-  );
-
-  // 4. Update Version History
+  // Add new immutable version snapshot (Item 17)
   const nextVersionNum = next.versions.length + 1;
+  const mainDesc = changeDescriptions.join('; ') || 'Refined project design';
+  next.visualConcept.refinementsHistory.push(mainDesc);
+
   next.versions.push({
     versionNumber: nextVersionNum,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    description: changeDescription,
-    briefSnapshot: changePrompt,
+    description: mainDesc,
+    briefSnapshot: mainDesc,
     dimensionsSnapshot: {
       length: primarySpace?.lengthM.value,
       width: primarySpace?.widthM.value,
       area: primarySpace?.areaM2.value,
     },
     finishesSnapshot: { ...next.finishSelections },
+    stateSnapshot: JSON.parse(JSON.stringify(next)),
   });
 
   next.updatedAt = new Date().toISOString();
   return next;
+}
+
+/**
+ * True Version Restore Engine (Item 17)
+ * Restores exact immutable snapshot without regex string re-parsing.
+ */
+export function restoreProjectVersion(currentState: ProjectState, targetVersionNumber: number): ProjectState {
+  const version = currentState.versions.find((v) => v.versionNumber === targetVersionNumber);
+  if (!version || !version.stateSnapshot) {
+    return currentState;
+  }
+
+  // Deep clone snapshot
+  const restoredState = JSON.parse(JSON.stringify(version.stateSnapshot)) as ProjectState;
+  
+  // Preserve complete version history list
+  restoredState.versions = [...currentState.versions];
+  
+  // Append new version entry noting the restore
+  restoredState.versions.push({
+    versionNumber: restoredState.versions.length + 1,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    description: `Restored back to Version ${targetVersionNumber} (${version.description})`,
+    briefSnapshot: version.briefSnapshot,
+    dimensionsSnapshot: { ...version.dimensionsSnapshot },
+    finishesSnapshot: { ...version.finishesSnapshot },
+    stateSnapshot: JSON.parse(JSON.stringify(restoredState)),
+  });
+
+  restoredState.updatedAt = new Date().toISOString();
+  return restoredState;
 }

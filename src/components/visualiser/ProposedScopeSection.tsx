@@ -10,16 +10,22 @@ import {
   Layers,
   Check,
   X,
+  AlertCircle,
 } from 'lucide-react';
 
 interface ProposedScopeSectionProps {
-  scopeOfWorks: ScopeOfWorkItem[];
+  scopeOfWorks?: ScopeOfWorkItem[];
+  items?: ScopeOfWorkItem[];
   onToggleItem: (id: string) => void;
 }
 
-export function ProposedScopeSection({ scopeOfWorks, onToggleItem }: ProposedScopeSectionProps) {
-  // Group by trade category
-  const categories = Array.from(new Set(scopeOfWorks.map((s) => s.category)));
+export function ProposedScopeSection({
+  scopeOfWorks,
+  items,
+  onToggleItem,
+}: ProposedScopeSectionProps) {
+  const scopeList = items || scopeOfWorks || [];
+  const categories = Array.from(new Set(scopeList.map((s) => s.category)));
 
   return (
     <div id="section-scope" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
@@ -33,13 +39,13 @@ export function ProposedScopeSection({ scopeOfWorks, onToggleItem }: ProposedSco
           </h2>
         </div>
         <div className="text-xs font-bold text-slate-500">
-          {scopeOfWorks.filter((s) => s.included).length} of {scopeOfWorks.length} Trade Items Active
+          {scopeList.filter((s) => s.included).length} of {scopeList.length} Trade Items Active
         </div>
       </div>
 
       <div className="space-y-6">
         {categories.map((category) => {
-          const catItems = scopeOfWorks.filter((s) => s.category === category);
+          const catItems = scopeList.filter((s) => s.category === category);
           return (
             <div key={category} className="space-y-3">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
@@ -57,12 +63,17 @@ export function ProposedScopeSection({ scopeOfWorks, onToggleItem }: ProposedSco
                     }`}
                   >
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold text-slate-900 font-heading">
                           {item.title}
                         </span>
+                        {item.status === 'PROVISIONAL' && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200">
+                            Provisional Item
+                          </span>
+                        )}
                         {item.isStructural && (
-                          <Badge variant="slate" className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-bold">
+                          <Badge variant="warning" className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-bold">
                             Structural Engineer Required
                           </Badge>
                         )}
@@ -75,6 +86,11 @@ export function ProposedScopeSection({ scopeOfWorks, onToggleItem }: ProposedSco
                       <p className="text-xs text-slate-600 leading-relaxed font-normal">
                         {item.description}
                       </p>
+                      {item.reason && (
+                        <p className="text-[11px] text-amber-800 italic">
+                          Reason: {item.reason}
+                        </p>
+                      )}
                       <div className="text-[11px] text-slate-400 font-medium">
                         Trade: {item.trade}
                       </div>

@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  interpretHomeownerBriefWithAI,
+  analyzeUploadedAsset,
+} from '@/lib/ai/visualiser-ai';
 import { createInitialProjectState } from '@/lib/visualiser/project-state-engine';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { briefText, images, dimensions, propertyType, propertyEra, location, budget, desiredCompletion } = body;
+    const {
+      briefText,
+      images,
+      dimensions,
+      propertyType,
+      propertyEra,
+      location,
+      budget,
+      desiredCompletion,
+    } = body;
 
     if (!briefText && (!images || images.length === 0)) {
       return NextResponse.json(
@@ -13,6 +26,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 1. Analyze uploaded images if present
+    const imageAnalyses = [];
+    if (images && Array.isArray(images) && images.length > 0) {
+      for (const img of images) {
+        const analysis = await analyzeUploadedAsset({
+          id: img.id || `img-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          url: img.url,
+          filename: img.filename || 'uploaded-photo.jpg',
+        });
+        imageAnalyses.push(analysis);
+      }
+    }
+
+    // 2. Structured LLM Brief Interpretation
+    const aiExtraction = await interpretHomeownerBriefWithAI({
+      briefText: briefText || '',
+      images,
+      dimensions,
+      propertyType,
+      propertyEra,
+      location,
+      budget,
+      desiredCompletion,
+      imageAnalyses,
+    });
+
+    // 3. Hydrate state with deterministic engineering & calculation engine
     const state = createInitialProjectState({
       briefText: briefText || 'Transform existing space with modern architectural finishes',
       images,
@@ -22,6 +62,8 @@ export async function POST(req: NextRequest) {
       location,
       budget,
       desiredCompletion,
+      aiExtraction,
+      imageAnalyses,
     });
 
     return NextResponse.json({

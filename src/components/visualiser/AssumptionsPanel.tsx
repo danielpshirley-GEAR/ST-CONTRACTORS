@@ -7,6 +7,7 @@ import {
   Check,
   Edit2,
   Trash2,
+  Layers,
 } from 'lucide-react';
 
 interface AssumptionsPanelProps {
@@ -31,14 +32,14 @@ export function AssumptionsPanel({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FFAA4F] block">
-            Section 10 • Assumptions Transparency
+            Section 10 • Assumptions &amp; Reasons
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-heading mt-0.5">
             Assumptions We&apos;re Currently Making
           </h2>
         </div>
         <p className="text-xs text-slate-500 font-medium">
-          Easily confirm or override any assumption
+          Every assumption has an explicit reason and can be confirmed or edited
         </p>
       </div>
 
@@ -53,18 +54,34 @@ export function AssumptionsPanel({
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-900">
                   {assump.label}
                 </span>
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-md">
-                  Active Assumption
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+                  Assumed ({assump.confidence} confidence)
                 </span>
               </div>
 
               <h3 className="text-sm font-bold text-slate-900 font-heading">
-                {assump.assumedValue}
+                {assump.value}
               </h3>
 
               <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                {assump.reasonForAssumption}
+                <strong>Why: </strong>{assump.reason}
               </p>
+
+              {assump.affectedCalculations && assump.affectedCalculations.length > 0 && (
+                <div className="pt-2 border-t border-amber-200/50 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                    Affects Calculations:
+                  </span>
+                  <ul className="space-y-0.5 text-[11px] text-slate-600">
+                    {assump.affectedCalculations.map((calc, idx) => (
+                      <li key={idx} className="flex items-center gap-1.5">
+                        <span className="text-[#FFAA4F] font-bold">•</span>
+                        <span>{calc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="pt-3 border-t border-amber-200/60 flex items-center justify-end gap-2 text-xs">

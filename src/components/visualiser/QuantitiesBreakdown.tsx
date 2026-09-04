@@ -2,15 +2,12 @@
 
 import React, { useState } from 'react';
 import { CalculatedQuantityItem } from '@/types/visualiser-scope';
-import { Badge } from '@/components/ui/Badge';
 import {
   Ruler,
-  HelpCircle,
   Calculator,
-  CheckCircle2,
-  AlertCircle,
   Info,
-  Layers,
+  AlertTriangle,
+  HardHat,
 } from 'lucide-react';
 
 interface QuantitiesBreakdownProps {
@@ -26,10 +23,10 @@ export function QuantitiesBreakdown({ quantities, onEditDimensions }: Quantities
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FFAA4F] block">
-            Section 8 • Bill of Quantities
+            Section 8 • Bill of Quantities &amp; Takeoffs
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-heading mt-0.5">
-            Estimated Project Quantities
+            Deterministic Project Quantities
           </h2>
         </div>
         <button
@@ -54,15 +51,23 @@ export function QuantitiesBreakdown({ quantities, onEditDimensions }: Quantities
                   {item.category}
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                    item.confidence === 'calculated'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : item.confidence === 'estimated'
-                      ? 'bg-amber-100 text-amber-900'
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                    item.confidence === 'CALCULATED_FROM_CONFIRMED_INPUT'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      : item.confidence === 'ESTIMATED_FROM_ASSUMPTION'
+                      ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                      : item.confidence === 'ENGINEERING_REQUIRED'
+                      ? 'bg-indigo-100 text-indigo-900 border border-indigo-200'
                       : 'bg-slate-200 text-slate-700'
                   }`}
                 >
-                  {item.confidence === 'calculated' ? 'Calculated' : item.confidence === 'estimated' ? 'Estimated' : 'Unknown'}
+                  {item.confidence === 'CALCULATED_FROM_CONFIRMED_INPUT'
+                    ? 'Calculated'
+                    : item.confidence === 'ESTIMATED_FROM_ASSUMPTION'
+                    ? 'Estimated'
+                    : item.confidence === 'ENGINEERING_REQUIRED'
+                    ? 'Engineering Required'
+                    : 'Insufficient Info'}
                 </span>
               </div>
 
@@ -71,7 +76,19 @@ export function QuantitiesBreakdown({ quantities, onEditDimensions }: Quantities
               </h3>
 
               <div className="pt-1">
-                {item.confidence === 'unknown' ? (
+                {item.confidence === 'ENGINEERING_REQUIRED' ? (
+                  <div className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-100 space-y-1">
+                    <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                      <HardHat className="h-3.5 w-3.5 text-indigo-600" />
+                      <span>{item.unit}</span>
+                    </span>
+                    {item.engineeringNote && (
+                      <p className="text-[10px] text-indigo-800 leading-tight">
+                        {item.engineeringNote}
+                      </p>
+                    )}
+                  </div>
+                ) : item.confidence === 'INSUFFICIENT_INFORMATION' ? (
                   <span className="text-xs font-bold text-slate-400 italic">
                     Requires confirmed dimensions
                   </span>
@@ -89,7 +106,7 @@ export function QuantitiesBreakdown({ quantities, onEditDimensions }: Quantities
             </div>
 
             <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500 truncate max-w-[150px]">{item.basis}</span>
+              <span className="text-slate-500 truncate max-w-[140px]">{item.basis}</span>
               <button
                 type="button"
                 onClick={() => setActiveFormulaModal(item)}

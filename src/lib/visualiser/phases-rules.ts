@@ -1,7 +1,7 @@
 /**
  * Dynamic Construction Phases Engine
- * Selects and tailors project-specific phases from the master 25-phase library.
- * Complies with BUILD_SPEC.md & Master Visualiser Rebuild Specification.
+ * Selects and tailors project-specific phases from the master library.
+ * Complies with BUILD_SPEC.md and Phase 7B Specification.
  */
 
 import { ConstructionPhase, ProjectCategoryType } from '@/types/visualiser-scope';
@@ -14,11 +14,107 @@ export function generateConstructionPhases(
   const isKitchen = projectTypes.includes('kitchen-renovation');
   const isBathroom = projectTypes.includes('bathroom-renovation');
   const isLoft = projectTypes.includes('loft-conversion');
-  const isGardenRoom = projectTypes.includes('garden-room');
   const isDriveway = projectTypes.includes('driveway');
-  const isLandscaping = projectTypes.includes('landscaping');
+  const isJoinery = projectTypes.includes('joinery');
+  const isBedroomOrDecorating = projectTypes.includes('bedroom') || projectTypes.includes('decorating');
 
   const phases: ConstructionPhase[] = [];
+
+  // =========================================================================
+  // DRIVEWAY PHASES
+  // =========================================================================
+  if (isDriveway) {
+    phases.push(
+      {
+        phaseNumber: 1,
+        title: 'Phase 1: Excavation, CAT Scanning & Subgrade Preparation',
+        shortDescription: 'Cable avoidance scanning, 250mm excavation, and subsoil compaction.',
+        whatHappens: 'Ground is scanned with Cable Avoidance Tools to trace incoming gas/electric supplies, excavated to 250mm depth, and subgrade compacted.',
+        workInvolved: ['Utility line CAT scanning', 'Excavation of old concrete/soil to 250mm depth', 'Grab lorry muck-away disposal', 'Geotextile weed barrier membrane installation'],
+        tradesInvolved: ['Groundworks Team', 'Excavator Operator'],
+        decisionsRequired: ['Confirm exact driveway perimeter boundary and levels'],
+        dependencies: ['Council skip permits or on-site grab lorry access confirmed'],
+        potentialRisks: ['Uncharted shallow utility pipes requiring hand digging'],
+        informationStillRequired: ['Exact invert level of council stormwater connection (if applicable)'],
+        indicativeDuration: '2 – 3 Days',
+      },
+      {
+        phaseNumber: 2,
+        title: 'Phase 2: MOT Type 3 Sub-Base & ACO Channel Drainage (SuDS)',
+        shortDescription: 'Compacted permeable stone sub-base and surface water drainage installation.',
+        whatHappens: 'Crushed open-graded MOT Type 3 stone is compacted in 50mm layers to create a high-strength permeable foundation with ACO drainage channels.',
+        workInvolved: ['Spreading and vibrating MOT Type 3 aggregate', 'Setting concrete haunched edge restraints', 'Installing permeable ACO drainage channels and silt traps'],
+        tradesInvolved: ['Groundworkers', 'Drainage Installers'],
+        decisionsRequired: ['Approve threshold fall levels against front entrance doorway'],
+        dependencies: ['Subgrade fully compacted'],
+        potentialRisks: ['Rain saturation of subsoil before stone compaction'],
+        informationStillRequired: ['Permeability test confirmation'],
+        indicativeDuration: '2 – 4 Days',
+      },
+      {
+        phaseNumber: 3,
+        title: 'Phase 3: Surface Laying (Block Paving / Resin Bound) & Handover',
+        shortDescription: 'Laying surface finish, sharp sand screed, kiln-dried sand compaction, and sealing.',
+        whatHappens: 'Laying the chosen permeable blocks or UV-stable resin-bound aggregate matrix, followed by compacting and joint finishing.',
+        workInvolved: ['Screeding bedding layer', 'Precision block laying with diamond cutting around borders', 'Vibrating plate compaction with protective rubber pad', 'Sweeping kiln-dried silica sand / applying resin seal'],
+        tradesInvolved: ['Paving Craftsman', 'Resin Surface Specialist'],
+        decisionsRequired: ['Final visual inspection of block laying bond and color distribution'],
+        dependencies: ['Sub-base cured and stable'],
+        potentialRisks: ['Vehicle parking before 48h curing period'],
+        informationStillRequired: ['Driveway maintenance guide handover'],
+        indicativeDuration: '3 – 5 Days',
+      }
+    );
+    return phases;
+  }
+
+  // =========================================================================
+  // BESPOKE JOINERY / WARDROBE PHASES
+  // =========================================================================
+  if (isJoinery) {
+    phases.push(
+      {
+        phaseNumber: 1,
+        title: 'Phase 1: Laser Site Survey, CAD Drafting & Workshop Fabrication',
+        shortDescription: '3D laser survey, detailed CAD workshop drawings, and timber fabrication.',
+        whatHappens: 'Precision laser measurements map out wall deviations. Carcasses, doors, and internal drawers are built off-site in our joinery workshop.',
+        workInvolved: ['Digital laser 3D level survey', 'Detailed joinery CAD cutting schedules', 'Workshop machining, dovetail drawer assembly, and factory spray finishing'],
+        tradesInvolved: ['Joinery Draughtsman', 'Master Cabinet Maker', 'Spray Finisher'],
+        decisionsRequired: ['Sign off CAD elevation drawings, handle choices, and internal layout'],
+        dependencies: ['Room finishes ready for survey'],
+        potentialRisks: ['Design revisions delaying workshop machining'],
+        informationStillRequired: ['Specific hanging length requirements (coats vs dresses)'],
+        indicativeDuration: '2 – 3 Weeks (Off-Site)',
+      },
+      {
+        phaseNumber: 2,
+        title: 'Phase 2: Electrical First-Fix & On-Site Carcass Installation',
+        shortDescription: 'Running internal LED wiring feeds, scribing carcasses, and securing modules.',
+        whatHappens: 'Pre-assembled joinery units are delivered, laser-leveled, and scribed to match out-of-plumb walls and ceilings.',
+        workInvolved: ['First-fix LED wiring feeds and socket relocation', 'Scribing base plinths and side infills to irregular walls', 'Bolting modular carcasses and hanging doors with soft-close hinges'],
+        tradesInvolved: ['Carpenter / Joiner', 'Electrician (Part P)'],
+        decisionsRequired: ['Approve scribe lines and shadow gaps against period cornices'],
+        dependencies: ['Clear room access and floor protection laid'],
+        potentialRisks: ['Tight stairwell turns navigating large carcass panels'],
+        informationStillRequired: ['Approve soft-close tension adjustments'],
+        indicativeDuration: '2 – 4 Days',
+      },
+      {
+        phaseNumber: 3,
+        title: 'Phase 3: Ironmongery, Internal Lighting Commissioning & Handover',
+        shortDescription: 'Fitting door handles, velvet drawer inserts, LED sensor testing, and final polish.',
+        whatHappens: 'Handles and internal accessories are fitted, door sensor LED channels tested, and joinery hand-polished.',
+        workInvolved: ['Installing handles and locksets', 'Fitting velvet inserts and pull-out shoe racks', 'Testing automated door sensor LED strips', 'Touch-up paint and final cleaning'],
+        tradesInvolved: ['Joiner', 'Electrician'],
+        decisionsRequired: ['Final snagging sign-off'],
+        dependencies: ['All carcasses and doors fitted'],
+        potentialRisks: ['Minor touch-ups'],
+        informationStillRequired: ['Client sign-off confirmation'],
+        indicativeDuration: '1 – 2 Days',
+      }
+    );
+    return phases;
+  }
 
   // =========================================================================
   // EXTENSION / STRUCTURAL KNOCKTHROUGH FLOW
@@ -98,22 +194,22 @@ export function generateConstructionPhases(
         workInvolved: ['Acoustic drylining and plaster skimming', 'Fitting kitchen base and wall carcasses', 'Digital laser templating for quartz worktops', '5-day stone workshop fabrication and installation'],
         tradesInvolved: ['Plasterers', 'Kitchen Fitters', 'Stone Fabricators'],
         decisionsRequired: ['Approve stone worktop overhangs, drainage grooves, and tap hole positions'],
-        dependencies: ['Plaster and screed must be fully dry before timber fitting'],
-        potentialRisks: ['Plaster cracking if artificial heating is introduced too rapidly'],
-        informationStillRequired: ['Exact sink and tap models on site for undermount cutouts'],
+        dependencies: ['Floor screed moisture level below 2.5% CM'],
+        potentialRisks: ['Worktop fabrication lead times (5–7 days from templating)'],
+        informationStillRequired: ['Sink and tap undermount technical drawings'],
         indicativeDuration: '2 – 3 Weeks',
       },
       {
         phaseNumber: 7,
-        title: 'Phase 7: Second-Fix Trades, Flooring, Testing & Handover',
-        shortDescription: 'Appliance commissioning, flooring, painting, snagging, and Building Control sign-off.',
-        whatHappens: 'Flooring is installed, appliances are commissioned, LED architectural lighting is connected, full decoration applied, and the project handed over with warranties.',
-        workInvolved: ['Engineered timber / porcelain floor installation', 'Appliance connections, Quooker tap, and extractor commissioning', 'Mist coating and 2 coats of designer emulsion paint', 'Part P and Building Control Completion Certificate sign-off'],
-        tradesInvolved: ['Electricians', 'Plumbers', 'Flooring Specialists', 'Decorators', 'Building Control Inspector'],
-        decisionsRequired: ['Conduct joint snagging walk-through with Project Director'],
-        dependencies: ['Worktops bonded and cured before second-fix plumbing'],
-        potentialRisks: ['Snagging adjustments delaying move-in'],
-        informationStillRequired: ['Building Control final sign-off inspection'],
+        title: 'Phase 7: Second-Fix, Flooring, Decorating & Building Control Sign-Off',
+        shortDescription: 'Herringbone flooring, designer emulsion, appliance commissioning, and completion certificate.',
+        whatHappens: 'Herringbone oak or microcement is installed. Walls receive mist coat and 2 full coats of designer paint. Appliances are commissioned, and Building Control issues the Final Completion Certificate.',
+        workInvolved: ['Herringbone flooring installation & perimeter skirting', 'Misting and 2 coats of washable emulsion paint', 'Connecting induction hob, Quooker tap, and second-fix sockets', 'Final Building Control inspection & NICEIC Part P certification'],
+        tradesInvolved: ['Flooring Specialist', 'Painters & Decorators', 'Electricians', 'Building Control Officer'],
+        decisionsRequired: ['Complete snagging walk-through with site manager'],
+        dependencies: ['Plaster thoroughly dry before painting'],
+        potentialRisks: ['Minor paint scuffs during appliance deliveries (repaired at snagging)'],
+        informationStillRequired: ['Building Regulations Final Completion Certificate'],
         indicativeDuration: '1 – 2 Weeks',
       }
     );
@@ -127,26 +223,26 @@ export function generateConstructionPhases(
     phases.push(
       {
         phaseNumber: 1,
-        title: 'Phase 1: Strip-Out & Subfloor Joist Inspection',
-        shortDescription: 'Removing old sanitaryware and checking underlying timber for damp.',
-        whatHappens: 'Old tiles and suites are removed. Underlying floor joists are checked for moisture, levelness, and load capacity.',
-        workInvolved: ['Safe isolation of water and electrical circuits', 'Removal of old sanitaryware, tiles, and plasterboard', 'Moisture probing and laser leveling of subfloor joists'],
-        tradesInvolved: ['Plumber', 'Demolition Specialist'],
-        decisionsRequired: ['Confirm if floor level needs sistering or reinforcement'],
-        dependencies: ['Mains water isolation valve working properly'],
-        potentialRisks: ['Historic timber rot around old shower wastes'],
-        informationStillRequired: ['Condition of waste pipe drops to external soil stack'],
+        title: 'Phase 1: Strip-Out, Waste Capping & Subfloor Inspection',
+        shortDescription: 'Removal of old sanitaryware, tiles, and probing subfloor joists.',
+        whatHappens: 'Old sanitaryware, shower trays, and wall tiles are stripped back to bare brick and timber joists.',
+        workInvolved: ['Isolating hot and cold water supplies', 'Stripping tiles, plasterboard, and old sanitaryware', 'Checking subfloor joists for historic pipe leaks and rot', 'Floor and doorway protective screening'],
+        tradesInvolved: ['Demolition Labourers', 'Plumber'],
+        decisionsRequired: ['Approve subfloor timber repairs if damp is detected'],
+        dependencies: ['Mains water isolation valve operational'],
+        potentialRisks: ['Concealed pipe leaks in old lead/copper pipes'],
+        informationStillRequired: ['Drainage drop position below floorboards'],
         indicativeDuration: '2 – 3 Days',
       },
       {
         phaseNumber: 2,
-        title: 'Phase 2: First-Fix Plumbing, Concealed Framing & Electrics',
-        shortDescription: 'Running hot/cold feeds, Geberit concealed frames, and niche lighting.',
-        whatHappens: 'Thermostatic shower valves, wall-hung toilet frames, waste pipes, and LED shampoo niche conduits are built into the walls.',
-        workInvolved: ['Concealed thermostatic shower valve body installation', 'Geberit steel wall-hung toilet frame installation', 'LED niche lighting and extractor fan ducting runs', '18mm marine plywood / cement board subfloor overboarding'],
-        tradesInvolved: ['Plumber', 'Electrician (Part P)', 'Carpenter'],
-        decisionsRequired: ['Confirm exact showerhead and niche height positions on wall'],
-        dependencies: ['Subfloor securely fixed and free of flex'],
+        title: 'Phase 2: First-Fix Plumbing, Concealed Frames & Electrical (Part P)',
+        shortDescription: 'In-wall concealed cistern frame, thermostatic shower valve feeds, and LED zones.',
+        whatHappens: 'Rigid steel frames for wall-hung toilets are anchored into structural walls, concealed shower valve bodies installed, and Part P electrical wiring pulled.',
+        workInvolved: ['Installing Geberit in-wall steel toilet frame', 'Channelling hot/cold supply pipes for concealed shower valves', 'Wiring low-voltage LED niche lighting and extractor fan with overrun', 'Fitting marine-ply subfloor base for zero deflection'],
+        tradesInvolved: ['Plumber', 'Electrician'],
+        decisionsRequired: ['Confirm exact shower head and basin tap centreline heights'],
+        dependencies: ['Subfloor joists reinforced'],
         potentialRisks: ['Inadequate water pressure requiring booster pump upgrade'],
         informationStillRequired: ['Water pressure reading (bar) across hot/cold supplies'],
         indicativeDuration: '3 – 5 Days',
@@ -195,12 +291,12 @@ export function generateConstructionPhases(
   }
 
   // =========================================================================
-  // STANDARD REFURBISHMENT / DEFAULT
+  // STANDARD INTERIOR REFURBISHMENT / DECORATING
   // =========================================================================
   phases.push(
     {
       phaseNumber: 1,
-      title: 'Phase 1: Project Setup & Protective Dust Screening',
+      title: 'Phase 1: Project Setup & Protective Screening',
       shortDescription: 'Site protection, surface prep, and isolation of affected services.',
       whatHappens: 'Floors, doors, and pathways are protected with heavy-duty corex and dust-sealed barriers.',
       workInvolved: ['Dust partition setup', 'Floor protection laying', 'Service isolation'],
@@ -213,29 +309,29 @@ export function generateConstructionPhases(
     },
     {
       phaseNumber: 2,
-      title: 'Phase 2: First-Fix Trades & Surface Preparation',
-      shortDescription: 'Channelling electrics, pipe adjustments, and plasterboard repair.',
-      whatHappens: 'Cables and plumbing are chased into walls and surfaces prepared for new finishes.',
-      workInvolved: ['Electrical chasing', 'Plumbing first-fix', 'Subfloor leveling screed'],
-      tradesInvolved: ['Electrician', 'Plumber', 'Plasterer'],
-      decisionsRequired: ['Approve socket and switch heights'],
-      dependencies: ['Demolition completed'],
-      potentialRisks: ['Cracking in old lath-and-plaster walls'],
-      informationStillRequired: ['Exact fixture locations'],
-      indicativeDuration: '1 – 2 Weeks',
+      title: 'Phase 2: Surface Preparation & First-Fix Adjustments',
+      shortDescription: 'Plaster repairs, electrical socket moves, and woodwork sanding.',
+      whatHappens: 'Wall imperfections are filled and skimmed, woodwork sanded, and electrical points relocated if required.',
+      workInvolved: ['Plaster repairs & acoustic lining', 'Electrical socket adjustments', 'Undercoat primer application'],
+      tradesInvolved: ['Decorator', 'Electrician', 'Plasterer'],
+      decisionsRequired: ['Approve colour swatches under room natural light'],
+      dependencies: ['Furniture cleared and protected'],
+      potentialRisks: ['Historic paint flaking on older walls'],
+      informationStillRequired: ['Confirmed paint brand and sheen level'],
+      indicativeDuration: '3 – 5 Days',
     },
     {
       phaseNumber: 3,
-      title: 'Phase 3: Second-Fix Installation, Finishes & Handover',
-      shortDescription: 'Fitting fixtures, flooring, painting, and completion certification.',
-      whatHappens: 'All fittings, flooring, and decorative paints are applied, tested, and handed over.',
-      workInvolved: ['Flooring laying', 'Socket faceplates and lighting fixtures', '2 coats emulsion paint', 'Snagging review and handover'],
-      tradesInvolved: ['Carpenter', 'Electrician', 'Decorator'],
-      decisionsRequired: ['Final sign-off and warranty certificate receipt'],
-      dependencies: ['First-fix trades certified'],
-      potentialRisks: ['Minor paint touch-ups required'],
+      title: 'Phase 3: Decorative Finishing, Flooring & Handover',
+      shortDescription: 'Emulsion application, woodwork satin finish, flooring, and sign-off.',
+      whatHappens: 'Applying 2 full coats of designer emulsion, satin finish on woodwork, laying floor finishes, and final cleanup.',
+      workInvolved: ['2 coats washable emulsion paint', 'Woodwork satinwood painting', 'Flooring / carpet installation', 'Snagging review and sign-off'],
+      tradesInvolved: ['Decorator', 'Flooring Specialist'],
+      decisionsRequired: ['Final sign-off on decorating finish'],
+      dependencies: ['Primer and filler fully dried'],
+      potentialRisks: ['Minor touch-ups'],
       informationStillRequired: ['Client sign-off confirmation'],
-      indicativeDuration: '1 – 2 Weeks',
+      indicativeDuration: '3 – 5 Days',
     }
   );
 

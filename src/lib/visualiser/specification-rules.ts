@@ -2,7 +2,7 @@
  * Project Specification Builder Engine
  * Generates room-by-room, trade-isolated editable specification trees with 3 finish tiers:
  * Standard, Enhanced, and Bespoke, supporting individual mix-and-match and "Not decided" state.
- * Complies with BUILD_SPEC.md & Master Visualiser Rebuild Specification.
+ * Complies with BUILD_SPEC.md and Phase 7B Specification.
  */
 
 import { SpecificationNode, FinishTier, ProjectCategoryType, FinishTierDefinition } from '@/types/visualiser-scope';
@@ -62,9 +62,111 @@ export function buildSpecificationTree(
   const nodes: SpecificationNode[] = [];
   const primarySpace = spaces[0] || { id: 'room-1', name: 'Main Project Space' };
 
-  const isKitchen = projectTypes.includes('kitchen-renovation') || projectTypes.includes('extension');
+  const isKitchen = projectTypes.includes('kitchen-renovation');
   const isBathroom = projectTypes.includes('bathroom-renovation');
   const isExtension = projectTypes.includes('extension');
+  const isDriveway = projectTypes.includes('driveway');
+  const isJoinery = projectTypes.includes('joinery');
+  const isBedroomOrDecorating = projectTypes.includes('bedroom') || projectTypes.includes('decorating');
+  const isDoorReplacement = projectTypes.includes('door-replacement');
+  const isCinema = projectTypes.includes('cinema-room');
+
+  // =========================================================================
+  // DRIVEWAY SPECIFICATIONS
+  // =========================================================================
+  if (isDriveway) {
+    nodes.push(
+      {
+        id: 'spec-driveway-surface',
+        roomId: primarySpace.id,
+        element: 'Driveway Surface Material',
+        trade: 'Groundworks & Paving',
+        selectedOption: globalTier === 'bespoke' ? 'Natural Granite Setts & Resin-Bound Quartz Mix' : globalTier === 'enhanced' ? 'UV-Stable Resin-Bound Aggregate with Block Border' : 'Permeable Concrete Block Paving (Marshalls Tegula)',
+        finishTier: globalTier,
+        status: 'selected',
+        availableOptions: [
+          { name: 'Permeable Concrete Block Paving (Marshalls Tegula)', tier: 'standard', description: 'Hardwearing permeable concrete block paving with MOT Type 3 sub-base complying with SuDS regulations.', costImpact: 'Included in Standard' },
+          { name: 'UV-Stable Resin-Bound Aggregate with Block Border', tier: 'enhanced', description: 'Smooth, seamless polyurethane resin bound gravel over open-textured tarmac base.', costImpact: '+£1,500 – £2,800' },
+          { name: 'Natural Granite Setts & Resin-Bound Quartz Mix', tier: 'bespoke', description: 'Hand-dressed silver-grey Portuguese granite setts with custom radius aprons and concealed ACO drainage.', costImpact: '+£3,500 – £6,500' },
+        ],
+      },
+      {
+        id: 'spec-driveway-drainage',
+        roomId: primarySpace.id,
+        element: 'Surface Water Drainage (SuDS)',
+        trade: 'Groundworks Drainage',
+        selectedOption: globalTier === 'bespoke' ? 'Concealed Slot Drain Channels with Underground Soakaway Crate System' : globalTier === 'enhanced' ? 'High-Capacity ACO HexDrain with Silt Trap to Soakaway' : 'Standard Fall to Permeable Sub-Base Grating',
+        finishTier: globalTier,
+        status: 'selected',
+        availableOptions: [
+          { name: 'Standard Fall to Permeable Sub-Base Grating', tier: 'standard', description: 'Gravity fall directing surface runoff into permeable sub-base layer.', costImpact: 'Included in Standard' },
+          { name: 'High-Capacity ACO HexDrain with Silt Trap to Soakaway', tier: 'enhanced', description: 'Discrete composite channel drainage with inline debris basket connected to geotextile soakaway.', costImpact: '+£650 – £1,100' },
+          { name: 'Concealed Slot Drain Channels with Underground Soakaway Crate System', tier: 'bespoke', description: 'Architectural stainless steel brickslot drains flush with driveway threshold.', costImpact: '+£1,400 – £2,400' },
+        ],
+      }
+    );
+    return nodes;
+  }
+
+  // =========================================================================
+  // JOINERY SPECIFICATIONS (FITTED WARDROBES)
+  // =========================================================================
+  if (isJoinery) {
+    nodes.push(
+      {
+        id: 'spec-joinery-carcass',
+        roomId: primarySpace.id,
+        element: 'Wardrobe Carcass & External Doors',
+        trade: 'Bespoke Joinery',
+        selectedOption: globalTier === 'bespoke' ? 'Handmade Solid Oak / Fluted Walnut with Integrated Warm LED Lighting' : globalTier === 'enhanced' ? 'Floor-to-Ceiling Custom Painted Shaker / Fluted MDF with Blum Tip-On' : 'Made-to-Measure Egger MFC Carcasses with Soft-Close Hinges',
+        finishTier: globalTier,
+        status: 'selected',
+        availableOptions: [
+          { name: 'Made-to-Measure Egger MFC Carcasses with Soft-Close Hinges', tier: 'standard', description: '18mm textured melamine faced board with hanging rails and adjustable shelves.', costImpact: 'Included in Standard' },
+          { name: 'Floor-to-Ceiling Custom Painted Shaker / Fluted MDF with Blum Tip-On', tier: 'enhanced', description: 'Bespoke moisture-resistant MDF, factory spray painted to Little Greene / Farrow & Ball palette.', costImpact: '+£1,200 – £2,400' },
+          { name: 'Handmade Solid Oak / Fluted Walnut with Integrated Warm LED Lighting', tier: 'bespoke', description: 'Real timber veneer internal drawers, dovetail construction, fluted glass door inserts, and sensor LEDs.', costImpact: '+£3,200 – £5,800' },
+        ],
+      },
+      {
+        id: 'spec-joinery-internals',
+        roomId: primarySpace.id,
+        element: 'Internal Storage Configuration',
+        trade: 'Cabinet Making',
+        selectedOption: globalTier === 'bespoke' ? 'Velvet-Lined Jewellery Drawers, Pull-Out Shoe Racks & Automated Lighting' : globalTier === 'enhanced' ? 'Integrated Soft-Close Drawer Stacks & Dual-Height Hanging Rails' : 'Standard Fixed Shelves & Chrome Wardrobe Hanging Rails',
+        finishTier: globalTier,
+        status: 'selected',
+        availableOptions: [
+          { name: 'Standard Fixed Shelves & Chrome Wardrobe Hanging Rails', tier: 'standard', description: 'Basic functional interior with fixed shelving and hanging bars.', costImpact: 'Included in Standard' },
+          { name: 'Integrated Soft-Close Drawer Stacks & Dual-Height Hanging Rails', tier: 'enhanced', description: 'Internal 3-drawer chests, adjustable shoe shelving, and soft-close pull-out trouser racks.', costImpact: '+£600 – £1,200' },
+          { name: 'Velvet-Lined Jewellery Drawers, Pull-Out Shoe Racks & Automated Lighting', tier: 'bespoke', description: 'Handcrafted velvet organiser compartments, LED concealed profile strips on door triggers.', costImpact: '+£1,500 – £2,800' },
+        ],
+      }
+    );
+    return nodes;
+  }
+
+  // =========================================================================
+  // DOOR REPLACEMENT SPECIFICATIONS
+  // =========================================================================
+  if (isDoorReplacement) {
+    nodes.push(
+      {
+        id: 'spec-front-door',
+        roomId: primarySpace.id,
+        element: 'Front Entrance Door & Frame',
+        trade: 'Joinery & Security',
+        selectedOption: globalTier === 'bespoke' ? 'Bespoke Solid Accoya Timber Door with Banham Multi-Point Security Suite' : globalTier === 'enhanced' ? 'Architectural Solid-Core Composite Door with Heritage Glazing & High-Security Lock' : 'Standard High-Grade Composite Door (PAS 24 Certified)',
+        finishTier: globalTier,
+        status: 'selected',
+        availableOptions: [
+          { name: 'Standard High-Grade Composite Door (PAS 24 Certified)', tier: 'standard', description: '44mm composite door leaf with police-approved multi-point locking system and standard chrome furniture.', costImpact: 'Included in Standard' },
+          { name: 'Architectural Solid-Core Composite Door with Heritage Glazing & High-Security Lock', tier: 'enhanced', description: '48mm solid timber core composite, custom heritage colours, etched double glazing, and brushed brass ironmongery.', costImpact: '+£850 – £1,500' },
+          { name: 'Bespoke Solid Accoya Timber Door with Banham Multi-Point Security Suite', tier: 'bespoke', description: 'Handcrafted solid Accoya timber entrance door with bespoke stained glass fanlight, Banham locks, and smart intercom.', costImpact: '+£2,400 – £4,500' },
+        ],
+      }
+    );
+    return nodes;
+  }
 
   // =========================================================================
   // KITCHEN SPECIFICATIONS
@@ -153,7 +255,7 @@ export function buildSpecificationTree(
   }
 
   // =========================================================================
-  // FLOORING & HEATING (UNIVERSAL)
+  // FLOORING & LIGHTING (FOR LIVING, BEDROOM, EXTENSION, KITCHEN)
   // =========================================================================
   nodes.push(
     {

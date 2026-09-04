@@ -1,20 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { applyProjectChange } from '@/lib/visualiser/project-state-engine';
+import { interpretProjectChangeWithAI } from '@/lib/ai/visualiser-ai';
+import { applyProjectChange, restoreProjectVersion } from '@/lib/visualiser/project-state-engine';
 import { ProjectState } from '@/types/visualiser-scope';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { projectState, changePrompt } = body;
+    const { projectState, changePrompt, restoreVersionNumber } = body;
 
-    if (!projectState || !changePrompt) {
+    if (!projectState) {
       return NextResponse.json(
-        { error: 'Both projectState and changePrompt are required.' },
+        { error: 'projectState is required.' },
         { status: 400 }
       );
     }
 
-    const updatedState = applyProjectChange(projectState as ProjectState, changePrompt);
+    // Handle true immutable version restoration (Item 17)
+    if (restoreVersionNumber !== undefined) {
+      const restored = restoreProjectVersion(projectState as ProjectState, Number(restoreVersionNumber));
+      return NextResponse.json({
+        success: true,
+        projectState: restored,
+      });
+    }
+
+    if (!changePrompt) {
+      return NextResponse.json(
+        { error: 'changePrompt is required.' },
+        { status: 400 }
+      );
+    }
+
+    // 1. Parse natural language change into structured operations via LLM (Item 15)
+    const operations = await interpretProjectChangeWithAI(
+      projectState as ProjectState,
+      changePrompt
+    );
+
+    // 2. Apply controlled atomic mutations and dependency recalculation
+    const updatedState = applyProjectChange(
+      projectState as ProjectState,
+      operations
+    );
 
     return NextResponse.json({
       success: true,

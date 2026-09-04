@@ -50,7 +50,7 @@ export function MissingInfoRank({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FFAA4F] block">
-            Progressive Refinement
+            Progressive Refinement &amp; Priorities
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-heading mt-0.5">
             Information That Would Improve This Plan
@@ -81,10 +81,10 @@ export function MissingInfoRank({
             <div className="p-6 rounded-2xl bg-amber-50/60 border-2 border-amber-300 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <Badge
-                  variant={activeQuestion.impact === 'HIGH' ? 'warning' : 'slate'}
-                  className="text-[10px] font-bold"
+                  variant="warning"
+                  className="text-[10px] font-bold bg-amber-100 text-amber-900 border-amber-300"
                 >
-                  {activeQuestion.impact} IMPACT DETAIL
+                  HIGH VALUE DETAIL (PRIORITY SCORE: {activeQuestion.priorityScore})
                 </Badge>
                 <span className="text-[11px] font-bold text-amber-900">
                   Category: {activeQuestion.category}
@@ -95,10 +95,12 @@ export function MissingInfoRank({
                 <h3 className="text-base font-bold text-slate-900 font-heading">
                   {activeQuestion.question}
                 </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  <strong className="text-slate-800">Why we&apos;re asking: </strong>
-                  {activeQuestion.whyWeAsk}
-                </p>
+                {activeQuestion.whyWeAsk && (
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    <strong className="text-slate-800">Why we&apos;re asking: </strong>
+                    {activeQuestion.whyWeAsk}
+                  </p>
+                )}
               </div>
 
               {/* Options or custom answer */}
@@ -140,7 +142,7 @@ export function MissingInfoRank({
           {/* Remaining Ranked List */}
           <div className="space-y-2 pt-2">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-              Remaining Missing Details (Ranked by Scope Impact):
+              Remaining Missing Details (Ranked by Project &amp; Cost Impact):
             </span>
             <div className="space-y-2">
               {unresolved.map((item) => (
@@ -149,16 +151,8 @@ export function MissingInfoRank({
                   className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                        item.impact === 'HIGH'
-                          ? 'bg-rose-100 text-rose-800'
-                          : item.impact === 'MEDIUM'
-                          ? 'bg-amber-100 text-amber-900'
-                          : 'bg-slate-200 text-slate-700'
-                      }`}
-                    >
-                      {item.impact}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200">
+                      Score {item.priorityScore}
                     </span>
                     <span className="font-semibold text-slate-800">{item.question}</span>
                   </div>
@@ -180,7 +174,7 @@ export function MissingInfoRank({
           <CheckCircle2 className="h-6 w-6 text-emerald-600 mx-auto" />
           <h3 className="font-bold text-sm">Brief is 100% Comprehensive!</h3>
           <p className="text-xs text-emerald-800">
-            All high, medium, and low-impact project details have been confirmed.
+            All project dimensions, property characteristics, and specifications have been confirmed.
           </p>
         </div>
       )}

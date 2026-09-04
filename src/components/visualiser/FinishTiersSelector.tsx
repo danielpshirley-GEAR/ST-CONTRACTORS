@@ -4,27 +4,30 @@ import React from 'react';
 import { FinishTier, FinishTierDefinition } from '@/types/visualiser-scope';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import {
-  Sparkles,
-  Check,
-  Eye,
-  Sliders,
-  CheckCircle2,
-} from 'lucide-react';
+import { Check, Eye } from 'lucide-react';
+import { MASTER_FINISH_TIERS } from '@/lib/visualiser/specification-rules';
 
 interface FinishTiersSelectorProps {
-  finishTiers: FinishTierDefinition[];
+  tiers?: FinishTierDefinition[];
+  finishTiers?: FinishTierDefinition[];
   activeTier: FinishTier;
-  onSelectGlobalTier: (tier: FinishTier) => void;
-  onVisualiseTier: (tier: FinishTier) => void;
+  onSelectTier?: (tier: FinishTier) => void;
+  onSelectGlobalTier?: (tier: FinishTier) => void;
+  onVisualiseTier?: (tier: FinishTier) => void;
 }
 
 export function FinishTiersSelector({
+  tiers,
   finishTiers,
   activeTier,
+  onSelectTier,
   onSelectGlobalTier,
   onVisualiseTier,
 }: FinishTiersSelectorProps) {
+  const tierList = tiers || finishTiers || MASTER_FINISH_TIERS;
+  const handleSelect = onSelectTier || onSelectGlobalTier || (() => {});
+  const handleVisualise = onVisualiseTier || onSelectTier || onSelectGlobalTier || (() => {});
+
   return (
     <div id="section-finishes" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -37,12 +40,12 @@ export function FinishTiersSelector({
           </h2>
         </div>
         <p className="text-xs text-slate-500 font-medium">
-          Mix-and-match individual elements in Section 7
+          Standardised taxonomy: STANDARD, ENHANCED, BESPOKE
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {finishTiers.map((tierDef) => {
+        {tierList.map((tierDef) => {
           const isSelected = activeTier === tierDef.tier;
           return (
             <div
@@ -93,7 +96,7 @@ export function FinishTiersSelector({
               <div className="pt-4 border-t border-slate-200/60 space-y-2">
                 <Button
                   type="button"
-                  onClick={() => onSelectGlobalTier(tierDef.tier)}
+                  onClick={() => handleSelect(tierDef.tier)}
                   variant={isSelected ? 'primary' : 'outline'}
                   size="sm"
                   className={`w-full text-xs font-extrabold justify-center ${
@@ -107,7 +110,7 @@ export function FinishTiersSelector({
 
                 <button
                   type="button"
-                  onClick={() => onVisualiseTier(tierDef.tier)}
+                  onClick={() => handleVisualise(tierDef.tier)}
                   className="w-full text-[11px] font-bold text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1 py-1"
                 >
                   <Eye className="h-3.5 w-3.5 text-[#FFAA4F]" />
