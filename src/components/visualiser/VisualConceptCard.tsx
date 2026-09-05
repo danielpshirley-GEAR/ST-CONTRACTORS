@@ -24,6 +24,7 @@ interface VisualConceptCardProps {
   state: ProjectState;
   onRefineVisual: (prompt: string) => void;
   onRestoreVisualVersion?: (version: VisualConceptHistoryItem) => void;
+  onRestartFromOriginal?: () => void;
   isRefining: boolean;
 }
 
@@ -47,6 +48,7 @@ export function VisualConceptCard({
   state,
   onRefineVisual,
   onRestoreVisualVersion,
+  onRestartFromOriginal,
   isRefining,
 }: VisualConceptCardProps) {
   const [refineInput, setRefineInput] = useState('');
@@ -65,10 +67,12 @@ export function VisualConceptCard({
     setRefineInput('');
   };
 
-  const displayedImage =
+  const displayedHistoryItem =
     selectedHistoryIndex !== null && history[selectedHistoryIndex]
-      ? history[selectedHistoryIndex].imageUrl
-      : visual.currentConceptImage;
+      ? history[selectedHistoryIndex]
+      : history[history.length - 1];
+
+  const displayedImage = displayedHistoryItem?.imageUrl || visual.currentConceptImage;
 
   return (
     <div id="section-visual" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
@@ -101,27 +105,29 @@ export function VisualConceptCard({
         </div>
       </div>
 
-      {/* Visual Revision Bar (Items 7, 8) */}
+      {/* Visual Revision Bar & Provenance (Items 5, 8, 9) */}
       {history.length > 1 && (
         <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-slate-500" />
-            <span className="text-xs font-bold text-slate-700">Visual Revisions:</span>
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <History className="w-4 h-4 text-slate-500 shrink-0" />
+            <span className="text-xs font-bold text-slate-700">Visual Provenance:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
               {history.map((h, idx) => {
                 const isActive = (selectedHistoryIndex === null && idx === history.length - 1) || selectedHistoryIndex === idx;
+                const provenanceLabel = h.sourceVersion ? `v${h.version} (from v${h.sourceVersion})` : `v${h.version}`;
                 return (
                   <button
                     key={h.id || idx}
                     type="button"
                     onClick={() => setSelectedHistoryIndex(idx)}
+                    title={`Model: ${h.model || h.provider} | Prompt: ${h.prompt}`}
                     className={`px-2.5 py-1 rounded text-xs font-extrabold transition-all ${
                       isActive
                         ? 'bg-slate-900 text-[#FFAA4F] shadow-xs'
                         : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
                     }`}
                   >
-                    v{h.version}
+                    {provenanceLabel}
                   </button>
                 );
               })}
@@ -129,6 +135,18 @@ export function VisualConceptCard({
           </div>
 
           <div className="flex items-center gap-2">
+            {visual.sourceImage && onRestartFromOriginal && (
+              <button
+                type="button"
+                disabled={isRefining}
+                onClick={onRestartFromOriginal}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-xs font-bold text-amber-900 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className="w-3 h-3 text-amber-700" />
+                Restart from Original Photo
+              </button>
+            )}
+
             {visual.sourceImage && (
               <button
                 type="button"

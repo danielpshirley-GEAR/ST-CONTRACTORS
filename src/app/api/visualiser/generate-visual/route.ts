@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
       state,
       customPromptOverride: body.customPromptOverride,
       sourceImageUrl: body.sourceImageUrl,
+      sourceVersion: body.sourceVersion !== undefined ? Number(body.sourceVersion) : undefined,
       modificationInstruction: body.modificationInstruction,
+      restartFromOriginal: Boolean(body.restartFromOriginal),
+      targetBranchId: body.targetBranchId,
     });
 
     return NextResponse.json({

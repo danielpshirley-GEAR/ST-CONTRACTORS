@@ -233,8 +233,11 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
     {
       id: `vis-${Date.now()}-1`,
       version: 1,
+      assetId: `ast-init-1`,
       imageUrl: initialConceptSvg,
       sourceImageUrl: existingAsset?.url,
+      sourceVersion: undefined,
+      branchId: 'main',
       prompt: input.briefText,
       modifications: [],
       provider: 'ST Contractors Architectural Engine',
@@ -248,6 +251,8 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
     sourceImage: existingAsset?.url,
     generatedConceptImage: initialConceptSvg,
     currentConceptImage: initialConceptSvg,
+    currentAssetId: `ast-init-1`,
+    activeBranchId: 'main',
     generationProvider: 'ST Contractors Architectural Engine',
     generationId: `vis-${Date.now()}-1`,
     generationVersion: 1,
@@ -427,6 +432,8 @@ export function applyProjectChange(
   if (generatedVisual) {
     next.visualConcept.generatedConceptImage = generatedVisual.imageUrl;
     next.visualConcept.currentConceptImage = generatedVisual.imageUrl;
+    next.visualConcept.currentAssetId = generatedVisual.historyItem.assetId;
+    next.visualConcept.activeBranchId = generatedVisual.historyItem.branchId || next.visualConcept.activeBranchId || 'main';
     next.visualConcept.generationId = generatedVisual.generationId;
     next.visualConcept.generationVersion = generatedVisual.generationVersion;
     next.visualConcept.generationProvider = generatedVisual.provider;
@@ -486,6 +493,18 @@ export function restoreProjectVersion(state: ProjectState, targetVersionNumber: 
     return restored;
   }
   return state;
+}
+
+/**
+ * Initiates a new visual branch by resetting visual modifications back to the original homeowner photo (Phase 7E Item 9, 10)
+ */
+export function restartVisualFromOriginal(state: ProjectState, reason: string = 'Restarted visual branch from original photograph'): ProjectState {
+  const next = JSON.parse(JSON.stringify(state)) as ProjectState;
+  next.updatedAt = new Date().toISOString();
+  const branchId = `branch-v0-${Date.now()}`;
+  next.visualConcept.activeBranchId = branchId;
+  next.visualConcept.refinementsHistory = [];
+  return next;
 }
 
 // ----------------------------------------------------------------------------

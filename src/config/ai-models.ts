@@ -1,6 +1,6 @@
 /**
  * Centralized AI Model Configuration & Capability-Based Provider Router
- * Complies with Phase 7D Specification (Items 11, 12).
+ * Complies with Phase 7E Specification (Items 1, 2, 3, 4, 18, 19).
  * 
  * Centralizes all model identifiers, capability matrices, and provider routing
  * to guarantee that requests are dispatched only to models with genuine capability support.
@@ -35,69 +35,70 @@ export interface ModelConfig {
 }
 
 export const PROVIDER_CAPABILITIES: Record<string, AICapability[]> = {
-  // OpenAI
+  // OpenAI Modern Series
   'gpt-4o': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
   'gpt-4o-mini': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
-  'dall-e-3': ['IMAGE_GENERATION'],
-  'dall-e-2': ['IMAGE_GENERATION', 'IMAGE_EDITING'],
+  'gpt-image-2': ['IMAGE_GENERATION', 'IMAGE_EDITING'],
+  'gpt-image-1': ['IMAGE_GENERATION', 'IMAGE_EDITING'],
   
-  // Gemini
-  'gemini-1.5-pro': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
-  'gemini-1.5-flash': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
-  'imagen-3.0-generate-002': ['IMAGE_GENERATION'],
+  // Gemini Modern Series
+  'gemini-2.5-pro': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
+  'gemini-2.5-flash': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
+  'gemini-2.0-flash': ['TEXT_GENERATION', 'VISION_ANALYSIS'],
+  'gemini-2.5-flash-image': ['IMAGE_GENERATION'],
 };
 
 export const VISUALISER_MODELS: Record<VisualiserAIRole, ModelConfig> = {
   visualiser_interpret: {
     provider: 'gemini',
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.5-pro',
     requiredCapability: 'TEXT_GENERATION',
     fallbackProvider: 'openai',
     fallbackModel: 'gpt-4o',
     maxTokens: 3000,
-    temperature: 0.1, // High deterministic precision for JSON
+    temperature: 0.1, // High deterministic precision for structured JSON
     costPer1kInputTokensGbp: 0.001,
     costPer1kOutputTokensGbp: 0.003,
   },
   visualiser_vision: {
     provider: 'gemini',
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     requiredCapability: 'VISION_ANALYSIS',
     fallbackProvider: 'openai',
     fallbackModel: 'gpt-4o-mini',
     maxTokens: 2500,
     temperature: 0.2,
-    costPer1kInputTokensGbp: 0.0005,
-    costPer1kOutputTokensGbp: 0.0015,
+    costPer1kInputTokensGbp: 0.0003,
+    costPer1kOutputTokensGbp: 0.001,
   },
   visualiser_change: {
     provider: 'gemini',
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     requiredCapability: 'TEXT_GENERATION',
     fallbackProvider: 'openai',
     fallbackModel: 'gpt-4o-mini',
     maxTokens: 2000,
     temperature: 0.1,
-    costPer1kInputTokensGbp: 0.0005,
-    costPer1kOutputTokensGbp: 0.0015,
+    costPer1kInputTokensGbp: 0.0003,
+    costPer1kOutputTokensGbp: 0.001,
   },
   visualiser_chat: {
     provider: 'gemini',
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     requiredCapability: 'TEXT_GENERATION',
     fallbackProvider: 'openai',
     fallbackModel: 'gpt-4o-mini',
     maxTokens: 1500,
     temperature: 0.3,
-    costPer1kInputTokensGbp: 0.0005,
-    costPer1kOutputTokensGbp: 0.0015,
+    costPer1kInputTokensGbp: 0.0003,
+    costPer1kOutputTokensGbp: 0.001,
   },
   visualiser_image_gen: {
     provider: 'openai',
-    model: 'dall-e-3',
+    model: 'gpt-image-2',
     requiredCapability: 'IMAGE_GENERATION',
     fallbackProvider: 'gemini',
-    fallbackModel: 'imagen-3.0-generate-002',
+    fallbackModel: 'gemini-2.5-flash-image',
     maxTokens: 1024,
     temperature: 0.7,
     costPer1kInputTokensGbp: 0.03, // Per image standard
@@ -105,10 +106,10 @@ export const VISUALISER_MODELS: Record<VisualiserAIRole, ModelConfig> = {
   },
   visualiser_image_edit: {
     provider: 'openai',
-    model: 'dall-e-2',
+    model: 'gpt-image-2',
     requiredCapability: 'IMAGE_EDITING',
     fallbackProvider: 'openai',
-    fallbackModel: 'dall-e-3',
+    fallbackModel: 'gpt-image-1',
     maxTokens: 1024,
     temperature: 0.7,
     costPer1kInputTokensGbp: 0.03,
@@ -163,4 +164,69 @@ export function recordAITelemetry(record: AIOperationTelemetry): void {
  */
 export function getAITelemetryLog(): readonly AIOperationTelemetry[] {
   return telemetryLog;
+}
+
+export interface ProviderHealthReport {
+  timestamp: string;
+  openaiConfigured: boolean;
+  geminiConfigured: boolean;
+  anthropicConfigured: boolean;
+  roles: Record<
+    VisualiserAIRole,
+    {
+      primaryProvider: AIProvider;
+      primaryModel: string;
+      fallbackProvider?: AIProvider;
+      fallbackModel?: string;
+      status: 'healthy' | 'degraded_no_key' | 'offline';
+    }
+  >;
+}
+
+/**
+ * Evaluates provider configuration health without exposing keys or credentials
+ */
+export function getProviderHealthReport(): ProviderHealthReport {
+  const openaiKey = !!process.env.OPENAI_API_KEY;
+  const geminiKey = !!process.env.GEMINI_API_KEY;
+  const anthropicKey = !!process.env.ANTHROPIC_API_KEY;
+
+  const rolesHealth: ProviderHealthReport['roles'] = {} as any;
+
+  (Object.keys(VISUALISER_MODELS) as VisualiserAIRole[]).forEach((role) => {
+    const config = VISUALISER_MODELS[role];
+    const primaryHasKey =
+      (config.provider === 'openai' && openaiKey) ||
+      (config.provider === 'gemini' && geminiKey) ||
+      (config.provider === 'anthropic' && anthropicKey);
+
+    const fallbackHasKey =
+      !config.fallbackProvider ||
+      (config.fallbackProvider === 'openai' && openaiKey) ||
+      (config.fallbackProvider === 'gemini' && geminiKey) ||
+      (config.fallbackProvider === 'anthropic' && anthropicKey);
+
+    let status: 'healthy' | 'degraded_no_key' | 'offline' = 'offline';
+    if (primaryHasKey) {
+      status = 'healthy';
+    } else if (fallbackHasKey && config.fallbackProvider) {
+      status = 'degraded_no_key';
+    }
+
+    rolesHealth[role] = {
+      primaryProvider: config.provider,
+      primaryModel: config.model,
+      fallbackProvider: config.fallbackProvider,
+      fallbackModel: config.fallbackModel,
+      status,
+    };
+  });
+
+  return {
+    timestamp: new Date().toISOString(),
+    openaiConfigured: openaiKey,
+    geminiConfigured: geminiKey,
+    anthropicConfigured: anthropicKey,
+    roles: rolesHealth,
+  };
 }

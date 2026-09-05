@@ -22,18 +22,29 @@ import {
   validateModelCapability,
 } from '@/config/ai-models';
 import { validateAndExtractImagePayload } from '@/lib/security/image-security';
+import {
+  persistGeneratedImageAsset,
+  resolveEditableImageAsset,
+} from '@/lib/storage/visual-asset-store';
 
 export interface GenerateVisualOptions {
   state: ProjectState;
   customPromptOverride?: string;
   sourceImageUrl?: string;
+  sourceVersion?: number;
   modificationInstruction?: string;
+  restartFromOriginal?: boolean;
+  targetBranchId?: string;
 }
 
 export interface VisualGenerationOutput {
   imageUrl: string;
+  assetId: string;
   generationId: string;
   generationVersion: number;
+  sourceVersion?: number;
+  sourceAssetId?: string;
+  branchId?: string;
   provider: string;
   model?: string;
   prompt: string;
@@ -99,12 +110,12 @@ export function constructVisualPrompt(state: ProjectState, modificationInstructi
     ? ` Specified finishes: ${finishDetails.join(', ')}.`
     : '';
 
-  // 5. Construct Core Architectural Prompt
-  let basePrompt = `Professional architectural interior photography of a high-end London residential ${projectDescription} (${spaceName}).${styleClause}${dimensionClause}${finishesClause} Clean architectural lines, authentic natural ambient lighting, clutter-free, premium British craftsmanship, shot on Hasselblad 35mm lens, 8k resolution.`;
+  // 5. Construct Core Architectural Prompt with structural fidelity directives
+  let basePrompt = `Professional architectural interior photography of a high-end London residential ${projectDescription} (${spaceName}).${styleClause}${dimensionClause}${finishesClause} Maintain exact room geometry, window and door placements, structural ceiling heights, and existing architectural character. Clean architectural lines, authentic natural ambient lighting, clutter-free, premium British craftsmanship, shot on Hasselblad 35mm lens, 8k resolution.`;
 
   // 6. Conversational Modification Directive
   if (modificationInstruction) {
-    basePrompt += ` Modification requested: "${modificationInstruction}". Render this specific alteration prominently while maintaining spatial geometry and existing architectural context.`;
+    basePrompt += ` Modification requested: "${modificationInstruction}". Render this specific alteration prominently while strictly preserving camera angle, window and door positions, and unchanged surrounding room features.`;
   }
 
   return basePrompt;
@@ -112,6 +123,7 @@ export function constructVisualPrompt(state: ProjectState, modificationInstructi
 
 /**
  * Generates an initial or refined visual concept using real AI image generation / editing
+ * Strictly implements sequential source priority (V1 -> V2 -> V3) and persistent asset normalization.
  */
 export async function generateVisualConcept(options: GenerateVisualOptions): Promise<VisualGenerationOutput> {
   const startTime = Date.now();
@@ -121,18 +133,50 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
 
   const prompt = options.customPromptOverride || constructVisualPrompt(options.state, options.modificationInstruction);
 
-  // Determine if a genuine source image is participating
-  const sourceImageToUse = options.sourceImageUrl || options.state.visualConcept.sourceImage || (
-    options.state.visualConcept.visualHistory && options.state.visualConcept.visualHistory.length > 0
-      ? options.state.visualConcept.visualHistory[options.state.visualConcept.visualHistory.length - 1].imageUrl
-      : undefined
-  );
+  // Sequential Source Resolution (Phase 7E Item 5 & 9)
+  // Priority:
+  // 1. Explicit restart from original homeowner photo
+  // 2. Explicitly selected visual version in options
+  // 3. Latest successful generated concept in visual history (v2 uses v1, v3 uses v2)
+  // 4. Original homeowner source photo for initial v1 generation
+  const history = options.state.visualConcept.visualHistory || [];
+  let sourceImageToUse: string | undefined;
+  let sourceVersion: number | undefined;
+  let sourceAssetId: string | undefined;
+  let branchId: string | undefined = options.targetBranchId;
+
+  if (options.restartFromOriginal) {
+    sourceImageToUse = options.state.visualConcept.sourceImage;
+    sourceVersion = 0;
+    sourceAssetId = 'source-homeowner-photo';
+    branchId = `branch-v0-${Date.now()}`;
+  } else if (options.sourceImageUrl) {
+    sourceImageToUse = options.sourceImageUrl;
+    const match = history.find((h) => h.imageUrl === options.sourceImageUrl);
+    sourceVersion = options.sourceVersion ?? match?.version;
+    sourceAssetId = match?.assetId;
+  } else if (history.length > 0) {
+    // Sequential edit: Use latest visual in history (v2 uses v1, v3 uses v2)
+    const latest = history[history.length - 1];
+    sourceImageToUse = latest.imageUrl;
+    sourceVersion = latest.version;
+    sourceAssetId = latest.assetId;
+    branchId = latest.branchId || branchId;
+  } else if (options.state.visualConcept.generatedConceptImage) {
+    sourceImageToUse = options.state.visualConcept.generatedConceptImage;
+    sourceVersion = options.state.visualConcept.generationVersion;
+    sourceAssetId = options.state.visualConcept.currentAssetId;
+  } else {
+    // Initial generation: Use homeowner photo if available
+    sourceImageToUse = options.state.visualConcept.sourceImage;
+    sourceVersion = undefined;
+  }
 
   const appliedMods: string[] = options.modificationInstruction
     ? [...(options.state.visualConcept.refinementsHistory || []), options.modificationInstruction]
     : options.state.visualConcept.refinementsHistory || [];
 
-  let generatedUrl = '';
+  let rawGeneratedPayload: string | Buffer = '';
   let providerUsed = '';
   let modelUsed = '';
   let isImageToImage = false;
@@ -141,24 +185,21 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
   const openaiKey = process.env.OPENAI_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
 
-  // 1. Attempt Genuine Image-to-Image Editing if source image exists (Items 6, 10, 12)
-  if (sourceImageToUse && sourceImageToUse.startsWith('data:image/')) {
-    const validatedSource = validateAndExtractImagePayload(sourceImageToUse);
-    if (validatedSource.isValid && openaiKey) {
-      try {
+  // 1. Attempt Genuine Image-to-Image Editing using resolveEditableImageAsset (Phase 7E Items 6, 7)
+  if (sourceImageToUse) {
+    try {
+      const resolvedSource = await resolveEditableImageAsset(sourceImageToUse);
+      if (resolvedSource.isValid && resolvedSource.imageBuffer && openaiKey) {
         const editConfig = VISUALISER_MODELS.visualiser_image_edit;
-        const imageBuffer = Buffer.from(validatedSource.base64Data, 'base64');
         
         // Prepare multipart form data for OpenAI Image Edit API
         const formData = new FormData();
-        const blob = new Blob([imageBuffer], { type: validatedSource.mimeType });
+        const blob = new Blob([new Uint8Array(resolvedSource.imageBuffer)], { type: resolvedSource.mimeType || 'image/png' });
         formData.append('image', blob, 'source-image.png');
         formData.append('prompt', prompt);
         formData.append('n', '1');
         formData.append('size', '1024x1024');
-        if (editConfig.model === 'dall-e-2') {
-          formData.append('model', 'dall-e-2');
-        }
+        formData.append('model', editConfig.model);
 
         const editRes = await fetch('https://api.openai.com/v1/images/edits', {
           method: 'POST',
@@ -171,22 +212,27 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
         if (editRes.ok) {
           const editData = await editRes.json();
           if (editData.data?.[0]?.url) {
-            generatedUrl = editData.data[0].url;
-            providerUsed = 'OpenAI Image Edit (DALL-E)';
+            rawGeneratedPayload = editData.data[0].url;
+            providerUsed = `OpenAI Image Edit (${editConfig.model})`;
+            modelUsed = editConfig.model;
+            isImageToImage = true;
+          } else if (editData.data?.[0]?.b64_json) {
+            rawGeneratedPayload = `data:image/png;base64,${editData.data[0].b64_json}`;
+            providerUsed = `OpenAI Image Edit (${editConfig.model})`;
             modelUsed = editConfig.model;
             isImageToImage = true;
           }
         } else {
-          console.warn('[Visual Generator] OpenAI Image Edit returned error:', await editRes.text());
+          console.warn('[Visual Generator] OpenAI Image Edit returned error status:', editRes.status, await editRes.text());
         }
-      } catch (err) {
-        console.warn('[Visual Generator] Image Edit call failed, falling back to text-to-image:', err);
       }
+    } catch (err) {
+      console.warn('[Visual Generator] Image Edit call failed, falling back to text-to-image:', err);
     }
   }
 
-  // 2. Primary Text-to-Image Generation if not already generated by edit
-  if (!generatedUrl && openaiKey) {
+  // 2. Primary Text-to-Image Generation if edit not applicable or failed
+  if (!rawGeneratedPayload && openaiKey) {
     try {
       const genConfig = VISUALISER_MODELS.visualiser_image_gen;
       const res = await fetch('https://api.openai.com/v1/images/generations', {
@@ -207,56 +253,89 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
       if (res.ok) {
         const data = await res.json();
         if (data.data?.[0]?.url) {
-          generatedUrl = data.data[0].url;
-          providerUsed = 'OpenAI DALL-E 3';
+          rawGeneratedPayload = data.data[0].url;
+          providerUsed = `OpenAI (${genConfig.model})`;
+          modelUsed = genConfig.model;
+        } else if (data.data?.[0]?.b64_json) {
+          rawGeneratedPayload = `data:image/png;base64,${data.data[0].b64_json}`;
+          providerUsed = `OpenAI (${genConfig.model})`;
           modelUsed = genConfig.model;
         }
       } else {
-        console.warn('[Visual Generator] OpenAI DALL-E 3 returned error:', await res.text());
+        console.warn('[Visual Generator] OpenAI image generation returned error:', await res.text());
       }
     } catch (err) {
-      console.warn('[Visual Generator] OpenAI DALL-E 3 generation failed:', err);
+      console.warn('[Visual Generator] OpenAI image generation failed:', err);
     }
   }
 
-  // 3. Fallback to Gemini Imagen 3 if configured and OpenAI failed (Item 11)
-  if (!generatedUrl && geminiKey) {
+  // 3. Fallback to Gemini Image Model if configured and OpenAI failed
+  if (!rawGeneratedPayload && geminiKey) {
     try {
-      const imagenRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instances: [{ prompt }],
-            parameters: { sampleCount: 1, aspectRatio: '1:1' },
-          }),
-        }
-      );
+      const genConfig = VISUALISER_MODELS.visualiser_image_gen;
+      const geminiModel = genConfig.fallbackModel || 'gemini-2.5-flash-image';
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`;
+      
+      const geminiRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      });
 
-      if (imagenRes.ok) {
-        const imagenData = await imagenRes.json();
-        const base64Bytes = imagenData.predictions?.[0]?.bytesBase64Encoded;
-        if (base64Bytes) {
-          generatedUrl = `data:image/png;base64,${base64Bytes}`;
-          providerUsed = 'Gemini Imagen 3';
-          modelUsed = 'imagen-3.0-generate-002';
+      if (geminiRes.ok) {
+        const geminiData = await geminiRes.json();
+        const inlineBytes = geminiData.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)?.inlineData?.data;
+        if (inlineBytes) {
+          rawGeneratedPayload = `data:image/png;base64,${inlineBytes}`;
+          providerUsed = `Google Gemini (${geminiModel})`;
+          modelUsed = geminiModel;
         }
       }
     } catch (err) {
-      console.warn('[Visual Generator] Gemini Imagen 3 call failed:', err);
+      console.warn('[Visual Generator] Google Gemini image generation failed:', err);
     }
   }
 
   // 4. Degraded Fallback: Architectural Placeholder Concept SVG (Items 13, 14)
-  if (!generatedUrl) {
-    generatedUrl = generateArchitecturalConceptSvg(options.state, prompt, nextVersion, options.modificationInstruction);
+  if (!rawGeneratedPayload) {
+    rawGeneratedPayload = generateArchitecturalConceptSvg(options.state, prompt, nextVersion, options.modificationInstruction);
     providerUsed = 'ST Contractors Architectural Engine';
     modelUsed = 'architectural-placeholder-svg-v2';
     isFallback = true;
     isImageToImage = false; // NEVER label SVG fallback as image-to-image
   }
 
+  // 5. Normalise and Store in Persistent Asset Store (Phase 7E Item 6)
+  let persistedAsset;
+  try {
+    persistedAsset = await persistGeneratedImageAsset({
+      imagePayload: rawGeneratedPayload,
+      version: nextVersion,
+      prompt,
+      projectId: options.state.projectId,
+      sourceVersion,
+      sourceAssetId,
+      branchId,
+    });
+  } catch (persistErr) {
+    console.warn('[Visual Generator] Asset persistence error, using raw payload:', persistErr);
+    persistedAsset = {
+      assetId: `ast-${Date.now()}`,
+      assetUrl: typeof rawGeneratedPayload === 'string' ? rawGeneratedPayload : '',
+      mimeType: 'image/png',
+      byteSize: 0,
+      version: nextVersion,
+      prompt,
+      sourceVersion,
+      sourceAssetId,
+      branchId,
+      timestamp,
+    };
+  }
+
+  const finalImageUrl = persistedAsset.assetUrl;
   const conceptType: 'conceptual_interpretation' | 'image_to_image_transformation' =
     isImageToImage ? 'image_to_image_transformation' : 'conceptual_interpretation';
 
@@ -267,8 +346,12 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
   const historyItem: VisualConceptHistoryItem = {
     id: generationId,
     version: nextVersion,
-    imageUrl: generatedUrl,
+    assetId: persistedAsset.assetId,
+    imageUrl: finalImageUrl,
     sourceImageUrl: isImageToImage ? sourceImageToUse : undefined,
+    sourceVersion,
+    sourceAssetId,
+    branchId,
     prompt,
     modifications: appliedMods,
     provider: providerUsed,
@@ -279,7 +362,7 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
 
   recordAITelemetry({
     role: isImageToImage ? 'visualiser_image_edit' : 'visualiser_image_gen',
-    provider: providerUsed.includes('OpenAI') ? 'openai' : providerUsed.includes('Gemini') ? 'gemini' : 'openai',
+    provider: providerUsed.includes('OpenAI') ? 'openai' : providerUsed.includes('Google') || providerUsed.includes('Gemini') ? 'gemini' : 'openai',
     model: modelUsed,
     capability: isImageToImage ? 'IMAGE_EDITING' : 'IMAGE_GENERATION',
     success: !isFallback,
@@ -290,9 +373,13 @@ export async function generateVisualConcept(options: GenerateVisualOptions): Pro
   });
 
   return {
-    imageUrl: generatedUrl,
+    imageUrl: finalImageUrl,
+    assetId: persistedAsset.assetId,
     generationId,
     generationVersion: nextVersion,
+    sourceVersion,
+    sourceAssetId,
+    branchId,
     provider: providerUsed,
     model: modelUsed,
     prompt,

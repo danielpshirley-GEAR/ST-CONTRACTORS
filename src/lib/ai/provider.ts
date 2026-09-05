@@ -80,7 +80,7 @@ export function getModelForProvider(provider: AIProviderName, role: AIRole): str
     case 'anthropic':
       return 'claude-3-5-sonnet-20241022';
     case 'gemini':
-      return role === 'research' || role === 'seo' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+      return role === 'research' || role === 'seo' || role === 'project_planner' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
     default:
       return 'gpt-4o-mini';
   }

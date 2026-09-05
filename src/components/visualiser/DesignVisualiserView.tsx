@@ -201,6 +201,31 @@ export function DesignVisualiserView() {
     }
   };
 
+  // Handle Restart Visual Branch From Original Homeowner Photograph (Phase 7E Item 9, 10)
+  const handleRestartFromOriginal = async () => {
+    if (!projectState) return;
+    setIsApplyingChange(true);
+    try {
+      const res = await fetch('/api/visualiser/change', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectState,
+          changePrompt: 'Restart visual branch from original photograph',
+          restartFromOriginal: true,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.projectState) {
+        setProjectState(json.projectState);
+      }
+    } catch (err) {
+      console.warn('Error restarting visual from original:', err);
+    } finally {
+      setIsApplyingChange(false);
+    }
+  };
+
   // Handle True Immutable Version Restore (Item 8)
   const handleRestoreVersion = async (versionNum: number) => {
     if (!projectState) return;
@@ -552,6 +577,7 @@ export function DesignVisualiserView() {
                 <VisualConceptCard
                   state={projectState}
                   onRefineVisual={handleApplyChange}
+                  onRestartFromOriginal={handleRestartFromOriginal}
                   isRefining={isApplyingChange}
                 />
 

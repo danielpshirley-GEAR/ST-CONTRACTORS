@@ -368,8 +368,12 @@ export interface ProjectVersion {
 export interface VisualConceptHistoryItem {
   id: string;
   version: number;
+  assetId?: string;
   imageUrl: string;
   sourceImageUrl?: string;
+  sourceVersion?: number;
+  sourceAssetId?: string;
+  branchId?: string;
   prompt: string;
   modifications: string[];
   provider: string;
@@ -382,6 +386,8 @@ export interface VisualConceptState {
   sourceImage?: string; // original homeowner uploaded image
   generatedConceptImage?: string; // AI generated visual
   currentConceptImage: string; // for display compatibility
+  currentAssetId?: string;
+  activeBranchId?: string;
   generationProvider?: string;
   generationId?: string;
   generationPrompt?: string;

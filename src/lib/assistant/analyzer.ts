@@ -656,7 +656,7 @@ CRITICAL RULES:
 2. If the user asks for painting, new flooring, and spotlights, the trades are Painter, Flooring Fitter, and Electrician. Cost is ~£2,500 - £5,000, NOT £50,000!`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

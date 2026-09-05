@@ -46,10 +46,12 @@ export async function POST(req: NextRequest) {
 
     // 2. Generate new visual if modification affects visual appearance (Item 7)
     let generatedVisual: any = undefined;
-    if (changeResponse.requiresVisualRegeneration || changePrompt.toLowerCase().includes('cabinet') || changePrompt.toLowerCase().includes('floor') || changePrompt.toLowerCase().includes('navy') || changePrompt.toLowerCase().includes('oak')) {
+    const isRestart = Boolean(body.restartFromOriginal);
+    if (isRestart || changeResponse.requiresVisualRegeneration || changePrompt.toLowerCase().includes('cabinet') || changePrompt.toLowerCase().includes('floor') || changePrompt.toLowerCase().includes('navy') || changePrompt.toLowerCase().includes('oak') || changePrompt.toLowerCase().includes('original')) {
       const visualOutput = await generateVisualConcept({
         state: projectState as ProjectState,
         modificationInstruction: changePrompt,
+        restartFromOriginal: isRestart,
       });
       generatedVisual = {
         imageUrl: visualOutput.imageUrl,
