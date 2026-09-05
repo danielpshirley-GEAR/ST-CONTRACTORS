@@ -68,6 +68,7 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
     : (['unknown'] as ProjectCategoryType[]);
 
   const hasStructuralAlteration = extraction.hasStructuralAlteration ?? false;
+  const uploadedAssets: UploadedAsset[] = input.imageAnalyses || [];
 
   // 1. Property Setup (Preserving 'not_provided' / 'unknown' - Item 3, 14, 15)
   const propEra = extraction.property.era || (input.propertyEra as any) || 'not_provided';
@@ -105,9 +106,9 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
       status: extraction.property.isListedBuilding !== undefined ? 'confirmed' : 'unknown',
     },
     existingCondition: {
-      value: extraction.property.existingCondition || 'Existing residential space',
-      source: 'system_assumption',
-      status: 'assumed',
+      value: extraction.property.existingCondition || uploadedAssets[0]?.existingConditions?.[0] || 'Not yet described',
+      source: extraction.property.existingCondition ? 'user_statement' : uploadedAssets.length > 0 ? 'user_image' : 'system_assumption',
+      status: extraction.property.existingCondition || uploadedAssets[0]?.existingConditions ? 'confirmed' : 'unknown',
     },
   };
 
@@ -168,10 +169,7 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
         },
       ];
 
-  // 3. Uploaded Assets
-  const uploadedAssets: UploadedAsset[] = input.imageAnalyses || [];
-
-  // 4. Initial Finish Tiers & Selections
+  // 3. Initial Finish Tiers & Selections
   const finishSelections: Record<string, FinishTier> = {
     Cabinetry: extraction.assumedFinishTier || 'enhanced',
     Worktops: extraction.assumedFinishTier || 'enhanced',
@@ -188,7 +186,7 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
     extraction.assumedFinishTier || 'enhanced'
   );
 
-  // 6. Visual Concept State (Items 4, 5, 6, 7, 8)
+  // 6. Visual Concept State (Items 4, 5, 6, 7, 8, 14)
   const existingAsset = uploadedAssets.find(
     (a) => a.classifiedCategory === 'existing_condition' || a.userOverriddenCategory === 'existing_condition'
   );
@@ -240,9 +238,9 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
       prompt: input.briefText,
       modifications: [],
       provider: 'ST Contractors Architectural Engine',
-      model: 'concept-vector-v2',
+      model: 'architectural-placeholder-svg-v2',
       timestamp: new Date().toISOString(),
-      conceptType: existingAsset ? 'image_to_image_transformation' : 'conceptual_interpretation',
+      conceptType: 'conceptual_interpretation',
     },
   ];
 
@@ -255,16 +253,16 @@ export function createInitialProjectState(input: InitialProjectInput): ProjectSt
     generationVersion: 1,
     generationPrompt: input.briefText,
     generationTimestamp: new Date().toISOString(),
-    conceptType: existingAsset ? 'image_to_image_transformation' : 'conceptual_interpretation',
+    conceptType: 'conceptual_interpretation',
+    status: 'idle',
     architecturalStyle: extraction.stylePreference,
     glazingType: extraction.glazingPreference,
     flooringType: extraction.flooringPreference,
     cabinetryColor: extraction.cabinetryPreference,
     visualPrompt: input.briefText,
-    disclaimer: 'CONCEPT VISUALISATION — Indicative design interpretation for spatial and finish exploration. Not a structural working drawing.',
+    disclaimer: 'ARCHITECTURAL PLACEHOLDER CONCEPT — Initial illustrative diagram. AI visual generation is available on demand.',
     refinementsHistory: [],
     visualHistory: initialVisualHistory,
-    status: 'completed',
   };
 
   // 7. Deterministic Quantities

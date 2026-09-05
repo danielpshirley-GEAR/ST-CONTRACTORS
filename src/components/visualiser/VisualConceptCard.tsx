@@ -232,6 +232,29 @@ export function VisualConceptCard({
         </div>
       )}
 
+      {/* Fallback degraded banner when AI is offline */}
+      {visual.disclaimer?.includes('ARCHITECTURAL PLACEHOLDER CONCEPT') && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Architectural Placeholder Concept: </span>
+              AI visual generation was unavailable. This simplified diagram is provided so you can continue building the project scope.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onRefineVisual(visual.visualPrompt || 'Regenerate visual')}
+            className="shrink-0 font-bold border-amber-400 bg-white hover:bg-amber-100 text-amber-950 gap-1.5"
+            disabled={isRefining}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefining ? 'animate-spin' : ''}`} />
+            Retry AI visual
+          </Button>
+        </div>
+      )}
+
       {/* Safety / Legal Disclaimer */}
       <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-slate-600 text-xs">
         <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />

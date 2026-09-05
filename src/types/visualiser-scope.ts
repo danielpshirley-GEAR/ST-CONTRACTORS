@@ -6,6 +6,7 @@
 export type ProvenanceStatus = 'confirmed' | 'derived' | 'assumed' | 'unknown';
 export type ProvenanceSource =
   | 'user_statement'
+  | 'user_image'
   | 'system_assumption'
   | 'derived_calculation'
   | 'document_image'
@@ -413,6 +414,7 @@ export interface ProjectState {
   spaces: ProjectSpace[];
   uploadedAssets: UploadedAsset[];
   visualConcept: VisualConceptState;
+  selectedFinishTier?: FinishTier | 'not_decided';
   finishSelections: Record<string, FinishTier>;
   finishTiers: FinishTierDefinition[];
   scopeOfWorks: ScopeOfWorkItem[];

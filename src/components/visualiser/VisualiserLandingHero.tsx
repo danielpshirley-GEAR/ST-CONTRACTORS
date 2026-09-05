@@ -68,9 +68,9 @@ export function VisualiserLandingHero({
   const [showOptionalInputs, setShowOptionalInputs] = useState(Boolean(initialLength || initialWidth));
   const [length, setLength] = useState<string>(initialLength ? String(initialLength) : '');
   const [width, setWidth] = useState<string>(initialWidth ? String(initialWidth) : '');
-  const [propertyType, setPropertyType] = useState<string>('terraced');
-  const [propertyEra, setPropertyEra] = useState<string>('victorian');
-  const [location, setLocation] = useState<string>('London (West / South West)');
+  const [propertyType, setPropertyType] = useState<string>('');
+  const [propertyEra, setPropertyEra] = useState<string>('');
+  const [location, setLocation] = useState<string>('');
   const [budget, setBudget] = useState<string>('');
   const [images, setImages] = useState<{ url: string; filename: string; category: UploadedAssetCategory }[]>([]);
 
@@ -78,7 +78,8 @@ export function VisualiserLandingHero({
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
+      const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      const filesArray = Array.from(e.target.files).filter((f) => allowedMimes.includes(f.type.toLowerCase()));
       filesArray.forEach((file, idx) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -119,9 +120,9 @@ export function VisualiserLandingHero({
         length: length ? parseFloat(length) : undefined,
         width: width ? parseFloat(width) : undefined,
       },
-      propertyType,
-      propertyEra,
-      location,
+      propertyType: propertyType.trim() ? propertyType.trim() : undefined,
+      propertyEra: propertyEra.trim() ? propertyEra.trim() : undefined,
+      location: location.trim() ? location.trim() : undefined,
       budget: budget ? parseFloat(budget) : undefined,
     });
   };
@@ -261,9 +262,41 @@ export function VisualiserLandingHero({
               </button>
 
               {showOptionalInputs && (
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-slate-500">Room Length (m)</label>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500">Property Type</label>
+                    <select
+                      value={propertyType}
+                      onChange={(e) => setPropertyType(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="terraced">Terraced</option>
+                      <option value="semi_detached">Semi-detached</option>
+                      <option value="detached">Detached</option>
+                      <option value="flat">Flat</option>
+                      <option value="maisonette">Maisonette</option>
+                      <option value="bungalow">Bungalow</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500">Property Era</label>
+                    <select
+                      value={propertyEra}
+                      onChange={(e) => setPropertyEra(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="georgian">Georgian</option>
+                      <option value="victorian">Victorian</option>
+                      <option value="edwardian">Edwardian</option>
+                      <option value="1930s">1930s</option>
+                      <option value="post_war">Post-war</option>
+                      <option value="modern">Modern</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500">Length (m)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -274,7 +307,7 @@ export function VisualiserLandingHero({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-slate-500">Room Width (m)</label>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500">Width (m)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -285,17 +318,14 @@ export function VisualiserLandingHero({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-slate-500">Property Era</label>
-                    <select
-                      value={propertyEra}
-                      onChange={(e) => setPropertyEra(e.target.value)}
+                    <label className="block text-[10px] font-bold uppercase text-slate-500">Location</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ealing, London"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
                       className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:outline-none focus:border-[#FFAA4F]"
-                    >
-                      <option value="victorian">Victorian (1837–1901)</option>
-                      <option value="edwardian">Edwardian (1901–1910)</option>
-                      <option value="1930s">1930s Semi-Detached</option>
-                      <option value="modern">Post-War / Modern</option>
-                    </select>
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold uppercase text-slate-500">Target Budget (£)</label>

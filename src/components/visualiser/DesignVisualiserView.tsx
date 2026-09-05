@@ -112,12 +112,47 @@ export function DesignVisualiserView() {
       });
       const json = await res.json();
       if (json.success && json.projectState) {
-        setProjectState(json.projectState);
-        if (json.projectState.spaces[0] && json.projectState.spaces[0].lengthM.value && json.projectState.spaces[0].widthM.value) {
-          setEditLength(String(json.projectState.spaces[0].lengthM.value));
-          setEditWidth(String(json.projectState.spaces[0].widthM.value));
+        const initialState = json.projectState;
+        setProjectState(initialState);
+        if (initialState.spaces[0] && initialState.spaces[0].lengthM.value && initialState.spaces[0].widthM.value) {
+          setEditLength(String(initialState.spaces[0].lengthM.value));
+          setEditWidth(String(initialState.spaces[0].widthM.value));
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Trigger real AI visual generation asynchronously (Items 8, 9)
+        fetch('/api/visualiser/generate-visual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            state: initialState,
+            sourceImageUrl: initialState.visualConcept?.sourceImage,
+          }),
+        })
+          .then((r) => r.json())
+          .then((genJson) => {
+            if (genJson.success && genJson.data) {
+              setProjectState((prev) => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  visualConcept: {
+                    ...prev.visualConcept,
+                    currentConceptImage: genJson.data.imageUrl,
+                    generatedConceptImage: genJson.data.imageUrl,
+                    generationProvider: genJson.data.provider,
+                    generationId: genJson.data.generationId,
+                    generationVersion: genJson.data.generationVersion,
+                    conceptType: genJson.data.conceptType,
+                    disclaimer: genJson.data.disclaimer,
+                    visualHistory: [genJson.data.visualHistoryItem],
+                    status: genJson.data.isFallback ? 'failed' : 'completed',
+                  },
+                };
+              });
+            }
+          })
+          .catch((err) => console.warn('Async visual generation error:', err));
       } else {
         const fallback = createInitialProjectState(data);
         setProjectState(fallback);

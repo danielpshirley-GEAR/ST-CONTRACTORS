@@ -56,13 +56,39 @@ CRITICAL ZERO-ASSUMPTION & ACCURACY RULES:
 6. Design choices (worktop, flooring, glazing, cabinetry): If not stated, do not invent.
 7. Output strict JSON conforming to the requested schema. No markdown wrapping outside the JSON block.`;
 
+  let uploadedAssetsPromptSection = '';
+  if (input.imageAnalyses && input.imageAnalyses.length > 0) {
+    uploadedAssetsPromptSection = `\nUPLOADED ASSET ANALYSIS (Evidence from Homeowner Uploaded Images):
+${input.imageAnalyses
+  .map(
+    (a, idx) => `Asset ${idx + 1} (${a.filename}):
+- Classified Category: ${a.classifiedCategory} (Confidence: ${a.classificationConfidence}%)
+- Visible Spaces: ${a.visibleSpaces?.join(', ') || 'None identified'}
+- Visible Materials: ${a.visibleMaterials?.join(', ') || 'None identified'}
+- Visible Openings / Doors / Windows: ${[...(a.visibleOpenings || []), ...(a.visibleDoors || []), ...(a.visibleWindows || [])].join(', ') || 'None identified'}
+- Architectural Features: ${a.architecturalFeatures?.join(', ') || 'None identified'}
+- Dimensions Shown in Drawing: ${a.dimensionsVisibleInDrawing?.map((d) => `${d.label || 'Dim'}: ${d.value || ''}`).join(', ') || 'None'}
+- Existing Conditions: ${a.existingConditions?.join(', ') || 'None recorded'}
+- Uncertainties: ${a.uncertainties?.join(', ') || 'None'}`
+  )
+  .join('\n\n')}
+Use this visual evidence to ground spaces, condition, and openings. Maintain source as 'user_image' where derived from image analysis.`;
+  }
+
+  const effectiveBrief = input.briefText?.trim()
+    ? input.briefText.trim()
+    : input.imageAnalyses && input.imageAnalyses.length > 0
+    ? 'Homeowner uploaded photos/plans without written brief. What would you like to change about this space?'
+    : 'General project enquiry';
+
   const userPrompt = `Analyze this homeowner project brief:
-Brief: "${input.briefText}"
+Brief: "${effectiveBrief}"
 Provided Dimensions: ${JSON.stringify(input.dimensions || {})}
 Property Type: ${input.propertyType || 'Not specified'}
 Property Era: ${input.propertyEra || 'Not specified'}
 Location: ${input.location || 'Not specified'}
 Budget: ${input.budget ? '£' + input.budget : 'Not specified'}
+${uploadedAssetsPromptSection}
 
 Return a valid JSON object matching the StructuredBriefExtraction schema.`;
 

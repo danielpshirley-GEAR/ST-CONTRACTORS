@@ -51,8 +51,14 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. Hydrate state with deterministic engineering & calculation engine
+    const effectiveBrief = briefText?.trim()
+      ? briefText.trim()
+      : images && images.length > 0
+      ? 'Space assessment from uploaded photograph'
+      : '';
+
     const state = createInitialProjectState({
-      briefText: briefText || 'Transform existing space with modern architectural finishes',
+      briefText: effectiveBrief,
       images,
       dimensions,
       propertyType,

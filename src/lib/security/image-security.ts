@@ -1,21 +1,18 @@
 /**
  * Image Download Security & SSRF Protection Utility
- * Complies with Phase 7C Specification (Item 2).
+ * Complies with Phase 7D Specification (Items 22, 23).
  * 
  * Protects against SSRF, unauthorized internal network scanning,
- * metadata exfiltration, and processing of oversized or dangerous payloads.
+ * metadata exfiltration, and processing of oversized or dangerous non-image payloads.
+ * Only accepts valid raster images (JPEG, PNG, WebP) up to 10MB.
  */
 
-import { URL } from 'url';
-
-// Allowed Image MIME types
+// Allowed Image MIME types for homeowner uploads (Purged SVG to prevent XSS / malicious vectors)
 export const ALLOWED_IMAGE_MIME_TYPES = [
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/webp',
-  'image/heic',
-  'image/svg+xml',
 ] as const;
 
 export type AllowedImageMimeType = (typeof ALLOWED_IMAGE_MIME_TYPES)[number];
@@ -51,7 +48,7 @@ export interface ValidatedImageData {
 }
 
 /**
- * Validates whether a host is safe from SSRF attacks
+ * Validates whether a hostname string is safe from SSRF attacks
  */
 export function isSafeRemoteHost(hostname: string): boolean {
   if (!hostname) return false;
@@ -62,6 +59,51 @@ export function isSafeRemoteHost(hostname: string): boolean {
     }
   }
   return true;
+}
+
+/**
+ * Performs asynchronous DNS resolution to verify resolved IP is not private/reserved
+ */
+export async function isSafeResolvedHost(hostname: string): Promise<boolean> {
+  if (!isSafeRemoteHost(hostname)) return false;
+  if (typeof window !== 'undefined') return true;
+  try {
+    const nodeDns = eval('require')('dns/promises');
+    const records = await nodeDns.lookup(hostname, { all: true });
+    for (const rec of records) {
+      if (!isSafeRemoteHost(rec.address)) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Verifies magic bytes/file signature from Base64 data to detect masqueraded file types
+ */
+export function verifyImageMagicBytes(base64Data: string, mimeType: AllowedImageMimeType): boolean {
+  if (!base64Data || base64Data.length < 8) return false;
+  const prefix = base64Data.substring(0, 16);
+
+  if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
+    // JPEG starts with /9j/
+    return prefix.startsWith('/9j/');
+  }
+
+  if (mimeType === 'image/png') {
+    // PNG starts with iVBORw0KGgo
+    return prefix.startsWith('iVBOR');
+  }
+
+  if (mimeType === 'image/webp') {
+    // WebP starts with UklGR (RIFF)
+    return prefix.startsWith('UklGR');
+  }
+
+  return false;
 }
 
 /**
