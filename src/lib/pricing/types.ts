@@ -110,14 +110,26 @@ export interface EstimateResult {
   disclaimer: string;
 }
 
+export type LeadScoreBand =
+  | 'HOT'
+  | 'STRONG'
+  | 'DEVELOPING'
+  | 'EARLY_STAGE'
+  | 'OUTSIDE_CRITERIA'
+  // Legacy aliases
+  | 'HIGH'
+  | 'MEDIUM'
+  | 'EARLY';
+
 export interface LeadScoreResult {
   score: number; // 0 - 100
-  scoreBand: 'HOT' | 'HIGH' | 'MEDIUM' | 'EARLY';
+  scoreBand: LeadScoreBand;
   factors: {
     factor: string;
     points: number;
     description: string;
   }[];
+  routingAction?: string;
 }
 
 export interface LeadSubmissionPayload {

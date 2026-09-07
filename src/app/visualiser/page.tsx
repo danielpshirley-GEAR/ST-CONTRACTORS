@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { DesignVisualiserView } from '@/components/visualiser/DesignVisualiserView';
+import { VisualiserHeroSSR } from '@/components/visualiser/VisualiserHeroSSR';
 import { Container } from '@/components/ui/Container';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -126,16 +127,7 @@ export default function VisualiserPage() {
       />
 
       {/* Main Interactive Application Shell */}
-      <React.Suspense
-        fallback={
-          <div className="min-h-[500px] bg-slate-50 flex items-center justify-center p-8">
-            <div className="text-slate-500 text-sm font-bold animate-pulse flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#FFAA4F]" />
-              <span>Loading AI Project Scope Builder...</span>
-            </div>
-          </div>
-        }
-      >
+      <React.Suspense fallback={<VisualiserHeroSSR />}>
         <DesignVisualiserView />
       </React.Suspense>
 

@@ -17,10 +17,11 @@ import {
   ProjectScopeItem,
   RecommendedWorkItem,
   FullProjectQuoteEstimate,
+  WorkCategory,
 } from '../ai/types';
 import { generateRoomByRoomScope, generateContextualRecommendations } from '../ai/planner';
 import { calculateFullRoomQuote } from '../pricing/room-estimator';
-import { computeLeadScore } from '../lead-scoring';
+import { computeLeadScore, computeVisualiserLeadScore } from '../lead-scoring';
 
 function generateRefCode(): string {
   const year = new Date().getFullYear();
@@ -887,6 +888,224 @@ class InMemoryDatabase {
       requestedTimeSlot: params.contact.requestedTimeSlot,
       status: 'pending',
       notes: `Calculator Consultation: ${params.calculator.name} (${params.calculator.formattedPrimary})`,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.projects.unshift(project);
+    this.leads.unshift(lead);
+    this.consultations.unshift(consultation);
+
+    return { lead, project, consultation };
+  }
+
+  public async createLeadFromVisualiser(params: {
+    state: import('@/types/visualiser-scope').ProjectState;
+    contact: {
+      name: string;
+      email: string;
+      phone: string;
+      preferredContactMethod?: 'phone' | 'email' | 'whatsapp';
+      postcode?: string;
+      message?: string;
+      consent?: boolean;
+    };
+    attribution?: {
+      utmSource?: string;
+      utmMedium?: string;
+      utmCampaign?: string;
+      utmContent?: string;
+      landingPage?: string;
+      referrer?: string;
+    };
+    userId?: string;
+  }): Promise<{ lead: DbLead; project: DbProject; consultation: DbConsultation }> {
+    const refCode = generateRefCode();
+    const projectId = params.state.projectId || `proj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const leadId = `lead_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const nameParts = (params.contact.name || 'Client').trim().split(/\s+/);
+    const firstName = nameParts[0] || 'Client';
+    const lastName = nameParts.slice(1).join(' ') || 'Project Owner';
+
+    const cleanPostcode = (params.contact.postcode || params.state.property?.location?.value || '').trim();
+    const leadScoreResult = computeVisualiserLeadScore({
+      state: params.state,
+      postcode: cleanPostcode,
+      isConsultationRequested: true,
+    });
+
+    const projectTypesStr = (params.state.projectTypes || []).join(' & ') || 'Renovation';
+    const projectTitle = `${cleanPostcode ? cleanPostcode + ' ' : ''}${projectTypesStr} Plan Review`;
+
+    const estValue = params.state.budgetAlignment?.indicativeCostRange?.min || 65000;
+    const estLow = Math.round(estValue * 0.9);
+    const estHigh = Math.round(estValue * 1.25);
+
+    const estimateResult: FullProjectQuoteEstimate = {
+      projectTitle,
+      summaryText: `Visualiser-generated scope for ${projectTypesStr} (${params.state.spaces.length} space(s), ${params.state.selectedFinishTier || 'enhanced'} finish).`,
+      indicativeCostLow: estLow,
+      indicativeCostHigh: estHigh,
+      averageCost: Math.round((estLow + estHigh) / 2),
+      contingencyAmount: Math.round(estLow * 0.1),
+      durationWeeksMin: 6,
+      durationWeeksMax: 16,
+      roomBreakdowns: params.state.spaces.map((sp) => ({
+        areaName: sp.name,
+        itemCount: 1,
+        costLow: Math.round(estLow / (params.state.spaces.length || 1)),
+        costHigh: Math.round(estHigh / (params.state.spaces.length || 1)),
+      })),
+      categoryBreakdowns: (() => {
+        const tradeCounts = new Map<string, number>();
+        for (const item of params.state.scopeOfWorks || []) {
+          const t = item.trade || item.category || 'Building & Structural';
+          tradeCounts.set(t, (tradeCounts.get(t) || 0) + 1);
+        }
+        const total = params.state.scopeOfWorks?.length || 1;
+        if (tradeCounts.size === 0) {
+          return [
+            { category: 'Building & Structural', costLow: Math.round(estLow * 0.6), costHigh: Math.round(estHigh * 0.6), percentage: 60 },
+            { category: 'Finishes & Fit-Out', costLow: Math.round(estLow * 0.4), costHigh: Math.round(estHigh * 0.4), percentage: 40 },
+          ];
+        }
+        return Array.from(tradeCounts.entries()).map(([trade, count]) => ({
+          category: trade,
+          costLow: Math.round(estLow * (count / total)),
+          costHigh: Math.round(estHigh * (count / total)),
+          percentage: Math.round((count / total) * 100),
+        }));
+      })(),
+      timelinePhases: [
+        { phaseNumber: 1, name: 'Pre-Construction & Feasibility Survey', duration: '1-2 weeks', description: 'Technical laser measure, structural review, and planning check' },
+        { phaseNumber: 2, name: 'Engineering & Party Wall', duration: '2-4 weeks', description: 'Structural steel calculations & Building Control submission' },
+        { phaseNumber: 3, name: 'Principal Construction', duration: '8-14 weeks', description: 'Site strip-out, structural build, first/second fix, and finishes' },
+      ],
+      thingsToConfirm: params.state.assumptions?.slice(0, 4).map((a) => a.label || a.reason || a.key) || [
+        'On-site laser measure',
+        'Structural opening feasibility',
+        'Underground drainage routing',
+      ],
+      confidenceRating: 'High',
+      isDevelopmentDemo: false,
+    };
+
+    const plannerInput: ComprehensivePlannerInput = {
+      projectType: (params.state.projectTypes?.[0] as any) || 'extension',
+      customDescription: params.state.originalBrief,
+      customerGoals: ['Turnkey project review', 'Scope validation & fixed-price quote'],
+      propertyType: (params.state.property?.type?.value as any) || 'terraced',
+      propertyAge: (params.state.property?.era?.value as any) || 'victorian',
+      postcode: cleanPostcode || 'London Hub',
+      selectedAreas: params.state.spaces.map((sp) => ({
+        id: sp.id,
+        name: sp.name,
+        sizeCategory: 'medium',
+        lengthMeters: sp.lengthM?.value,
+        widthMeters: sp.widthM?.value,
+      })),
+      finishLevel: params.state.selectedFinishTier === 'bespoke' ? 'luxury' : params.state.selectedFinishTier === 'enhanced' ? 'premium' : 'standard',
+      projectStatus: 'ready_to_plan',
+      timeline: '1_3_months',
+      budgetRange: '50k_100k',
+    };
+
+    const mapToWorkCategory = (str?: string): WorkCategory => {
+      const s = (str || '').toLowerCase();
+      if (s.includes('demo') || s.includes('prep') || s.includes('strip')) return 'Preparation & Demolition';
+      if (s.includes('plumb') || s.includes('heat') || s.includes('boiler')) return 'Plumbing & Heating';
+      if (s.includes('electr') || s.includes('light') || s.includes('rewir')) return 'Electrical & Lighting';
+      if (s.includes('carpent') || s.includes('timber') || s.includes('joiner')) return 'Carpentry & Joinery';
+      if (s.includes('glaz') || s.includes('window') || s.includes('door') || s.includes('bifold') || s.includes('skylight')) return 'Glazing & Openings';
+      if (s.includes('finish') || s.includes('paint') || s.includes('decorat') || s.includes('plaster')) return 'Finishing & Decorating';
+      if (s.includes('kitchen') || s.includes('cabinet') || s.includes('wardrobe')) return 'Installation & Cabinetry';
+      if (s.includes('garden') || s.includes('ground') || s.includes('paving') || s.includes('drain')) return 'External & Grounds';
+      return 'Building & Structural';
+    };
+
+    const totalScopeCount = params.state.scopeOfWorks?.length || 1;
+    const scopeItems: ProjectScopeItem[] = (params.state.scopeOfWorks || []).map((si, idx) => ({
+      id: si.id || `item_${idx}`,
+      areaId: 'space-1',
+      areaName: si.category || si.trade || 'General',
+      category: mapToWorkCategory(si.trade || si.category),
+      name: si.title,
+      description: si.description,
+      selected: si.included ?? true,
+      pricingStatus: 'estimated',
+      costLow: Math.round(estLow / totalScopeCount),
+      costHigh: Math.round(estHigh / totalScopeCount),
+    }));
+
+    const project: DbProject = {
+      id: projectId,
+      userId: params.userId,
+      leadId,
+      referenceCode: refCode,
+      title: projectTitle,
+      status: 'CONSULTATION_REQUESTED',
+      inputData: plannerInput,
+      scopeItems,
+      recommendations: [],
+      estimateResult,
+      timelineStages: generateDefaultTimelineStages(params.state.projectTypes?.[0] || 'extension'),
+      notes: JSON.stringify({
+        source: 'Visualiser Scope Builder',
+        finishTier: params.state.selectedFinishTier,
+        complexity: params.state.complexity?.level,
+        spaceCount: params.state.spaces.length,
+        conceptsCount: params.state.visualConcept?.visualHistory?.length || 1,
+      }),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const lead: DbLead = {
+      id: leadId,
+      projectId,
+      visualiserProjectId: params.state.projectId,
+      projectState: params.state,
+      referenceCode: refCode,
+      firstName,
+      lastName,
+      email: params.contact.email,
+      phone: params.contact.phone,
+      postcode: cleanPostcode,
+      projectType: projectTypesStr,
+      budgetRange: params.state.budgetAlignment?.indicativeCostRange?.formatted || 'Flexible / To Confirm',
+      estimatedValue: estHigh,
+      timeline: '1–3 Months',
+      score: leadScoreResult.score,
+      scoreBand: leadScoreResult.scoreBand,
+      scoreFactors: leadScoreResult.factors,
+      routingAction: leadScoreResult.routingAction,
+      stage: 'consultation_booked',
+      source: 'AI Project Visualiser',
+      preferredContactMethod: params.contact.preferredContactMethod || 'phone',
+      consultationType: 'consultation',
+      customerDescription: `Visualiser Lead (${projectTypesStr}). Brief: "${params.state.originalBrief}". ${params.contact.message ? `Client note: ${params.contact.message}` : ''}`,
+      notesHistory: [
+        {
+          id: `note_${Date.now()}`,
+          author: 'Visualiser Lead Router',
+          text: `[${leadScoreResult.scoreBand}] Score: ${leadScoreResult.score}/100. Action: ${leadScoreResult.routingAction}. Spaces: ${params.state.spaces.length}. Finish: ${params.state.selectedFinishTier}.`,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      attribution: params.attribution,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const consultation: DbConsultation = {
+      id: `cons_${Date.now()}`,
+      leadId,
+      projectId,
+      userId: params.userId,
+      referenceCode: refCode,
+      type: 'consultation',
+      status: 'pending',
+      notes: `Visualiser Technical Review: ${projectTitle}`,
       createdAt: new Date().toISOString(),
     };
 

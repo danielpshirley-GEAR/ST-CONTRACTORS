@@ -152,11 +152,14 @@ export interface DbLead {
   estimatedValue: number;
   timeline: string;
   score: number; // 0 - 100
-  scoreBand: 'HOT' | 'HIGH' | 'MEDIUM' | 'EARLY';
+  scoreBand: import('../pricing/types').LeadScoreBand;
   scoreFactors: LeadScoreResult['factors'];
+  routingAction?: string;
+  visualiserProjectId?: string;
+  projectState?: unknown;
   stage: CrmStage;
   source: string;
-  preferredContactMethod: 'phone' | 'email';
+  preferredContactMethod: 'phone' | 'email' | 'whatsapp';
   consultationType: 'consultation' | 'callback' | 'site_visit';
   requestedDate?: string;
   requestedTimeSlot?: string;

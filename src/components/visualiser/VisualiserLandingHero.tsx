@@ -137,11 +137,11 @@ export function VisualiserLandingHero({
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-heading leading-tight">
-            What are you planning?
+            AI Home Renovation &amp; Extension Visualiser
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-            Describe your project in your own words. It can be one simple sentence or a complete architectural brief. Upload existing photos or plans for an instant scope, 3 finish tiers, and visual concept.
+            Describe your project, upload photos or plans and turn your idea into a visual concept, construction scope, specification and project plan.
           </p>
         </div>
 
@@ -355,6 +355,26 @@ export function VisualiserLandingHero({
               </Button>
             </div>
           </form>
+        </div>
+
+        {/* Trust & Reassurance Strip (Phase 8 Item 14) */}
+        <div className="mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-bold text-slate-600">
+          <div className="flex items-center gap-1.5">
+            <Check className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+            <span>FREE PROJECT PLANNING TOOL</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Check className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+            <span>NO SIGN-UP REQUIRED TO START</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Check className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+            <span>PHOTOS &amp; FLOOR PLANS SUPPORTED</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Check className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+            <span>BUILT FOR UK HOME RENOVATION PROJECTS</span>
+          </div>
         </div>
       </Container>
     </div>

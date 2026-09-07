@@ -24,8 +24,11 @@ import { AskAboutProjectChat } from './AskAboutProjectChat';
 import { BudgetAlignmentCard } from './BudgetAlignmentCard';
 import { ProjectComplexityBadge } from './ProjectComplexityBadge';
 import { BuilderReadyBriefModal } from './BuilderReadyBriefModal';
-import { ConversionBanner } from './ConversionBanner';
+import { ProjectReviewSection } from './ProjectReviewSection';
+import { ProjectReviewModal } from './ProjectReviewModal';
+import { MobileStickyCta } from './MobileStickyCta';
 import { RelatedResourcesSection } from './RelatedResourcesSection';
+import { trackEvent } from '@/lib/analytics';
 import {
   Sparkles,
   ArrowRight,
@@ -69,12 +72,18 @@ export function DesignVisualiserView() {
   const [isSendingChat, setIsSendingChat] = useState<boolean>(false);
   const [activeNav, setActiveNav] = useState<string>('section-brief');
   const [showBriefModal, setShowBriefModal] = useState<boolean>(false);
+  const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
   const [showEditDimsModal, setShowEditDimsModal] = useState<boolean>(false);
   const [showPropertyModal, setShowPropertyModal] = useState<boolean>(false);
   const [editLength, setEditLength] = useState<string>('5.0');
   const [editWidth, setEditWidth] = useState<string>('3.8');
   const [selectedPropertyType, setSelectedPropertyType] = useState<string>('terraced');
   const [selectedPropertyEra, setSelectedPropertyEra] = useState<string>('victorian');
+
+  // Track page view for conversion measurement (Phase 8A)
+  useEffect(() => {
+    trackEvent('visualiser_view');
+  }, []);
 
   // Auto-initialize if promptParam exists
   useEffect(() => {
@@ -104,6 +113,10 @@ export function DesignVisualiserView() {
     budget?: number;
   }) => {
     setIsLoading(true);
+    trackEvent('brief_submitted', {
+      briefLength: data.briefText?.length || 0,
+      hasImages: (data.images || []).length > 0,
+    });
     try {
       const res = await fetch('/api/visualiser/interpret', {
         method: 'POST',
@@ -113,6 +126,11 @@ export function DesignVisualiserView() {
       const json = await res.json();
       if (json.success && json.projectState) {
         const initialState = json.projectState;
+        trackEvent('brief_interpreted', {
+          spaceCount: initialState.spaces.length,
+          projectTypes: initialState.projectTypes,
+          selectedFinishTier: initialState.selectedFinishTier,
+        });
         setProjectState(initialState);
         if (initialState.spaces[0] && initialState.spaces[0].lengthM.value && initialState.spaces[0].widthM.value) {
           setEditLength(String(initialState.spaces[0].lengthM.value));
@@ -326,6 +344,7 @@ export function DesignVisualiserView() {
 
   // Handle Global Finish Tier Switch
   const handleSelectGlobalTier = (tier: FinishTier) => {
+    trackEvent('finish_tier_selected', { tier });
     handleApplyChange(`Switch all finishes to ${tier} tier`);
   };
 
@@ -660,13 +679,20 @@ export function DesignVisualiserView() {
             </div>
           </Container>
 
-          {/* 3. Conversion Banner */}
+          {/* 3. Conversion Section (Phase 8 Items 6, 7, 8, 49) */}
           <Container>
-            <ConversionBanner
+            <ProjectReviewSection
               state={projectState}
+              onOpenReviewModal={() => setShowReviewModal(true)}
               onOpenBriefModal={() => setShowBriefModal(true)}
             />
           </Container>
+
+          {/* 4. Mobile Sticky Conversion Action Bar (Phase 8 Item 51) */}
+          <MobileStickyCta
+            state={projectState}
+            onOpenReviewModal={() => setShowReviewModal(true)}
+          />
 
           {/* 4. Contextual Commercial Links */}
           <Container>
@@ -821,6 +847,19 @@ export function DesignVisualiserView() {
           state={projectState}
           isOpen={showBriefModal}
           onClose={() => setShowBriefModal(false)}
+        />
+      )}
+
+      {/* Project Review Modal (Phase 8 Zero Re-Entry Handoff) */}
+      {showReviewModal && projectState && (
+        <ProjectReviewModal
+          state={projectState}
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          onExportBrief={() => {
+            setShowReviewModal(false);
+            setShowBriefModal(true);
+          }}
         />
       )}
     </div>
