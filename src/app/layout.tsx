@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.shortName}`,
   },
   description: siteConfig.description,
+  alternates: {
+    canonical: '/',
+  },
   keywords: [
     'house extensions London',
     'luxury residential construction',

@@ -249,6 +249,81 @@ export const CostGuideView: React.FC<CostGuideViewProps> = ({ guide }) => {
             />
           </div>
 
+          {/* 8B. CONTENT -> TOOL ENGINE (Phase 8 Section 16 & 17) */}
+          <section aria-label="Interactive Planning Tools" className="space-y-4 text-left">
+            <h2 className="text-xl sm:text-2xl font-bold font-heading text-slate-950 flex items-center gap-2">
+              <span className="h-6 w-1.5 rounded-full bg-[#FFAA4F]" />
+              Plan &amp; Scope This Project in Real-Time
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Move beyond static averages. Explore live interactive tools, deterministic calculators, and verified London case studies.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
+              {/* Tool 1: AI Visualiser */}
+              <Link
+                href={`/visualiser?projectType=${guide.category}&brief=${encodeURIComponent(guide.title)}`}
+                className="group block p-5 rounded-2xl bg-[#0E1013] text-white border border-slate-800 hover:border-[#FFAA4F]/60 transition-all shadow-md relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFAA4F]/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="flex items-center justify-between mb-3 relative z-10">
+                  <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-black text-[10px] px-2 py-0.5">
+                    AI Visualiser
+                  </Badge>
+                  <ArrowUpRight className="h-4 w-4 text-[#FFAA4F] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-[#FFAA4F] transition-colors relative z-10">
+                  Visualise My {guide.title.split(' Cost')[0]}
+                </h3>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed relative z-10">
+                  Build 3 finish tiers, instant 2D/3D concepts, and a trade scope of works in 60 seconds.
+                </p>
+              </Link>
+
+              {/* Tool 2: Live Calculator */}
+              {guide.relatedCalculatorSlug && (
+                <Link
+                  href={`/calculators/${guide.relatedCalculatorSlug}`}
+                  className="group block p-5 rounded-2xl bg-white border border-slate-200 hover:border-[#FFAA4F] transition-all shadow-xs"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge variant="slate" size="sm" className="bg-slate-100 text-slate-700 font-bold text-[10px] px-2 py-0.5">
+                      Deterministic Engine
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-[#D97706] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 group-hover:text-[#D97706] transition-colors">
+                    Interactive Cost Calculator
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                    Adjust exact dimensions, wall areas, and trade waste allowances.
+                  </p>
+                </Link>
+              )}
+
+              {/* Tool 3: Related Service / Case Study */}
+              {guide.relatedServiceSlug && (
+                <Link
+                  href={`/services/${guide.relatedServiceSlug}`}
+                  className="group block p-5 rounded-2xl bg-white border border-slate-200 hover:border-[#FFAA4F] transition-all shadow-xs"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge variant="slate" size="sm" className="bg-slate-100 text-slate-700 font-bold text-[10px] px-2 py-0.5">
+                      Full Service Delivery
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-[#D97706] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 group-hover:text-[#D97706] transition-colors">
+                    Our Turnkey Building Service
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                    Explore how ST Contractors manages planning, structural engineering, and delivery.
+                  </p>
+                </Link>
+              )}
+            </div>
+          </section>
+
           {/* 9. TIMELINE PHASES */}
           {guide.timeline && (
             <section aria-label="Project Timeline" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-5 text-left">

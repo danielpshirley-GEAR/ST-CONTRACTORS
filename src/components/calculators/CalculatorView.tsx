@@ -592,6 +592,34 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({ slug }) => {
             </div>
           </section>
 
+          {/* AI Visualiser Bridge (Phase 8 Section 16 & 17) */}
+          <section aria-label="Visualise Your Project" className="p-6 sm:p-8 rounded-3xl bg-[#0E1013] text-white border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden text-left">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFAA4F]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="space-y-1.5 relative z-10 max-w-xl">
+              <div className="flex items-center gap-2">
+                <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-black text-[10px] px-2 py-0.5">
+                  AI Visualiser &amp; Scope Builder
+                </Badge>
+                <span className="text-xs text-slate-400">Architectural Next Step</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold font-heading text-white">
+                Want to see 2D/3D concepts &amp; a complete multi-trade specification?
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Turn your calculations into an architect-ready brief with 3 finish tiers and a trade scope of works in 60 seconds.
+              </p>
+            </div>
+            <Button
+              href={`/visualiser?brief=${encodeURIComponent(calculator.name)}`}
+              variant="primary"
+              size="md"
+              className="w-full sm:w-auto bg-[#FFAA4F] hover:bg-[#FFB86A] text-slate-950 font-extrabold text-xs px-6 py-3.5 shrink-0 shadow-md relative z-10 cursor-pointer"
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+            >
+              Visualise My Build Free →
+            </Button>
+          </section>
+
           {/* Related Services */}
           {calculator.relatedServices && calculator.relatedServices.length > 0 && (
             <section aria-label="Our Construction Services" className="space-y-4">

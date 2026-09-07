@@ -55,6 +55,25 @@ interface SeoDashboardViewProps {
       criticalOpportunitiesCount: number;
       criticalTechnicalIssuesCount: number;
     };
+    generativeAiSearch?: {
+      isAvailable: boolean;
+      aiSearchImpressions: number;
+      aiSearchClicks: number;
+      aiSearchCtr: number;
+      trendVsPreviousPeriod: number;
+      surfacedPages: {
+        url: string;
+        title: string;
+        impressions: number;
+        clicks: number;
+        triggerType: string;
+      }[];
+      comparisonWithOrganic: {
+        organicImpressions: number;
+        organicClicks: number;
+        aiShareOfVoicePercent: number;
+      };
+    };
     topOpportunities: SEOOpportunity[];
     recentRankingGains: RankingMetric[];
     recentRankingLosses: RankingMetric[];
@@ -290,6 +309,80 @@ export function SeoDashboardView({
               <div className="text-[11px] text-slate-500">{kpis.totalOpportunitiesCount} total actions</div>
             </Card>
           </div>
+
+          {/* GENERATIVE AI SEARCH REPORTING (Phase 8 Section 43 & Section 54) */}
+          {initialOverview.generativeAiSearch && (
+            <Card className="p-6 bg-slate-900 border-slate-800 shadow-xl text-white rounded-3xl space-y-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="brand" size="sm" className="bg-[#FFAA4F] text-slate-950 font-black text-[10px] px-2 py-0.5">
+                      Section 43
+                    </Badge>
+                    <span className="text-xs text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
+                      Google Generative AI Search Reporting (AI Overviews &amp; Citations)
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold font-heading text-white">
+                    Generative Search Visibility &amp; AI Answer Engine Footprint
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Search Console Generative AI telemetry tracking real homeowner query triggers without speculative GEO manipulation.
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 bg-slate-950/70 border border-slate-800 rounded-2xl px-5 py-3 shrink-0">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">AI Impressions</span>
+                    <span className="text-xl font-black text-[#FFAA4F] tabular-numbers">
+                      {initialOverview.generativeAiSearch.aiSearchImpressions.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-8 w-px bg-slate-800" />
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">AI Clicks</span>
+                    <span className="text-xl font-black text-white tabular-numbers">
+                      {initialOverview.generativeAiSearch.aiSearchClicks.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="h-8 w-px bg-slate-800" />
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">AI CTR</span>
+                    <span className="text-xl font-black text-emerald-400 tabular-numbers">
+                      {initialOverview.generativeAiSearch.aiSearchCtr}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 relative z-10">
+                {initialOverview.generativeAiSearch.surfacedPages.map((page, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="slate" size="sm" className="bg-slate-800 text-amber-300 font-bold text-[10px] px-2 py-0.5">
+                        {page.triggerType}
+                      </Badge>
+                      <span className="text-[11px] text-slate-400 tabular-numbers font-medium">
+                        {page.clicks} clicks ({((page.clicks / Math.max(1, page.impressions)) * 100).toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-slate-200 line-clamp-1">
+                      {page.title}
+                    </div>
+                    <Link
+                      href={page.url}
+                      className="text-[11px] text-[#FFAA4F] hover:underline flex items-center gap-1 font-mono truncate"
+                      target="_blank"
+                    >
+                      <span>{page.url}</span>
+                      <ArrowUpRight className="h-3 w-3 shrink-0" />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* TOP OPPORTUNITIES & QUICK WINS */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

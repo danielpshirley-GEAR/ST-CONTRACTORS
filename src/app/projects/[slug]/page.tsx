@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Lightbulb,
+  Sparkles,
 } from 'lucide-react';
 
 interface CaseStudyPageProps {
@@ -39,10 +40,17 @@ export async function generateMetadata({ params }: CaseStudyPageProps): Promise<
   return {
     title: `${study.title} | Case Study | ${siteConfig.shortName}`,
     description: `${study.customerObjective} Located in ${study.location}. Completed in ${study.duration}.`,
+    alternates: {
+      canonical: `${siteConfig.url}/projects/${study.slug}`,
+    },
     openGraph: {
       title: `${study.title} | ${siteConfig.name}`,
       description: study.customerObjective,
+      url: `${siteConfig.url}/projects/${study.slug}`,
+      siteName: siteConfig.name,
       images: [{ url: study.coverImage }],
+      locale: 'en_GB',
+      type: 'article',
     },
   };
 }
@@ -54,8 +62,58 @@ export default function CaseStudyDetailPage({ params }: CaseStudyPageProps) {
     notFound();
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        '@id': `${siteConfig.url}/projects/${study.slug}#article`,
+        headline: study.title,
+        description: study.customerObjective,
+        image: study.coverImage.startsWith('http') ? study.coverImage : `${siteConfig.url}${study.coverImage}`,
+        publisher: {
+          '@type': 'HomeAndConstructionBusiness',
+          name: siteConfig.name,
+          url: siteConfig.url,
+          telephone: siteConfig.company.phone,
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `${siteConfig.url}/projects/${study.slug}`,
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: siteConfig.url,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Portfolio',
+            item: `${siteConfig.url}/projects`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: study.title,
+            item: `${siteConfig.url}/projects/${study.slug}`,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="bg-white text-slate-900 min-h-screen pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* 1. HERO HEADER (LIGHT GREY) */}
       <section className="bg-slate-50 text-slate-900 pt-10 pb-16 sm:pb-20 border-b border-slate-200">
         <Container>
@@ -262,6 +320,16 @@ export default function CaseStudyDetailPage({ params }: CaseStudyPageProps) {
                     rightIcon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
                   >
                     Start Project Planner
+                  </Button>
+
+                  <Button
+                    href={`/visualiser?brief=${encodeURIComponent(`${study.title} in ${study.location}: ${study.customerObjective}`)}`}
+                    variant="outline"
+                    size="md"
+                    className="w-full justify-center text-xs sm:text-sm font-bold text-slate-900 border-slate-300 hover:border-[#FFAA4F] hover:bg-amber-50/50"
+                    leftIcon={<Sparkles className="h-4 w-4 text-[#FFAA4F]" />}
+                  >
+                    Customise This in AI Visualiser
                   </Button>
 
                   <Button

@@ -10,6 +10,18 @@ export const metadata: Metadata = {
   title: `AI Project Planner & Instant Quote Builder | ${siteConfig.name}`,
   description:
     'Explain what you want to build in plain English. Our AI project planner builds a customized room-by-room scope of work, allows you to edit items, and calculates an estimated development cost range.',
+  alternates: {
+    canonical: `${siteConfig.url}/plan-my-project`,
+  },
+  openGraph: {
+    title: `AI Project Planner & Instant Quote Builder | ${siteConfig.name}`,
+    description:
+      'Explain what you want to build in plain English. Our AI project planner builds a customized room-by-room scope of work, allows you to edit items, and calculates an estimated development cost range.',
+    url: `${siteConfig.url}/plan-my-project`,
+    siteName: siteConfig.name,
+    locale: 'en_GB',
+    type: 'website',
+  },
 };
 
 export default function PlanMyProjectPage() {

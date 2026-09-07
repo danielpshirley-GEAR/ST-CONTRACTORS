@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: `About Us | Master Residential Builders | ${siteConfig.name}`,
   description:
     'Learn about ST CONTRACTORS. Over 15 years delivering high-specification residential extensions, period renovations, and luxury living spaces with fixed-price integrity.',
+  alternates: {
+    canonical: `${siteConfig.url}/about`,
+  },
 };
 
 export default function AboutPage() {

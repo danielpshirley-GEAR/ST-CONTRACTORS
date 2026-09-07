@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { Badge } from '@/components/ui/Badge';
 import { Calendar, Shield, Phone, Sparkles } from 'lucide-react';
 import { ConsultationsManagerView } from '@/components/portal/ConsultationsManagerView';
+import { siteConfig } from '@/config/site';
 
 export default async function CustomerConsultationsPage({
   searchParams,
@@ -46,7 +47,7 @@ export default async function CustomerConsultationsPage({
 
         <div className="p-3 bg-slate-900 rounded-2xl border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
           <Phone className="h-4 w-4 text-[#FFAA4F] shrink-0" />
-          <span>Direct Office Hotline: <strong>020 8942 1000</strong></span>
+          <span>Direct Office Hotline: <strong>{siteConfig.company.phone}</strong></span>
         </div>
       </div>
 

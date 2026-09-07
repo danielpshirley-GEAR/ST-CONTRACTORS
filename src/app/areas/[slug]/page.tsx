@@ -77,7 +77,7 @@ export default function SingleLocationPage({ params }: LocationPageProps) {
     name: `${siteConfig.name} - ${location.name}`,
     description: location.metaDescription,
     url: canonicalUrl,
-    telephone: '+44 20 8123 4567',
+    telephone: siteConfig.company.phone,
     areaServed: {
       '@type': 'AdministrativeArea',
       name: location.borough,

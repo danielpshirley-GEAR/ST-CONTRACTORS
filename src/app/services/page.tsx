@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Residential Construction Services | London & South East',
   description:
     'Explore our 10 core residential building services: house extensions, full home renovations, loft conversions, kitchen & bathroom remodeling, garden rooms, driveways, and architectural new builds.',
+  alternates: {
+    canonical: `${siteConfig.url}/services`,
+  },
 };
 
 export default function ServicesPage() {

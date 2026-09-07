@@ -16,13 +16,14 @@ export default async function AdminSeoPage() {
     redirect('/admin/login');
   }
 
-  const [gsc, ga4, trackedKeywords, opportunities, technicalIssues, healthStatuses] = await Promise.all([
+  const [gsc, ga4, trackedKeywords, opportunities, technicalIssues, healthStatuses, generativeAiSearch] = await Promise.all([
     searchConsoleService.getSearchPerformance(),
     googleAnalyticsService.getOrganicLandingPages(),
     dataForSeoService.getTrackedKeywords(),
     opportunityEngineService.getUnifiedOpportunities(),
     pageSpeedService.getTechnicalSEOIssues(),
     checkAllIntegrationHealth(),
+    searchConsoleService.getGenerativeAiSearchPerformance(),
   ]);
 
   const totalClicks = gsc.metrics.reduce((sum, m) => sum + m.clicks, 0);
@@ -52,6 +53,7 @@ export default async function AdminSeoPage() {
       criticalOpportunitiesCount: criticalOpps,
       criticalTechnicalIssuesCount: technicalIssues.filter((t) => t.severity === 'CRITICAL').length,
     },
+    generativeAiSearch,
     topOpportunities: opportunities.slice(0, 5),
     recentRankingGains: await searchConsoleService.getGrowingQueries(),
     recentRankingLosses: await searchConsoleService.getDecliningQueries(),

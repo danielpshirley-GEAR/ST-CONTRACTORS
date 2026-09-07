@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: 'Project Portfolio & Case Studies | London & South East Builders',
   description:
     'Browse our portfolio of completed residential construction projects, including house extensions, full Victorian renovations, kitchen transformations, and architectural garden studios.',
+  alternates: {
+    canonical: `${siteConfig.url}/projects`,
+  },
 };
 
 export default function ProjectsPage() {
