@@ -37,7 +37,6 @@ export default function PlanMyProjectPage() {
           className="w-full h-full object-cover object-center"
           aria-hidden="true"
         >
-          <source src="/videos/Long video 1_1.mp4" type="video/mp4" />
           <source src="/videos/long-video-1-1.mp4" type="video/mp4" />
         </video>
         {/* Ambient Dark Scrim to guarantee 100% text readability over moving video */}

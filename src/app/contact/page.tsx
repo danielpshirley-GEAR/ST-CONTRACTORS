@@ -467,6 +467,95 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
+
+          {/* Ambient Video Reassurance Showcase: Built with Calm Precision */}
+          <div className="mt-16 relative rounded-3xl overflow-hidden text-white border border-slate-800 shadow-2xl">
+            {/* Ambient Background Video */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover object-center"
+                aria-hidden="true"
+              >
+                <source src="/videos/living-room-reading.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
+              <div
+                className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black/90 via-black/40 to-transparent"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="relative z-10 p-8 sm:p-12 text-left">
+              <div className="max-w-3xl mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#FFAA4F] text-xs font-extrabold uppercase tracking-wider mb-4">
+                  <span>Our Commitment to You</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white font-heading leading-tight drop-shadow-md">
+                  Your Home, Delivered with Calm Precision
+                </h2>
+                <p className="mt-3 text-sm sm:text-base text-neutral-200 leading-relaxed font-normal drop-shadow-sm">
+                  A home transformation should be exciting, not stressful. When you consult with ST Contractors, you speak directly with experienced estimators who respect your vision, your budget, and your home.
+                </p>
+              </div>
+
+              {/* Luminous Liquid Glass Feature Container */}
+              <div className="w-full bg-white/[0.14] backdrop-blur-3xl p-6 sm:p-8 rounded-3xl border border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_25px_60px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/25 before:via-white/[0.04] before:to-transparent before:pointer-events-none mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
+                  <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
+                    <h3 className="text-sm font-bold text-white font-heading mb-1.5 flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#FFAA4F]" />
+                      <span>Zero High-Pressure Sales</span>
+                    </h3>
+                    <p className="text-xs text-neutral-200 leading-relaxed">
+                      Constructive technical advice and spatial feasibility from seasoned building professionals.
+                    </p>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
+                    <h3 className="text-sm font-bold text-white font-heading mb-1.5 flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#FFAA4F]" />
+                      <span>Itemized Schedule of Works</span>
+                    </h3>
+                    <p className="text-xs text-neutral-200 leading-relaxed">
+                      Detailed written scope with transparent trade breakdowns and fixed milestone payment schedules.
+                    </p>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
+                    <h3 className="text-sm font-bold text-white font-heading mb-1.5 flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-[#FFAA4F]" />
+                      <span>10-Year Insurance Backed</span>
+                    </h3>
+                    <p className="text-xs text-neutral-200 leading-relaxed">
+                      Structural guarantees and certified Building Control compliance delivered on every completed build.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <a
+                  href={`tel:${siteConfig.company.phone.replace(/\s+/g, '')}`}
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-colors"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  <span>Call {siteConfig.company.phone}</span>
+                </a>
+                <Button
+                  href="/plan-my-project"
+                  variant="outline"
+                  size="md"
+                  className="text-white bg-slate-950/60 backdrop-blur-md border-white/60 hover:bg-slate-900/90 font-semibold px-6 py-2.5 text-xs sm:text-sm justify-center"
+                >
+                  Plan Project Online First
+                </Button>
+              </div>
+            </div>
+          </div>
         </Container>
       </section>
     </div>

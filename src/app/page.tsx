@@ -319,7 +319,7 @@ export default function HomePage() {
             className="w-full h-full object-cover object-center"
             aria-hidden="true"
           >
-            <source src="/videos/Camera_reveals_house_rear_extension_202608270129.mp4" type="video/mp4" />
+            <source src="/videos/house-rear-extension.mp4" type="video/mp4" />
           </video>
           {/* Subtle Bottom Gradient */}
           <div

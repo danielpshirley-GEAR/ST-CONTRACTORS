@@ -240,6 +240,94 @@ export default function VisualiserPage() {
               </div>
             </div>
 
+            {/* 3.5. AMBIENCE & SPATIAL LIGHTING (ATMOSPHERIC VIDEO SHOWCASE) */}
+            <div className="relative rounded-3xl overflow-hidden text-white border border-slate-800 shadow-2xl">
+              {/* Ambient Background Video */}
+              <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover object-center"
+                  aria-hidden="true"
+                >
+                  <source src="/videos/residential-lighting-dimmer.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
+                <div
+                  className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black/90 via-black/40 to-transparent"
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div className="relative z-10 p-8 sm:p-12 text-left">
+                <div className="max-w-3xl mb-8">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#FFAA4F] text-xs font-extrabold uppercase tracking-wider mb-4">
+                    <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
+                    <span>Atmosphere &amp; Illumination</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white font-heading leading-tight drop-shadow-md">
+                    Visualise Mood, Lighting Channels &amp; Tactile Finishes
+                  </h2>
+                  <p className="mt-3 text-sm sm:text-base text-neutral-200 leading-relaxed font-normal drop-shadow-sm">
+                    A home’s character lives in the interplay of natural daylight, warm dimmable architectural illumination, and tactile surfaces. Our scoping engine includes multi-circuit electrical allowances in every tier.
+                  </p>
+                </div>
+
+                {/* Luminous Liquid Glass Feature Container */}
+                <div className="w-full bg-white/[0.14] backdrop-blur-3xl p-6 sm:p-8 rounded-3xl border border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_25px_60px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/25 before:via-white/[0.04] before:to-transparent before:pointer-events-none mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
+                    <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
+                      <h3 className="text-sm font-bold text-white font-heading mb-1.5 flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-[#FFAA4F]" />
+                        <span>Layered Lighting Zones</span>
+                      </h3>
+                      <p className="text-xs text-neutral-200 leading-relaxed">
+                        Specify independent task, ambient cove, and accent dimmer circuits in your initial electrical scope.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
+                      <h3 className="text-sm font-bold text-white font-heading mb-1.5 flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-[#FFAA4F]" />
+                        <span>Material Cohesion</span>
+                      </h3>
+                      <p className="text-xs text-neutral-200 leading-relaxed">
+                        Compare acoustic slatted timber, micro-cement, and polished plaster with transparent cost breakdowns.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
+                      <h3 className="text-sm font-bold text-white font-heading mb-1.5 flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-[#FFAA4F]" />
+                        <span>Fixed Scoping Accuracy</span>
+                      </h3>
+                      <p className="text-xs text-neutral-200 leading-relaxed">
+                        Deterministic mathematical quantities calculate accurate fixture counts and cabling runs automatically.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <Link
+                    href="/plan-my-project"
+                    className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-colors"
+                  >
+                    <span>Plan My Project</span>
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                  <Link
+                    href="/contact?type=consultation"
+                    className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-slate-950/60 backdrop-blur-md border border-white/60 hover:bg-slate-900/90 text-white font-semibold text-xs sm:text-sm transition-colors"
+                  >
+                    <span>Book Estimator Consultation</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
             {/* 4. What the Visualiser Can and Cannot Determine */}
             <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 space-y-4 shadow-sm">
               <h3 className="text-base font-bold text-slate-900 font-heading flex items-center gap-2">

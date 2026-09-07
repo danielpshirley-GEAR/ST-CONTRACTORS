@@ -44,7 +44,6 @@ export const AboutSection: React.FC = () => {
           className="w-full h-full object-cover object-center"
           aria-hidden="true"
         >
-          <source src="/videos/Natural_oak_flooring_installatio…_202608270129.mp4" type="video/mp4" />
           <source src="/videos/natural-oak-flooring.mp4" type="video/mp4" />
         </video>
         {/* Contrast scrim */}
