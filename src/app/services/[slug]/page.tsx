@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 import { BuilderInsightsCard } from '@/components/knowledge/BuilderInsightsCard';
 import { constructionKnowledgeBank } from '@/lib/knowledge/knowledge-bank';
-import { ServiceVideoShowcase } from '@/components/services/ServiceVideoShowcase';
 
 interface ServicePageProps {
   params: {
@@ -486,9 +485,6 @@ export default function ServiceDetailPage({ params }: ServicePageProps) {
           </Container>
         </section>
       )}
-
-      {/* 4.5. ARCHITECTURAL CRAFTSMANSHIP VIDEO SHOWCASE */}
-      <ServiceVideoShowcase slug={service.slug} />
 
       {/* 5. HOMEOWNER PLANNING CHECKLIST */}
       {service.homeownerChecklist && service.homeownerChecklist.length > 0 && (

@@ -119,95 +119,34 @@ export default function ServicesPage() {
           ))}
         </div>
 
-        {/* Ambient Video Showcase Banner: Crafted for London Living */}
-        <div className="mt-20 relative rounded-3xl overflow-hidden text-white border border-slate-800 shadow-2xl">
-          {/* Ambient Background Video */}
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover object-center"
-              aria-hidden="true"
-            >
-              <source src="/videos/contemporary-living-space.mp4" type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
-            <div
-              className="absolute bottom-0 inset-x-0 h-64 bg-gradient-to-t from-black/90 via-black/40 to-transparent"
-              aria-hidden="true"
-            />
+        {/* Bottom Consultation Callout */}
+        <div className="mt-16 p-8 sm:p-12 rounded-3xl bg-white border border-slate-200 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="max-w-2xl text-left">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 font-heading">
+              Need advice on the right project scope?
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+              Speak directly with our senior estimators or request a comprehensive feasibility review for your property.
+            </p>
           </div>
-
-          <div className="relative z-10 p-8 sm:p-12 lg:p-16 text-left">
-            <div className="max-w-3xl mb-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#FFAA4F] text-xs font-extrabold uppercase tracking-wider mb-4">
-                <span>The ST Standard</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white font-heading leading-tight drop-shadow-md">
-                Crafted for London Living. Built for Life.
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-slate-100 leading-relaxed font-normal drop-shadow-sm">
-                Every project is executed by directly managed master trades, coordinated by senior project managers, and protected by comprehensive insurance and fixed-price contracts.
-              </p>
-            </div>
-
-            {/* Luminous Liquid Glass Card Row */}
-            <div className="w-full bg-white/[0.14] backdrop-blur-3xl p-6 sm:p-8 rounded-3xl border border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_25px_60px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/25 before:via-white/[0.04] before:to-transparent before:pointer-events-none mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="h-5 w-5 text-[#FFAA4F]" aria-hidden="true" />
-                    <h3 className="text-base font-bold text-white font-heading">Turnkey Management</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-100 leading-relaxed">
-                    One single principal contractor overseeing architectural design, structural engineering, council approvals, and full fit-out.
-                  </p>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="h-5 w-5 text-[#FFAA4F]" aria-hidden="true" />
-                    <h3 className="text-base font-bold text-white font-heading">Fixed-Price Contracts</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-100 leading-relaxed">
-                    Clear schedules of work and milestone billing so you have total financial certainty before a single hammer swings.
-                  </p>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/25 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Shield className="h-5 w-5 text-[#FFAA4F]" aria-hidden="true" />
-                    <h3 className="text-base font-bold text-white font-heading">10-Year Guarantee</h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-100 leading-relaxed">
-                    Insurance-backed structural guarantees alongside full NICEIC electrical and Gas Safe building compliance certificates.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <Button
-                href="/plan-my-project"
-                variant="primary"
-                size="lg"
-                className="bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold px-8 py-3.5 text-sm shadow-xl border border-[#E69335] justify-center"
-                rightIcon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
-              >
-                Plan Your Project
-              </Button>
-              <Button
-                href="/contact?type=consultation"
-                variant="outline"
-                size="lg"
-                className="text-white bg-slate-950/60 backdrop-blur-md border-white/60 hover:bg-slate-900/90 font-semibold px-8 py-3.5 text-sm justify-center"
-              >
-                Book Free Site Survey
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <Button
+              href="/plan-my-project"
+              variant="primary"
+              size="lg"
+              className="w-full sm:w-auto justify-center bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold border border-[#E69335]"
+              rightIcon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
+            >
+              Plan Your Project
+            </Button>
+            <Button
+              href="/contact?type=consultation"
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto justify-center text-slate-800 border-slate-300 hover:bg-slate-50"
+            >
+              Book Consultation
+            </Button>
           </div>
         </div>
       </Container>
