@@ -4,11 +4,31 @@ import { Sparkles, Check, ArrowRight } from 'lucide-react';
 
 export function VisualiserHeroSSR() {
   return (
-    <div className="relative bg-[#0B192C] text-white py-16 sm:py-24 border-b border-slate-800 overflow-hidden">
-      <div className="absolute inset-0 bg-radial from-amber-500/10 via-transparent to-transparent pointer-events-none" />
-      <Container size="md">
+    <div className="relative bg-slate-950 text-white py-16 sm:py-24 overflow-hidden min-h-[85vh] flex items-center justify-center">
+      {/* Fixed Video Background (Long video 1) */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="w-full h-full object-cover object-center"
+          aria-hidden="true"
+        >
+          <source src="/videos/Long video 1_1.mp4" type="video/mp4" />
+          <source src="/videos/long-video-1-1.mp4" type="video/mp4" />
+          <source src="/videos/Long video 1.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-[#0B192C]/75 backdrop-blur-[1px]" aria-hidden="true" />
+        <div
+          className="absolute bottom-0 inset-x-0 h-96 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+          aria-hidden="true"
+        />
+      </div>
+      <Container size="md" className="relative z-10">
         <div className="max-w-3xl mx-auto space-y-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider shadow-sm">
             <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
             <span>AI Project Guide</span>
           </div>
