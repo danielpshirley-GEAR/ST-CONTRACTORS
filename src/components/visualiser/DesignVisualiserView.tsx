@@ -97,6 +97,7 @@ export function DesignVisualiserView() {
   const [understanding, setUnderstanding] = useState<MultiPartProjectUnderstanding | null>(null);
   const [answeredQuestions, setAnsweredQuestions] = useState<AnsweredQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<ConsultationQuestion | null>(null);
+  const [questionHistory, setQuestionHistory] = useState<ConsultationQuestion[]>([]);
   const [isProcessingConsultation, setIsProcessingConsultation] = useState<boolean>(false);
 
   // Full Project Report State
@@ -138,7 +139,7 @@ export function DesignVisualiserView() {
       ...(workAreaId === 'bath-stage-4' ? { surfaces: choiceId } : {}),
       ...(workAreaId === 'ext-stage-3' ? { glazing: choiceId } : {}),
     }));
-    trackEvent('roadmap_choice_changed', { workAreaId, choiceId });
+    trackEvent('roadmap_choice_selected', { workAreaId, choiceId });
   };
 
   const handleSelectCategoryOption = (categoryId: string, optionId: string) => {
@@ -229,13 +230,14 @@ export function DesignVisualiserView() {
     const firstQ = getNextBestQuestion(initialUnder, []);
     if (firstQ) {
       setCurrentQuestion(firstQ);
+      setQuestionHistory([firstQ]);
       setConsultationStage('consultation');
     } else {
       setConsultationStage('confirmation');
     }
   };
 
-  // Stage 2: Answer Question
+  // Stage 2: Answer Question (In-place transition, no page reload)
   const handleAnswerConsultationQuestion = (ans: AnsweredQuestion) => {
     setIsProcessingConsultation(true);
     const newAnswered = [...answeredQuestions, ans];
@@ -256,11 +258,61 @@ export function DesignVisualiserView() {
     const nextQ = getNextBestQuestion(updatedUnder, newAnswered);
     if (nextQ) {
       setCurrentQuestion(nextQ);
+      setQuestionHistory((prev) => [...prev, nextQ]);
     } else {
       setConsultationStage('confirmation');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setIsProcessingConsultation(false);
+  };
+
+  // Back button handler: Step back one question, or from Q1 back to Stage 1 input
+  const handleBackConsultationQuestion = () => {
+    if (consultationStage === 'confirmation') {
+      setConsultationStage('consultation');
+      return;
+    }
+
+    if (consultationStage === 'consultation') {
+      if (answeredQuestions.length === 0 || questionHistory.length <= 1) {
+        setConsultationStage('input');
+        return;
+      }
+
+      const newAnswered = answeredQuestions.slice(0, -1);
+      setAnsweredQuestions(newAnswered);
+
+      const newHistory = questionHistory.slice(0, -1);
+      setQuestionHistory(newHistory);
+      const prevQ = newHistory[newHistory.length - 1];
+      if (prevQ) {
+        setCurrentQuestion(prevQ);
+      }
+
+      const prevUnder = analyzeProjectBrief({
+        briefText: consultationBrief,
+        images: consultationImages,
+        answeredQuestions: newAnswered,
+      });
+      setUnderstanding(prevUnder);
+    }
+  };
+
+  // Reset button handler: Clean slate back to Stage 1
+  const handleResetConsultation = () => {
+    if (consultationBrief || answeredQuestions.length > 0) {
+      if (!confirm('Start over? This will clear your current brief and answers.')) {
+        return;
+      }
+    }
+    setConsultationStage('input');
+    setConsultationBrief('');
+    setConsultationImages([]);
+    setAnsweredQuestions([]);
+    setQuestionHistory([]);
+    setCurrentQuestion(null);
+    setUnderstanding(null);
+    setProjectState(null);
+    setRoadmapChoices({});
   };
 
   // Stage 2: Skip Question
@@ -625,41 +677,78 @@ export function DesignVisualiserView() {
   const navSections = viewMode === 'homeowner' ? HOMEOWNER_NAV_SECTIONS : TECHNICAL_NAV_SECTIONS;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-28">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-28 relative">
+      {/* ========================================================= */}
+      {/* FIXED VIDEO BACKGROUND (Long video 1)                     */}
+      {/* ========================================================= */}
+      {consultationStage !== 'report' && (
+        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover object-center"
+            aria-hidden="true"
+          >
+            <source src="/videos/Long video 1_1.mp4" type="video/mp4" />
+            <source src="/videos/long-video-1-1.mp4" type="video/mp4" />
+            <source src="/videos/Long video 1.mp4" type="video/mp4" />
+          </video>
+          {/* Ambient dark scrim to guarantee 100% text readability over moving video */}
+          <div className="absolute inset-0 bg-[#0B192C]/75 backdrop-blur-[1px]" aria-hidden="true" />
+          <div
+            className="absolute bottom-0 inset-x-0 h-96 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+            aria-hidden="true"
+          />
+        </div>
+      )}
+
       {/* ========================================================= */}
       {/* STAGE 1: INITIAL NATURAL LANGUAGE BRIEF (Part 1)          */}
       {/* ========================================================= */}
       {consultationStage === 'input' && !projectState && (
-        <VisualiserLandingInput
-          onStart={handleStartConsultation}
-          isLoading={isLoading}
-          initialPrompt={promptParam}
-        />
+        <div className="relative z-10">
+          <VisualiserLandingInput
+            onStart={handleStartConsultation}
+            isLoading={isLoading}
+            initialPrompt={promptParam}
+          />
+        </div>
       )}
 
       {/* ========================================================= */}
       {/* STAGE 2: SHORT INTELLIGENT CONSULTATION (Parts 4-20)       */}
       {/* ========================================================= */}
       {consultationStage === 'consultation' && currentQuestion && !projectState && (
-        <ConsultationQuestionCard
-          question={currentQuestion}
-          onAnswer={handleAnswerConsultationQuestion}
-          onSkip={handleSkipConsultationQuestion}
-          onAddNaturalLanguageNote={handleAddNaturalLanguageNote}
-          isProcessing={isProcessingConsultation}
-        />
+        <div className="relative z-10">
+          <ConsultationQuestionCard
+            question={currentQuestion}
+            onAnswer={handleAnswerConsultationQuestion}
+            onSkip={handleSkipConsultationQuestion}
+            onBack={handleBackConsultationQuestion}
+            onReset={handleResetConsultation}
+            onAddNaturalLanguageNote={handleAddNaturalLanguageNote}
+            isProcessing={isProcessingConsultation}
+          />
+        </div>
       )}
 
       {/* ========================================================= */}
       {/* STAGE 3: "HERE'S WHAT YOU'RE PLANNING" (Parts 21 & 22)    */}
       {/* ========================================================= */}
       {consultationStage === 'confirmation' && understanding && !projectState && (
-        <PlanConfirmationCard
-          understanding={understanding}
-          onConfirm={handleConfirmAndBuildPlan}
-          onChangeSomething={handleChangeSomething}
-          isBuildingPlan={isLoading}
-        />
+        <div className="relative z-10">
+          <PlanConfirmationCard
+            understanding={understanding}
+            onConfirm={handleConfirmAndBuildPlan}
+            onChangeSomething={handleChangeSomething}
+            onBack={handleBackConsultationQuestion}
+            onReset={handleResetConsultation}
+            isBuildingPlan={isLoading}
+          />
+        </div>
       )}
 
       {/* ========================================================= */}

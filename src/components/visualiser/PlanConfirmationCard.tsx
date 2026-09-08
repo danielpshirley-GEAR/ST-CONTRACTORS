@@ -14,12 +14,16 @@ import {
   Layers,
   Wrench,
   DoorOpen,
+  ArrowLeft,
+  RotateCcw,
 } from 'lucide-react';
 
 interface PlanConfirmationCardProps {
   understanding: MultiPartProjectUnderstanding;
   onConfirm: () => void;
   onChangeSomething: (tweakText: string) => void;
+  onBack?: () => void;
+  onReset?: () => void;
   isBuildingPlan?: boolean;
 }
 
@@ -27,6 +31,8 @@ export function PlanConfirmationCard({
   understanding,
   onConfirm,
   onChangeSomething,
+  onBack,
+  onReset,
   isBuildingPlan = false,
 }: PlanConfirmationCardProps) {
   const [showEditInput, setShowEditInput] = useState(false);
@@ -43,19 +49,47 @@ export function PlanConfirmationCard({
   };
 
   return (
-    <div className="min-h-[70vh] flex flex-col justify-center items-center py-12 px-4 sm:px-6">
-      <div className="w-full max-w-3xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-300">
-        {/* Top Eyebrow */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold uppercase tracking-wider">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+    <div className="min-h-[70vh] flex flex-col justify-center items-center py-10 px-4 sm:px-6">
+      <div className="w-full max-w-3xl mx-auto space-y-6">
+        {/* Top Eyebrow with Back & Reset Controls */}
+        <div className="flex items-center justify-between gap-3">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              disabled={isBuildingPlan}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-semibold border border-slate-700/80 shadow-sm transition-all active:scale-95"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 text-[#FFAA4F]" />
+              <span>Back to Questions</span>
+            </button>
+          )}
+
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
             <span>Consultation Complete</span>
           </div>
+
+          {onReset && (
+            <button
+              type="button"
+              onClick={onReset}
+              disabled={isBuildingPlan}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 shadow-sm transition-all active:scale-95"
+            >
+              <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+
+        {/* Heading */}
+        <div className="text-center space-y-2">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white font-heading tracking-tight">
             Here&apos;s What You&apos;re Planning
           </h1>
           <p className="text-sm sm:text-base text-slate-300">
-            Review the key elements before we generate your personalised project buying plan.
+            Review the key elements before we generate your personalised project guide.
           </p>
         </div>
 

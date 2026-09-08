@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ConsultationQuestion, ConsultationQuestionOption } from '@/types/visualiser-scope';
 import { Button } from '@/components/ui/Button';
-import { ArrowRight, Check, HelpCircle, Sparkles, MessageSquare } from 'lucide-react';
+import { ArrowRight, ArrowLeft, RotateCcw, Check, HelpCircle, Sparkles, MessageSquare } from 'lucide-react';
 
 interface ConsultationQuestionCardProps {
   question: ConsultationQuestion;
@@ -14,6 +14,8 @@ interface ConsultationQuestionCardProps {
     answerLabel: string;
   }) => void;
   onSkip?: () => void;
+  onBack?: () => void;
+  onReset?: () => void;
   onAddNaturalLanguageNote?: (note: string) => void;
   isProcessing?: boolean;
 }
@@ -22,6 +24,8 @@ export function ConsultationQuestionCard({
   question,
   onAnswer,
   onSkip,
+  onBack,
+  onReset,
   onAddNaturalLanguageNote,
   isProcessing = false,
 }: ConsultationQuestionCardProps) {
@@ -75,28 +79,56 @@ export function ConsultationQuestionCard({
   };
 
   return (
-    <div className="min-h-[60vh] flex flex-col justify-center items-center py-10 px-4 sm:px-6">
-      <div className="w-full max-w-2xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-300">
-        {/* Dynamic Stage Label (Part 9) */}
+    <div className="min-h-[65vh] flex flex-col justify-center items-center py-8 px-4 sm:px-6">
+      <div className="w-full max-w-2xl mx-auto space-y-5">
+        {/* Top Navigation Bar: [Back] [Stage Badge] [Reset] [Skip] */}
         <div className="flex items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
-            <span>{question.stageLabel}</span>
+          <div className="flex items-center gap-2">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-semibold border border-slate-700/80 shadow-sm transition-all active:scale-95"
+                title="Go back to previous question"
+              >
+                <ArrowLeft className="h-3.5 w-3.5 text-[#FFAA4F]" />
+                <span>Back</span>
+              </button>
+            )}
+
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
+              <span>{question.stageLabel}</span>
+            </div>
           </div>
 
-          {question.allowSkip && onSkip && (
-            <button
-              type="button"
-              onClick={onSkip}
-              className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              {question.skipLabel || 'Skip'}
-            </button>
-          )}
+          <div className="flex items-center gap-2.5">
+            {onReset && (
+              <button
+                type="button"
+                onClick={onReset}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700/80 shadow-sm transition-all active:scale-95"
+                title="Start over from beginning"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+                <span>Reset</span>
+              </button>
+            )}
+
+            {question.allowSkip && onSkip && (
+              <button
+                type="button"
+                onClick={onSkip}
+                className="text-xs font-semibold text-slate-300 hover:text-white px-2 py-1 transition-colors"
+              >
+                {question.skipLabel || 'Skip'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Question Card (Part 6) */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-xl space-y-6 text-left">
+        <div className="bg-white text-slate-900 rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-2xl space-y-6 text-left transition-all">
           <div className="space-y-2">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading leading-tight tracking-tight">
               {question.question}

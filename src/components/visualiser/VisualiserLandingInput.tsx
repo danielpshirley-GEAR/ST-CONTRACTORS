@@ -71,16 +71,13 @@ export function VisualiserLandingInput({
   };
 
   return (
-    <div className="relative bg-[#0B192C] text-white py-16 sm:py-24 border-b border-slate-800 overflow-hidden">
-      {/* Subtle Background Glow */}
-      <div className="absolute inset-0 bg-radial from-amber-500/10 via-transparent to-transparent pointer-events-none" />
-
+    <div className="relative bg-transparent text-white py-12 sm:py-18 overflow-hidden">
       <Container size="md">
         <div className="max-w-3xl mx-auto space-y-8 relative z-10 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider shadow-sm">
             <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
-            <span>AI Project Consultation &amp; Plan Builder</span>
+            <span>AI Project Guide</span>
           </div>
 
           {/* Master Heading (Stage 1 — Simple Project Input) */}
