@@ -696,10 +696,14 @@ export function DesignVisualiserView() {
             <source src="/videos/long-video-1-1.mp4" type="video/mp4" />
             <source src="/videos/Long video 1.mp4" type="video/mp4" />
           </video>
-          {/* Ambient dark scrim to guarantee 100% text readability over moving video */}
-          <div className="absolute inset-0 bg-[#0B192C]/75 backdrop-blur-[1px]" aria-hidden="true" />
+          {/* Homepage-Style Gradient & Overlay for Crisp, Cinematic Video */}
+          <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" aria-hidden="true" />
           <div
-            className="absolute bottom-0 inset-x-0 h-96 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+            className="absolute bottom-0 inset-x-0 h-64 sm:h-96 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent pointer-events-none"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-slate-950/60 to-transparent pointer-events-none"
             aria-hidden="true"
           />
         </div>

@@ -82,10 +82,10 @@ export function VisualiserLandingInput({
 
           {/* Master Heading (Stage 1 — Simple Project Input) */}
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
               What would you like to do to your home?
             </h1>
-            <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-slate-100 font-normal leading-relaxed max-w-2xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
               Describe it however you like. A sentence is enough.
             </p>
           </div>

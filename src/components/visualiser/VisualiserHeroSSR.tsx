@@ -20,9 +20,14 @@ export function VisualiserHeroSSR() {
           <source src="/videos/long-video-1-1.mp4" type="video/mp4" />
           <source src="/videos/Long video 1.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-[#0B192C]/75 backdrop-blur-[1px]" aria-hidden="true" />
+        {/* Homepage-Style Gradient & Overlay for Crisp, Cinematic Video */}
+        <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" aria-hidden="true" />
         <div
-          className="absolute bottom-0 inset-x-0 h-96 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+          className="absolute bottom-0 inset-x-0 h-64 sm:h-96 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-slate-950/60 to-transparent pointer-events-none"
           aria-hidden="true"
         />
       </div>
@@ -34,10 +39,10 @@ export function VisualiserHeroSSR() {
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
               What would you like to do to your home?
             </h1>
-            <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-slate-100 font-normal leading-relaxed max-w-2xl mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
               Describe it however you like. A sentence is enough.
             </p>
           </div>
