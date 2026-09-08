@@ -110,11 +110,11 @@ export function VisualConceptCard({
         <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <History className="w-4 h-4 text-slate-500 shrink-0" />
-            <span className="text-xs font-bold text-slate-700">Visual Provenance:</span>
+            <span className="text-xs font-bold text-slate-700">Visual Revisions:</span>
             <div className="flex items-center gap-1.5 flex-wrap">
               {history.map((h, idx) => {
                 const isActive = (selectedHistoryIndex === null && idx === history.length - 1) || selectedHistoryIndex === idx;
-                const provenanceLabel = h.sourceVersion ? `v${h.version} (from v${h.sourceVersion})` : `v${h.version}`;
+                const provenanceLabel = h.sourceVersion ? `v${h.version} (from v${h.sourceVersion})` : null;
                 return (
                   <button
                     key={h.id || idx}
@@ -127,7 +127,7 @@ export function VisualConceptCard({
                         : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
                     }`}
                   >
-                    {provenanceLabel}
+                    {provenanceLabel || <>v{h.version}</>}
                   </button>
                 );
               })}

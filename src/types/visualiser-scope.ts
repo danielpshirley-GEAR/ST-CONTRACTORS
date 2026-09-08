@@ -140,6 +140,7 @@ export interface FinishTierDefinition {
   keyFeatures: string[];
   materialPalette: string[];
   indicativeMultiplier: number;
+  regulatoryBaselineMet: boolean;
 }
 
 export type ScopeItemStatus = 'CONFIRMED_IN_SCOPE' | 'PROVISIONAL' | 'NOT_CURRENTLY_INCLUDED';
@@ -342,16 +343,24 @@ export interface BudgetProvenance {
 
 export interface BudgetAlignment {
   estimateQuality: EstimateQuality;
+  isBudgetReady?: boolean;
+  budgetUnreadyReason?: string;
   indicativeCostRange: {
     min: number;
     max: number;
     formatted: string;
   };
   benchmarkPerM2?: string;
+  inclusions?: string[];
   elementsMostAffectingBudget: string[];
+  costDrivers?: Array<{ title: string; description: string }>;
   whereToSpendMore: string[];
   whereToSave: string[];
+  couldIncreaseIf?: string[];
+  potentialSavings?: string[];
   unknownCostRisks: string[];
+  onSiteWorkDuration?: string;
+  totalLeadTime?: string;
   provenance?: BudgetProvenance;
 }
 
@@ -435,10 +444,236 @@ export interface ProjectState {
   complexity: ProjectComplexity;
   budgetAlignment: BudgetAlignment;
   completenessScore: number;
+  // Phase 8B Consultation Fields
+  reportDepth?: 'simple' | 'moderate' | 'complex';
+  humanReadableStatus?: {
+    stage: string;
+    headline: string;
+    detail: string;
+    detailsNeededCount: number;
+  };
+  initialView?: {
+    paragraphs: string[];
+    keyPriorities: Array<{ title: string; explanation: string; icon?: string }>;
+  };
+  projectSnapshot?: Array<{ label: string; value: string; detail?: string }>;
+  workingInFavour?: string[];
+  potentialChallenges?: Array<{ challenge: string; solution: string }>;
+  valueEngineeringTips?: string[];
+  // Phase 8B/Master Consultation Lifecycle
+  consultationStage?: 'input' | 'consultation' | 'confirmation' | 'report';
+  consultationUnderstanding?: MultiPartProjectUnderstanding;
   versions: ProjectVersion[];
   chatHistory: {
     role: 'user' | 'assistant';
     message: string;
     timestamp: string;
   }[];
+}
+
+export type ConsultationStage = 'input' | 'consultation' | 'confirmation' | 'report';
+
+export interface MultiPartProjectUnderstanding {
+  primaryProject: ProjectCategoryType;
+  primaryProjectTitle: string;
+  secondaryProjects: Array<{
+    type: ProjectCategoryType;
+    title: string;
+    description: string;
+  }>;
+  optionalRequirements: string[];
+  spaces: string[];
+  objectives: string[];
+  requestedChanges: string[];
+  featuresToKeep: string[];
+  featuresToRemove: string[];
+  knownDimensions?: {
+    length?: number;
+    width?: number;
+    height?: number;
+    area?: number;
+    note?: string;
+  };
+  uploadedAssetsCount: number;
+  budgetInfo?: {
+    amount?: number;
+    range?: string;
+    notes?: string;
+  };
+  timelineInfo?: {
+    targetDate?: string;
+    notes?: string;
+  };
+  unknowns: string[];
+  ambiguities: string[];
+  contradictions: string[];
+  isScopeUnderstood: boolean;
+  isReadyForConfirmation: boolean;
+  confirmationSummary: {
+    headline: string;
+    primaryDescription: string;
+    secondaryDescription?: string;
+    frontageOrKeyElement?: string;
+    dimensionsSummary?: string;
+    mainRequirements: string[];
+  };
+}
+
+export interface ConsultationQuestionOption {
+  label: string;
+  value: string;
+  description?: string;
+  autoAdvance?: boolean;
+}
+
+export interface ConsultationQuestion {
+  id: string;
+  category: 'scope' | 'layout' | 'feasibility' | 'dimensions' | 'budget' | 'style' | 'ambiguity' | 'contradiction';
+  stageLabel: string;
+  question: string;
+  subtitle?: string;
+  impactReason?: string;
+  options: ConsultationQuestionOption[];
+  allowCustomInput?: boolean;
+  customInputPlaceholder?: string;
+  allowSkip?: boolean;
+  skipLabel?: string;
+  inputType?: 'single_choice' | 'multi_choice' | 'dimensions' | 'budget_slider' | 'text';
+}
+
+export interface AnsweredQuestion {
+  questionId: string;
+  questionText: string;
+  answerValue: string;
+  answerLabel: string;
+  timestamp?: string;
+}
+
+// =============================================================================
+// AI PROJECT GUIDE: SCOPE MAP & VISUAL ROADMAP INTERFACES
+// =============================================================================
+
+export interface RoadmapWorkAreaChoice {
+  id: string;
+  label: string;
+  description: string;
+  costIndicator: '£' | '££' | '£££';
+  costDeltaMin: number;
+  costDeltaMax: number;
+  isDefault?: boolean;
+  isSelected?: boolean;
+}
+
+export interface RoadmapStageCard {
+  id: string;
+  stepNumber: number;
+  name: string;
+  badge?: string;
+  whyNeeded: string;
+  whatIsThis: string;
+  possibleWorks: string[];
+  choices: RoadmapWorkAreaChoice[];
+  selectedChoiceId?: string;
+  costMin: number;
+  costMax: number;
+  costFormatted: string;
+  dependencies?: string[];
+  visualAsset: {
+    type: 'icon' | 'diagram' | 'image' | 'render';
+    iconName?: string;
+    diagramType?: string;
+    src?: string;
+    alt?: string;
+  };
+  needsCheck: boolean;
+  checkDescription?: string;
+  contractorSolution?: string;
+  includedByDefault: boolean;
+  optional: boolean;
+}
+
+export interface ProjectAtAGlance {
+  projectTitle: string;
+  projectType: string;
+  workAreasCount: number;
+  approxDuration: string;
+  earlyBudgetRange: string;
+  budgetMin: number;
+  budgetMax: number;
+  biggestCostDrivers: string[];
+  mainThingToCheck: string;
+}
+
+export interface ProjectBuyingPackage {
+  id: 'essential' | 'recommended' | 'premium';
+  name: string;
+  tagline: string;
+  summary: string;
+  features: string[];
+  costRange: string;
+  costMin: number;
+  costMax: number;
+  regulatoryBaselineMet: boolean;
+  visualHighlight: string;
+}
+
+export interface BudgetCostDriverCard {
+  id: string;
+  title: string;
+  description: string;
+  impact: 'low' | 'medium' | 'high';
+  exampleText: string;
+  costDeltaLabel: string;
+}
+
+export interface ConfirmCheckItem {
+  id: string;
+  issue: string;
+  whatWeDo: string;
+  importance: 'high' | 'standard';
+}
+
+export interface CustomerDecisionItem {
+  id: string;
+  category: string;
+  title: string;
+  currentValue: string;
+  options: {
+    id: string;
+    label: string;
+    priceIndicator: string;
+    impact: string;
+  }[];
+}
+
+export interface ProjectRoadmapModel {
+  glance: ProjectAtAGlance;
+  stages: RoadmapStageCard[];
+  packages: ProjectBuyingPackage[];
+  budgetBreakdown: {
+    category: string;
+    costMin: number;
+    costMax: number;
+    formatted: string;
+  }[];
+  totalEarlyBudget: {
+    min: number;
+    max: number;
+    formatted: string;
+  };
+  costDrivers: BudgetCostDriverCard[];
+  checksToConfirm: ConfirmCheckItem[];
+  customerChoices: CustomerDecisionItem[];
+  relevantCaseStudy?: {
+    title: string;
+    location: string;
+    projectType: string;
+    duration: string;
+    cost: string;
+    coverImage: string;
+    slug: string;
+    whatCustomerWanted: string;
+    whatStContractorsDid: string;
+    result: string;
+  };
 }

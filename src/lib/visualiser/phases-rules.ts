@@ -8,8 +8,10 @@ import { ConstructionPhase, ProjectCategoryType } from '@/types/visualiser-scope
 
 export function generateConstructionPhases(
   projectTypes: ProjectCategoryType[],
-  hasStructuralKnockthrough: boolean
+  hasStructuralKnockthrough: boolean,
+  briefText?: string
 ): ConstructionPhase[] {
+  const lower = (briefText || '').toLowerCase();
   const isExtension = projectTypes.includes('extension');
   const isKitchen = projectTypes.includes('kitchen-renovation');
   const isBathroom = projectTypes.includes('bathroom-renovation');
@@ -17,6 +19,54 @@ export function generateConstructionPhases(
   const isDriveway = projectTypes.includes('driveway');
   const isJoinery = projectTypes.includes('joinery');
   const isBedroomOrDecorating = projectTypes.includes('bedroom') || projectTypes.includes('decorating');
+
+  // =========================================================================
+  // GARAGE ACCESS DOOR PHASES (Concise 3-Phase Execution)
+  // =========================================================================
+  const isGarageDoor = (lower.includes('garage') && lower.includes('door')) || (lower.includes('door') && lower.includes('hallway'));
+  if (isGarageDoor) {
+    return [
+      {
+        phaseNumber: 1,
+        title: 'Phase 1: Protection, Service Tracing & Propping',
+        shortDescription: 'Dust sealing, electrical cable scanning, and temporary Acrow support.',
+        whatHappens: 'Work areas are cordoned off with sealed zipped dust screens. Electrical and pipework detectors scan the wall before any masonry work commences.',
+        workInvolved: ['Zipped polythene dust isolation screens', 'Floor corex protection throughout hallway', 'Cable and pipe avoidance scanning', 'Temporary Acrow propping to overhead joists'],
+        tradesInvolved: ['Lead Carpenter / Site Foreman'],
+        decisionsRequired: ['Confirm exact opening position relative to garage vehicle clearance and hallway flow'],
+        dependencies: ['Clear hallway and garage workspace'],
+        potentialRisks: ['Concealed electric cables running in wall requiring safe isolation'],
+        informationStillRequired: ['Confirmation of consumer unit location for temporary isolation'],
+        indicativeDuration: 'Day 1 (Morning)',
+      },
+      {
+        phaseNumber: 2,
+        title: 'Phase 2: Structural Opening & Approved Lintel Insertion',
+        shortDescription: 'Precision diamond cutting of masonry, padstone bearing, and lintel placement.',
+        whatHappens: 'Opening is cut through masonry with dust-extracted diamond disc cutter. Heavy-duty padstones and a pre-stressed concrete or steel box lintel are bedded into position.',
+        workInvolved: ['Dust-suppressed masonry diamond cutting', 'Careful block/brick removal and waste bagging', 'C30 concrete padstone installation (minimum 150mm end bearing)', 'Structural lintel placement and dry-pack slate pinning'],
+        tradesInvolved: ['Bricklayer / Structural Mason'],
+        decisionsRequired: ['Sign off structural lintel bearing prior to curing'],
+        dependencies: ['Acrow props safely pre-tensioned'],
+        potentialRisks: ['Unbonded cavity blockwork requiring extra vertical ties'],
+        informationStillRequired: ['Building Control Building Notice reference number'],
+        indicativeDuration: 'Day 1 (Afternoon)',
+      },
+      {
+        phaseNumber: 3,
+        title: 'Phase 3: FD30S Fire Doorset, 100mm Threshold & Sign-Off',
+        shortDescription: 'Fitting certified FD30S doorset, smoke seals, 100mm step, plaster make-good & completion.',
+        whatHappens: 'An FD30S certified fire-resisting doorset is installed with cold smoke seals, automatic overhead self-closer, compliant 100mm threshold step, and plaster skim.',
+        workInvolved: ['Fitting fire-rated timber casing with intumescent perimeter seals', 'Hanging FD30S fire door on CE-marked fire hinges', 'Installing approved automatic self-closing device', 'Forming 100mm floor step / vapour spill barrier', 'Plasterboard lining, bonding, and multi-finish plaster skim', 'Building Control inspection and sign-off'],
+        tradesInvolved: ['Finishing Carpenter', 'Plasterer', 'Building Control Inspector'],
+        decisionsRequired: ['Approve door ironmongery / handle finish'],
+        dependencies: ['Lintel mortar fully cured'],
+        potentialRisks: ['Floor level difference requiring custom timber sill threshold'],
+        informationStillRequired: ['Final Building Control completion certificate issue'],
+        indicativeDuration: 'Day 2 – 3',
+      }
+    ];
+  }
 
   const phases: ConstructionPhase[] = [];
 

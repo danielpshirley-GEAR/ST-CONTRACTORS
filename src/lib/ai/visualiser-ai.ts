@@ -327,15 +327,25 @@ export function extractBriefDeterministically(input: {
   const text = input.briefText.toLowerCase();
 
   const types: ProjectCategoryType[] = [];
-  if (text.includes('extension') || text.includes('rear') || text.includes('side return')) types.push('extension');
+  const isGarageConversion =
+    (text.includes('garage') && (text.includes('convert') || text.includes('conversion') || text.includes('room') || text.includes('office') || text.includes('gym') || text.includes('playroom') || text.includes('habitable')));
+
+  if (isGarageConversion) {
+    types.push('garage-conversion');
+    if (text.includes('door') || text.includes('doorway') || text.includes('corridor') || text.includes('hallway')) {
+      types.push('door-replacement');
+    }
+  }
+
+  if (text.includes('extension') || text.includes('rear') || text.includes('side return') || text.includes('wraparound')) types.push('extension');
   if (text.includes('kitchen') || text.includes('cabinet') || text.includes('worktop') || text.includes('island')) types.push('kitchen-renovation');
-  if (text.includes('bathroom') || text.includes('shower') || text.includes('ensuite') || text.includes('bath')) types.push('bathroom-renovation');
+  if (text.includes('bathroom') || text.includes('shower') || text.includes('ensuite') || text.includes('bath') || text.includes('wet room')) types.push('bathroom-renovation');
   if (text.includes('loft') || text.includes('dormer') || text.includes('attic')) types.push('loft-conversion');
   if (text.includes('driveway') || text.includes('paving') || text.includes('permeable')) types.push('driveway');
   if (text.includes('wardrobe') || text.includes('joinery') || text.includes('cabinetry') || text.includes('fitted')) types.push('joinery');
   if (text.includes('bedroom') || text.includes('baby') || text.includes('nursery')) types.push('bedroom');
   if (text.includes('decorat') || text.includes('paint') || text.includes('wallpaper')) types.push('decorating');
-  if (text.includes('door') || text.includes('front door') || text.includes('entrance door')) types.push('door-replacement');
+  if (!isGarageConversion && (text.includes('door') || text.includes('front door') || text.includes('entrance door') || text.includes('doorway'))) types.push('door-replacement');
   if (text.includes('cinema') || text.includes('media room')) types.push('cinema-room');
   if (text.includes('living room') || text.includes('lounge') || text.includes('sitting room')) types.push('living-room');
 

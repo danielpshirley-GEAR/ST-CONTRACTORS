@@ -24,6 +24,11 @@ interface ProjectReviewSectionProps {
  * Returns a tailored, professional CTA headline based on project types and scope
  */
 export function getPersonalisedCtaHeadline(state: ProjectState): string {
+  const lower = (state.originalBrief || '').toLowerCase();
+  if (lower.includes('garage') && lower.includes('door')) {
+    return 'Get Your Garage Access Door Plan Reviewed';
+  }
+
   const pTypes = state.projectTypes || [];
   const pTypesStr = pTypes.join(' ').toLowerCase();
 
@@ -93,7 +98,7 @@ export function ProjectReviewSection({
           </h2>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-xl mx-auto">
-            Send this project plan directly to ST Contractors. We will review your 12-section scope of works, check structural viability, and provide a comprehensive fixed-price proposal.
+            Send this project plan directly to ST Contractors. We will review your scope of works, check structural and statutory feasibility, and provide a comprehensive itemised proposal.
           </p>
         </div>
 

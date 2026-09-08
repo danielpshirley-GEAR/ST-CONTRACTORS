@@ -21,6 +21,7 @@ export const MASTER_FINISH_TIERS: FinishTierDefinition[] = [
     ],
     materialPalette: ['Stock Painted Shaker', '20mm White Quartz', 'Engineered Oak Plank', 'Brushed Chrome Fittings'],
     indicativeMultiplier: 1.0,
+    regulatoryBaselineMet: true,
   },
   {
     tier: 'enhanced',
@@ -36,6 +37,7 @@ export const MASTER_FINISH_TIERS: FinishTierDefinition[] = [
     ],
     materialPalette: ['In-Frame Shaker', '30mm Calacatta Gold Quartz', 'Herringbone European Oak', 'Brushed Brass Hardware'],
     indicativeMultiplier: 1.35,
+    regulatoryBaselineMet: true,
   },
   {
     tier: 'bespoke',
@@ -51,6 +53,7 @@ export const MASTER_FINISH_TIERS: FinishTierDefinition[] = [
     ],
     materialPalette: ['Custom Walnut / Fluted Timber', 'Bookmatched Quartzite', 'Seamless Microcement', 'Plaster-in Architectural LED'],
     indicativeMultiplier: 1.75,
+    regulatoryBaselineMet: true,
   },
 ];
 

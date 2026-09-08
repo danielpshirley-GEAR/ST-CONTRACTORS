@@ -24,19 +24,19 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: `AI Home Renovation & Extension Visualiser | ${siteConfig.name}`,
+  title: `AI Home Renovation & Extension Project Guide | ${siteConfig.name}`,
   description:
-    'Describe your renovation, extension, or home improvement project, upload photographs or plans, and build an initial visual concept, trade scope of works, and 3 finish tiers.',
+    'Plan your London home renovation or extension with ST Contractors. Explore interactive roadmaps, realistic cost options, construction stages, and architectural visualisations.',
   alternates: {
     canonical: `${siteConfig.url}/visualiser`,
   },
   openGraph: {
-    title: `AI Home Renovation & Extension Visualiser | ${siteConfig.name}`,
+    title: `AI Home Renovation & Extension Project Guide | ${siteConfig.name}`,
     description:
-      'Turn simple or detailed project briefs into structured architectural concepts, deterministic quantities, and builder-ready scopes with ST Contractors.',
+      'Turn simple or detailed project briefs into structured visual roadmaps, realistic cost options, and expert ST Contractors consultations.',
     url: `${siteConfig.url}/visualiser`,
     siteName: siteConfig.name,
-    images: [{ url: '/images/services/house-extensions.png', width: 1200, height: 630, alt: 'AI Project Visualiser' }],
+    images: [{ url: '/images/services/house-extensions.png', width: 1200, height: 630, alt: 'AI Project Guide' }],
     locale: 'en_GB',
     type: 'website',
   },
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
 
 const VISUALISER_FAQS = [
   {
-    question: 'How does the AI Project Design & Scope Builder work?',
+    question: 'How does the AI Project Guide work?',
     answer:
-      'You describe what you want to build in plain English (or upload photos/floor plans). Our system interprets the project intent, isolates the relevant trades, calculates deterministic quantities (flooring, plasterboard, paint, steel), and structures a 12-section builder-ready brief with 3 finish tiers.',
+      'You describe what you want to build or renovate in plain English. A sentence is enough. Our system asks a few smart probing questions, confirms your plan, and structures an interactive visual roadmap with realistic cost options, buying packages, and delivery stages.',
   },
   {
     question: 'Can I upload photos of my existing room or garden?',
@@ -54,19 +54,19 @@ const VISUALISER_FAQS = [
       'Yes! You can upload multiple photographs of your existing rooms, sketches, or floor plans. Our AI extracts architectural features, layout constraints, and creates visual concepts reflecting your actual space.',
   },
   {
-    question: 'Are the quantity calculations accurate?',
+    question: 'Are the cost ranges accurate?',
     answer:
-      'Our quantity engine uses pure mathematical formulas (Length × Width, Wall Area, Skirting Perimeters) with UK trade-specific waste factors (8%–15%) rather than arbitrary AI guesses. Click "How was this calculated?" on any item to view the exact formula.',
+      'Our pricing engine uses real UK residential construction benchmark data tailored to London and the South East. You can use interactive cost switches to see how different finishes, heating types, and architectural options impact the overall budget.',
   },
   {
     question: 'Does this replace an architect or structural engineer?',
     answer:
-      'No. The Visualiser is an advanced planning and scoping tool designed to give you clarity on layout, budget alignment, and construction phases. Formal structural drawings, Thames Water build-overs, and local council approvals are carried out during our pre-construction design phase.',
+      'No. The Project Guide gives you clarity on layout, stages, budget alignment, and key checks. Formal structural calculations, Thames Water build-overs, and local council approvals are carried out during our pre-construction phase.',
   },
   {
-    question: 'What happens after I build my project plan?',
+    question: 'What happens after I see my project guide?',
     answer:
-      'You can print or download your builder-ready project brief, or click "Get My Project Reviewed" to send your complete specification directly to our estimating team for a comprehensive consultation and site survey.',
+      'You can explore your interactive roadmap and finish options, or click "Get ST Contractors to Review My Project" to send your plan directly to our team for an expert consultation and site visit.',
   },
 ];
 
@@ -175,16 +175,16 @@ export default function VisualiserPage() {
                   How It Works
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading">
-                  From Conversational Brief to Builder-Ready Scope
+                  From Conversational Brief to Clear Project Guide
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { step: '1', title: 'Describe Your Project', desc: 'Enter a simple or detailed brief and upload existing photos or floor plans.' },
-                  { step: '2', title: 'AI Interprets Scope', desc: 'Our engine identifies project types, spaces, load paths, and active assumptions.' },
-                  { step: '3', title: 'Explore 3 Finish Tiers', desc: 'Compare Standard, Enhanced, and Bespoke specifications with mix-and-match control.' },
-                  { step: '4', title: 'Send to ST Contractors', desc: 'Export your builder-ready brief or request an expert site survey and fixed-price quote.' },
+                  { step: '1', title: 'Describe Your Idea', desc: 'Tell us what you want to do to your home in plain English. A sentence is enough.' },
+                  { step: '2', title: 'Smart Probing Questions', desc: 'Answer a few targeted questions to narrow down room use, layout, and structure.' },
+                  { step: '3', title: 'Explore Roadmap & Options', desc: 'See your visual construction steps, buying packages, and interactive cost switches.' },
+                  { step: '4', title: 'Consult With ST Contractors', desc: 'Have our estimating team review your plan and conduct a thorough site survey.' },
                 ].map((st, idx) => (
                   <div key={idx} className="p-5 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs">
                     <span className="h-7 w-7 rounded-lg bg-[#FFAA4F] text-slate-950 font-extrabold flex items-center justify-center text-xs">

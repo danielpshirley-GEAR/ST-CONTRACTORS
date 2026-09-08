@@ -20,6 +20,7 @@ export const STANDARD_ANALYTICS_EVENTS = [
   'visual_modified',
   'finish_tier_viewed',
   'finish_tier_selected',
+  'tier_selected',
   'scope_viewed',
   'quantity_section_viewed',
   'budget_viewed',
@@ -27,6 +28,10 @@ export const STANDARD_ANALYTICS_EVENTS = [
   'brief_downloaded',
   'brief_shared',
   'return_project_session',
+  'review_modal_opened',
+  'report_view_mode_changed',
+  'timeline_viewed',
+  'drawer_opened',
 
   // Commercial Conversions (Primary Business Goals)
   'project_review_clicked',

@@ -26,8 +26,49 @@ export function generateThingsToConsider(
   const isVictorian = property.era.value === 'victorian' || lower.includes('victorian');
 
   // =========================================================================
-  // DRIVEWAY CONSIDERATIONS
+  // GARAGE ACCESS DOOR CONSIDERATIONS (Approved Document B & Structural)
   // =========================================================================
+  const isGarageDoor = (lower.includes('garage') && lower.includes('door')) || (lower.includes('door') && lower.includes('hallway'));
+  if (isGarageDoor) {
+    return [
+      {
+        id: 'cons-garage-fire-sep',
+        issue: 'Approved Document B Fire Separation & FD30S Doorset',
+        category: 'Fire Safety & Building Regs',
+        impactLevel: 'HIGH',
+        whyItMatters: 'Any door opening between an integral/attached garage and a dwelling must provide 30-minute fire resistance (FD30S) fitted with intumescent fire and cold smoke seals plus an automatic self-closer.',
+        whatShouldBeChecked: 'Ensure the complete doorset (door leaf, frame, hinges, and latch) is British Standard certified as an FD30S assembly.',
+        effectOnProject: 'Essential statutory Building Regulations requirement for life safety and property insurance validity.',
+      },
+      {
+        id: 'cons-garage-threshold-step',
+        issue: '100mm Floor Level Step or Fall (Vapour Containment)',
+        category: 'Building Regulations & Safety',
+        impactLevel: 'HIGH',
+        whyItMatters: 'Building Regulations require the garage floor level to be at least 100mm lower than the dwelling floor level, or laid to fall away from the door, to prevent petrol fumes or fuel spills entering the home.',
+        whatShouldBeChecked: 'Inspect the level difference between garage slab and hallway finished floor before forming the opening.',
+        effectOnProject: 'Determines threshold detail and step construction requirement.',
+      },
+      {
+        id: 'cons-garage-lintel',
+        issue: 'Structural Lintel Bearing & Wall Composition',
+        category: 'Structural Engineering',
+        impactLevel: 'HIGH',
+        whyItMatters: 'If the dividing wall carries floor joists, ceiling timbers, or external masonry above, a properly calculated steel box or pre-stressed concrete lintel with 150mm end bearings must be installed.',
+        whatShouldBeChecked: 'Establish whether the wall is load-bearing by probing joist direction in hallway and garage.',
+        effectOnProject: 'Ensures temporary Acrow propping is properly specified during the opening knock-through.',
+      },
+      {
+        id: 'cons-garage-door-swing',
+        issue: 'Door Swing Direction & Vehicle Clearance',
+        category: 'Usability & Circulation',
+        impactLevel: 'MEDIUM',
+        whyItMatters: 'The door swing must not conflict with parked vehicles in the garage or block hallway circulation and domestic escape routes.',
+        whatShouldBeChecked: 'Measure available clearance with a car parked inside the garage to verify comfortable ingress and egress.',
+        effectOnProject: 'Informs whether the door should swing inwards toward the garage or into the hallway.',
+      }
+    ];
+  }
   if (isDriveway) {
     pool.push(
       {
@@ -179,15 +220,44 @@ export function generateThingsToConsider(
   }
 
   if (isBathroom) {
-    pool.push({
-      id: 'cons-ventilation',
-      issue: 'Building Regs Part F Mechanical Extract Ventilation',
-      category: 'Ventilation & Moisture',
-      impactLevel: 'HIGH',
-      whyItMatters: 'High-pressure rainfall showers generate significant steam. Weak extractor fans cause mirror misting, mold on ceiling paint, and peeling silicone sealant.',
-      whatShouldBeChecked: 'Install an inline continuous or humidistat extractor fan ducted directly through external walls with an overrun timer.',
-      effectOnProject: 'Eliminates mold and satisfies Building Regulations Part F airflow rates.',
-    });
+    pool.push(
+      {
+        id: 'cons-wet-zone-tanking',
+        issue: 'Wet Zone Substrate Tanking & Waterproof Membrane',
+        category: 'Waterproofing & Longevity',
+        impactLevel: 'HIGH',
+        whyItMatters: 'Walk-in showers subject wall substrates to continuous pressurized water. Grout and microcement are water-resistant, not waterproof; an impervious liquid or fleece tanking membrane is essential behind all wet zones.',
+        whatShouldBeChecked: 'Verify continuous tanking coverage extending 2m high in shower zones and 300mm above basin vanities.',
+        effectOnProject: 'Prevents hidden subfloor rot and ceiling leaks to rooms below.',
+      },
+      {
+        id: 'cons-ventilation',
+        issue: 'Building Regs Part F Mechanical Extract Ventilation',
+        category: 'Ventilation & Moisture',
+        impactLevel: 'HIGH',
+        whyItMatters: 'High-pressure rainfall showers generate significant steam. Weak extractor fans cause mirror misting, mold on ceiling paint, and peeling silicone sealant.',
+        whatShouldBeChecked: 'Install an inline continuous or humidistat extractor fan ducted directly through external walls with an overrun timer.',
+        effectOnProject: 'Eliminates mold and satisfies Building Regulations Part F airflow rates.',
+      },
+      {
+        id: 'cons-drainage-falls',
+        issue: 'Shower Waste Gradient & Subfloor Joist Traps',
+        category: 'Plumbing & Drainage',
+        impactLevel: 'HIGH',
+        whyItMatters: 'Walk-in shower trays or flush wetroom formers require a minimum 1:40 waste pipe fall. In older properties, running 50mm solvent-weld waste through existing joists requires careful notching/drilling compliance.',
+        whatShouldBeChecked: 'Inspect joist direction relative to the shower position and existing soil stack location.',
+        effectOnProject: 'Ensures rapid water drainage without pooling or slow draining.',
+      },
+      {
+        id: 'cons-microcement-substrate',
+        issue: 'Rigid Substrate Preparation for Seamless Finishes',
+        category: 'Specialist Finishes',
+        impactLevel: 'MEDIUM',
+        whyItMatters: 'Microcement and large format porcelain require an unyielding, deflection-free substrate (cement backer board or primed marine ply). Any joist flex causes hairline cracking in seamless coatings.',
+        whatShouldBeChecked: 'Ensure subfloor is stiffened with 18mm or 22mm WBP plywood / cement board screwed at 150mm centres before application.',
+        effectOnProject: 'Guarantees flawless finish durability and warranty protection.',
+      }
+    );
   }
 
   if (isTerrace) {

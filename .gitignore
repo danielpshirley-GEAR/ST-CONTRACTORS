@@ -29,3 +29,5 @@ yarn-error.log*
 # Raw video editing files
 VIDEOS/
 *.prproj
+
+*.tsbuildinfo
