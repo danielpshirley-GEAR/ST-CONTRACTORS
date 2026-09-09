@@ -68,7 +68,7 @@ const STAGE_OPTIONS = [
 
 export const TypeformWizard: React.FC = () => {
   const searchParams = useSearchParams();
-  const initialService = searchParams.get('service');
+  const initialService = searchParams.get('service') || searchParams.get('type') || searchParams.get('projectType');
 
   // Active Project Type (Initial step)
   const [selectedProjectType, setSelectedProjectType] = useState<ProjectType | null>(null);
@@ -142,11 +142,9 @@ export const TypeformWizard: React.FC = () => {
             if (firstRoom.lengthMeters) setCustomLength(firstRoom.lengthMeters);
             if (firstRoom.widthMeters) setCustomWidth(firstRoom.widthMeters);
           }
-          if (profile.projectTypes && profile.projectTypes.length > 0 && !selectedProjectType) {
-            const pt = profile.projectTypes[0];
-            const valid = PROJECT_TYPE_OPTIONS.find((p) => p.id === pt);
-            if (valid) setSelectedProjectType(pt as any);
-          }
+          // Note: DO NOT auto-select selectedProjectType from profile.
+          // When starting the planner, the user must explicitly choose what type of project they are planning (Step 0)
+          // unless a specific service was requested via URL query params or transferred from the AI Assistant.
         }
       }
     } catch (err) {
@@ -173,6 +171,12 @@ export const TypeformWizard: React.FC = () => {
         driveways: 'driveway',
         renovations: 'full-renovation',
         'full-renovation': 'full-renovation',
+        'house-renovation': 'full-renovation',
+        garage: 'other',
+        'garage-conversion': 'other',
+        'garage-conversions': 'other',
+        structural: 'other',
+        other: 'other',
       };
       if (mapping[initialService]) {
         setSelectedProjectType(mapping[initialService]);
@@ -439,10 +443,10 @@ export const TypeformWizard: React.FC = () => {
         {/* Header */}
         <div className="text-left space-y-2">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white font-heading drop-shadow-md">
-            What are you building or changing?
+            What type of project are you planning?
           </h1>
           <p className="text-sm sm:text-base text-white/95 leading-relaxed font-medium max-w-2xl drop-shadow-xs">
-            Select your project type below to get a tailored estimate with questions specific to your home.
+            Select your project type below to get tailored questions and an accurate, itemised estimate for your home.
           </p>
         </div>
 

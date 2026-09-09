@@ -1247,7 +1247,7 @@ class InMemoryDatabase {
       },
       location: profile.location || {},
       propertyType: profile.propertyType || 'terraced',
-      projectTypes: profile.projectTypes || ['extension'],
+      projectTypes: profile.projectTypes || [],
       rooms: profile.rooms || [],
       scopeItems: profile.scopeItems || [],
       customScopeAdditions: profile.customScopeAdditions || [],
