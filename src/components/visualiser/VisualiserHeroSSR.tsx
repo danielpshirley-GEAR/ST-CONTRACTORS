@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from '@/components/ui/Container';
-import { Sparkles, Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 
 export function VisualiserHeroSSR() {
   return (
@@ -28,11 +28,6 @@ export function VisualiserHeroSSR() {
       </div>
       <Container size="md" className="relative z-10">
         <div className="max-w-3xl mx-auto space-y-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
-            <span>AI Project Guide</span>
-          </div>
-
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
               What would you like to do to your home?

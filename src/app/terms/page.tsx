@@ -2,8 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { Container } from '@/components/ui/Container';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { FileText, Shield, AlertCircle, Scale, CheckCircle2, Clock } from 'lucide-react';
+import { FileText, Shield, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 
 export const metadata: Metadata = {
@@ -19,10 +18,6 @@ export default function TermsOfBusinessPage() {
       <Container size="md">
         {/* Header */}
         <div className="space-y-4 pb-10 border-b border-slate-200">
-          <Badge variant="brand" className="bg-amber-100 text-amber-900 border-amber-300 text-xs">
-            <Scale className="h-3.5 w-3.5 mr-1" />
-            Standard Construction Terms &amp; Conditions
-          </Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-heading text-slate-900 tracking-tight">
             Terms of Business
           </h1>

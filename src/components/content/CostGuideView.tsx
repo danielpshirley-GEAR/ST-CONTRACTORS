@@ -60,9 +60,6 @@ export const CostGuideView: React.FC<CostGuideViewProps> = ({ guide }) => {
           {/* 1. HERO HEADER (CENTERED & BALANCED) */}
           <header className="space-y-5 text-left">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="brand" size="sm" className="bg-[#FFAA4F]/20 text-slate-950 border-[#FFAA4F] font-bold text-xs">
-                2026 UK Build Benchmark
-              </Badge>
               <span className="text-xs text-slate-500 flex items-center gap-1 font-semibold">
                 <Clock className="h-3.5 w-3.5 text-[#FFAA4F]" />
                 Updated February 2026

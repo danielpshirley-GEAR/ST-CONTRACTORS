@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ConsultationQuestion, ConsultationQuestionOption } from '@/types/visualiser-scope';
 import { Button } from '@/components/ui/Button';
-import { ArrowRight, ArrowLeft, RotateCcw, Check, HelpCircle, Sparkles, MessageSquare } from 'lucide-react';
+import { ArrowRight, ArrowLeft, RotateCcw, Check, HelpCircle, MessageSquare } from 'lucide-react';
 
 interface ConsultationQuestionCardProps {
   question: ConsultationQuestion;
@@ -83,7 +83,7 @@ export function ConsultationQuestionCard({
       <div className="w-full max-w-2xl mx-auto space-y-5">
         {/* Top Navigation Bar: [Back] [Stage Badge] [Reset] [Skip] */}
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div>
             {onBack && (
               <button
                 type="button"
@@ -95,11 +95,6 @@ export function ConsultationQuestionCard({
                 <span>Back</span>
               </button>
             )}
-
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
-              <span>{question.stageLabel}</span>
-            </div>
           </div>
 
           <div className="flex items-center gap-2.5">

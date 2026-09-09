@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { siteConfig } from '@/config/site';
 import { LOCATIONS_DATA } from '@/lib/content/locations-data';
-import { MapPin, Building, ArrowRight, Phone, CheckCircle2, Compass, Sparkles } from 'lucide-react';
+import { MapPin, Building, ArrowRight, Phone, CheckCircle2 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: `Service Areas & Locations | ${siteConfig.name}`,
@@ -30,12 +30,6 @@ export default function AreasHubPage() {
 
           {/* Hero Section */}
           <div className="max-w-4xl space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="brand" size="sm" className="bg-[#FFAA4F]/20 text-[#D97706] border-[#FFAA4F]/40 font-bold text-xs">
-                <Compass className="h-3.5 w-3.5 mr-1 inline text-[#D97706]" />
-                Direct London &amp; South East Service Coverage (55 Prime Hubs)
-              </Badge>
-            </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-heading leading-tight">
               Our Construction &amp; Renovation Service Areas
             </h1>

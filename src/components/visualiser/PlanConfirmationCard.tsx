@@ -53,7 +53,7 @@ export function PlanConfirmationCard({
       <div className="w-full max-w-3xl mx-auto space-y-6">
         {/* Top Eyebrow with Back & Reset Controls */}
         <div className="flex items-center justify-between gap-3">
-          {onBack && (
+          {onBack ? (
             <button
               type="button"
               onClick={onBack}
@@ -63,12 +63,7 @@ export function PlanConfirmationCard({
               <ArrowLeft className="h-3.5 w-3.5 text-[#FFAA4F]" />
               <span>Back to Questions</span>
             </button>
-          )}
-
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Consultation Complete</span>
-          </div>
+          ) : <div />}
 
           {onReset && (
             <button

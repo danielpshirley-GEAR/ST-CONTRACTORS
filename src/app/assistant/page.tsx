@@ -4,7 +4,7 @@ import { Container } from '@/components/ui/Container';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { siteConfig } from '@/config/site';
 import { AiConstructionAssistant } from '@/components/assistant/AiConstructionAssistant';
-import { CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: `AI Project Scope & Cost Assistant | ${siteConfig.name}`,
@@ -28,10 +28,6 @@ export default function AssistantPage() {
 
           {/* Hero Header */}
           <header className="space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFAA4F]/20 text-[#D97706] border border-[#FFAA4F]/40 font-bold text-xs">
-              <Sparkles className="h-3.5 w-3.5 text-[#D97706]" />
-              <span>AI Scope &amp; Cost Interpreter</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-heading leading-tight">
               What are you building?
             </h1>

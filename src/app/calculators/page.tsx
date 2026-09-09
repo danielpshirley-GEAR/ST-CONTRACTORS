@@ -32,11 +32,6 @@ export default function CalculatorsHubPage() {
 
         {/* Hero Section (Center Aligned) */}
         <div className="max-w-3xl mx-auto mb-14 text-center space-y-4">
-          <div className="flex justify-center">
-            <Badge variant="brand" size="sm" className="bg-amber-100/90 text-amber-900 border-amber-300/80 font-bold text-xs px-3 py-1 rounded-full">
-              Phase 3 Engine • 20 Interactive Tools
-            </Badge>
-          </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 font-heading leading-tight">
             Free Construction &amp; Material Calculators
           </h1>

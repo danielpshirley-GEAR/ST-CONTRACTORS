@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
-import { Upload, Image as ImageIcon, X, ArrowRight, Sparkles, CheckCircle2, Shield } from 'lucide-react';
+import { Upload, Image as ImageIcon, X, ArrowRight, CheckCircle2, Shield } from 'lucide-react';
 import { UploadedAssetCategory } from '@/types/visualiser-scope';
 
 interface VisualiserLandingInputProps {
@@ -74,12 +74,6 @@ export function VisualiserLandingInput({
     <div className="relative bg-transparent text-white py-12 sm:py-18 overflow-hidden">
       <Container size="md">
         <div className="max-w-3xl mx-auto space-y-8 relative z-10 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[#FFAA4F] text-xs font-bold uppercase tracking-wider shadow-sm">
-            <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
-            <span>AI Project Guide</span>
-          </div>
-
           {/* Master Heading (Stage 1 — Simple Project Input) */}
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">

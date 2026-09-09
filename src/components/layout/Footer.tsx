@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { siteConfig } from '@/config/site';
 import { Container } from '@/components/ui/Container';
-import { Hammer, Phone, Mail, MapPin, Shield, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Hammer, Phone, Mail, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -21,10 +21,6 @@ export const Footer: React.FC = () => {
         {/* Top Pitch Section */}
         <div className="pb-12 mb-12 border-b border-slate-850 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-8">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-500/10 text-brand-400 text-xs font-semibold uppercase tracking-wider mb-4 border border-brand-500/20">
-              <Shield className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>Full-Service Principal Contractor</span>
-            </div>
             <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-heading">
               One team. One project. From idea to completion.
             </h3>

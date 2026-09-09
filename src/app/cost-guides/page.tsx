@@ -29,9 +29,6 @@ export default function CostGuidesHubPage() {
 
         {/* Hero Section */}
         <div className="max-w-3xl mb-12">
-          <Badge variant="brand" size="sm" className="mb-3 bg-amber-100 text-amber-900 border-amber-300 font-bold text-xs">
-            2026 UK Build Benchmarks
-          </Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 font-heading leading-tight">
             UK Construction Cost Guides (2026)
           </h1>

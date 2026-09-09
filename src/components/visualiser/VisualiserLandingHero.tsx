@@ -6,7 +6,6 @@ import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
-  Sparkles,
   ArrowRight,
   Upload,
   Image as ImageIcon,
@@ -131,11 +130,6 @@ export function VisualiserLandingHero({
     <div className="relative bg-slate-50 border-b border-slate-200 py-12 sm:py-16 overflow-hidden">
       <Container size="md">
         <div className="space-y-6 text-center max-w-2xl mx-auto mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5 text-[#FFAA4F]" />
-            <span>AI Project Design &amp; Scope Builder</span>
-          </div>
-
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-heading leading-tight">
             AI Home Renovation &amp; Extension Visualiser
           </h1>

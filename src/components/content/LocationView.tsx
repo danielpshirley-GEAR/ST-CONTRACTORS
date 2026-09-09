@@ -62,11 +62,6 @@ export const LocationView: React.FC<LocationViewProps> = ({ location }) => {
               <span className="text-xs text-slate-500 font-mono font-medium">
                 Postcodes: {location.postcodes.join(', ')}
               </span>
-              {location.opportunityScore && (
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  Opportunity Score: {location.opportunityScore}/100
-                </span>
-              )}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 font-heading leading-tight">
