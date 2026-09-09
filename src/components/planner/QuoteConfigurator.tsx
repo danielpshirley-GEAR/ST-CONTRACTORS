@@ -26,6 +26,7 @@ import {
   ChevronUp,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Phone,
   Mail,
   Calendar,
@@ -375,60 +376,57 @@ export const QuoteConfigurator: React.FC<QuoteConfiguratorProps> = ({
             </span>
           </div>
 
-          {/* CTAs */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-            <Button
+          {/* CTAs — Uniform, Cohesive Action Row */}
+          <div className="pt-3 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
+            <button
               type="button"
               onClick={() => {
                 setBookingType('consultation');
                 setBookingModalOpen(true);
               }}
-              variant="primary"
-              size="lg"
-              className="w-full sm:w-auto bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-sm sm:text-base px-8 py-4 shadow-xl"
-              rightIcon={<ArrowRight className="h-4 w-4" />}
+              className="w-full sm:w-auto h-12 px-6 rounded-xl bg-[#FFAA4F] hover:bg-[#F59E3F] active:scale-[0.99] text-slate-950 font-extrabold text-sm border border-[#E69335] shadow-lg shadow-[#FFAA4F]/25 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer"
             >
-              Book Free Project Consultation
-            </Button>
-            <Button
+              <span>Book Free Project Consultation</span>
+              <ArrowRight className="h-4 w-4 text-slate-950" aria-hidden="true" />
+            </button>
+
+            <button
               type="button"
               onClick={() => setBudgetOptimizerOpen(true)}
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto text-emerald-400 bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 text-xs sm:text-sm font-bold px-6 py-4"
-              leftIcon={<PoundSterling className="h-4 w-4 text-emerald-400" />}
+              className="w-full sm:w-auto h-12 px-5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-[0.99] text-white font-semibold text-sm border border-slate-700 hover:border-slate-600 shadow-sm inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer"
             >
-              AI Budget Optimizer ✨
-            </Button>
-            <Button
+              <Sliders className="h-4 w-4 text-[#FFAA4F]" aria-hidden="true" />
+              <span>AI Budget Optimizer</span>
+            </button>
+
+            <button
               type="button"
               onClick={handleSaveToAccount}
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto text-[#FFAA4F] bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 text-xs sm:text-sm font-bold px-6 py-4"
-              leftIcon={<Sparkles className="h-4 w-4 text-[#FFAA4F]" />}
+              className="w-full sm:w-auto h-12 px-5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-[0.99] text-white font-semibold text-sm border border-slate-700 hover:border-slate-600 shadow-sm inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer"
             >
-              Save Estimate to My Account
-            </Button>
-            <Button
+              <Sparkles className="h-4 w-4 text-[#FFAA4F]" aria-hidden="true" />
+              <span>Save Estimate to My Account</span>
+            </button>
+
+            <button
               type="button"
               onClick={() => {
                 setBookingType('callback');
                 setBookingModalOpen(true);
               }}
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto text-white bg-slate-800/80 border-slate-700 hover:bg-slate-700 text-xs sm:text-sm font-semibold px-6 py-4"
-              leftIcon={<Phone className="h-4 w-4 text-[#FFAA4F]" />}
+              className="w-full sm:w-auto h-12 px-5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-[0.99] text-white font-semibold text-sm border border-slate-700 hover:border-slate-600 shadow-sm inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer"
             >
-              Request a Callback
-            </Button>
+              <Phone className="h-4 w-4 text-[#FFAA4F]" aria-hidden="true" />
+              <span>Request a Callback</span>
+            </button>
+
             <button
               type="button"
               onClick={onBackToWizard}
-              className="text-xs text-slate-400 hover:text-white underline underline-offset-4 ml-auto pt-2 sm:pt-0"
+              className="w-full sm:w-auto h-12 px-4 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer sm:ml-auto"
             >
-              ← Edit Answers in Questionnaire
+              <ArrowLeft className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
+              <span>Edit Answers</span>
             </button>
           </div>
         </div>
@@ -791,29 +789,25 @@ export const QuoteConfigurator: React.FC<QuoteConfiguratorProps> = ({
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          <Button
+          <button
             type="button"
             onClick={handleSaveToAccount}
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto border-amber-300 bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-sm px-6 py-3.5"
-            leftIcon={<Sparkles className="h-4 w-4 text-[#FFAA4F]" />}
+            className="w-full sm:w-auto h-12 px-5 rounded-xl bg-slate-800/90 hover:bg-slate-750 active:scale-[0.99] text-white font-semibold text-sm border border-slate-700 hover:border-slate-600 shadow-sm inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer"
           >
-            Save to My Account
-          </Button>
-          <Button
+            <Sparkles className="h-4 w-4 text-[#FFAA4F]" aria-hidden="true" />
+            <span>Save to My Account</span>
+          </button>
+          <button
             type="button"
             onClick={() => {
               setBookingType('consultation');
               setBookingModalOpen(true);
             }}
-            variant="primary"
-            size="lg"
-            className="w-full sm:w-auto bg-[#FFAA4F] hover:bg-[#F59E3F] text-slate-950 font-bold text-sm px-7 py-3.5"
-            rightIcon={<ArrowRight className="h-4 w-4" />}
+            className="w-full sm:w-auto h-12 px-6 rounded-xl bg-[#FFAA4F] hover:bg-[#F59E3F] active:scale-[0.99] text-slate-950 font-extrabold text-sm border border-[#E69335] shadow-lg shadow-[#FFAA4F]/25 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer"
           >
-            Book Free Project Consultation
-          </Button>
+            <span>Book Free Project Consultation</span>
+            <ArrowRight className="h-4 w-4 text-slate-950" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
